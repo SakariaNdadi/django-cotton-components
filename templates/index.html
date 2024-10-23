@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="p-4 grid grid-cols-4 gap-5">
+    <div class="p-4 grid grid-cols-4 gap-5">
 
 
     {% comment %}
@@ -23,11 +23,11 @@
 
     {% endcomment %}
 
-    <div class="col-span-4">
-        <br>
-        <c-h2 title="Table" />
-        <c-table :th="['manufacturer','model','year','transmission','color']" :tr="cars" />
-    </div>
+        <div class="col-span-4">
+            <br>
+            <c-h2 title="Table" />
+            <c-table :th="['id','manufacturer','model','year','transmission','color']" :tr="cars" />
+        </div>
 
-</div>
+    </div>
 {% endblock content %}
