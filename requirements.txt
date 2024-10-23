@@ -1,0 +1,5 @@
+asgiref==3.8.1
+Django==5.1.2
+django-cotton==1.2.1
+sqlparse==0.5.1
+uv==0.4.25
