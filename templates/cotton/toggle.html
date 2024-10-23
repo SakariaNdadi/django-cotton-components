@@ -1,0 +1,9 @@
+<div class="flex flex-col items-start">
+    <label for="{{ id }}" class="inline-flex cursor-pointer items-center gap-3">
+        <input id="{{ id }}" type="checkbox" class="peer sr-only" role="switch" name="{{ name }}" />
+        <div class="relative h-6 w-11 after:h-5 after:w-5 peer-checked:after:translate-x-5 rounded-full border border-primary-300 bg-primary-50 after:absolute after:bottom-0 after:left-[0.0625rem] after:top-0 after:my-auto after:rounded-full after:bg-primary-600 after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:bg-primary-100 peer-focus:outline peer-focus:outline-2 peer-focus:outline-offset-2 peer-focus:outline-primary-800 peer-focus:peer-checked:outline-black peer-active:outline-offset-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:border-primary-700 dark:bg-primary-900 dark:after:bg-primary-300 dark:peer-checked:bg-white dark:peer-checked:after:bg-black dark:peer-focus:outline-primary-300 dark:peer-focus:peer-checked:outline-white"
+             aria-hidden="true"></div>
+        <span
+            class="trancking-wide text-sm font-medium text-primary-600 peer-checked:text-primary-900 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-primary-300 dark:peer-checked:text-white">{{ label }}</span>
+    </label>
+</div>
