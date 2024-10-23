@@ -1,22 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-    <div class="p-4 grid grid-cols-4 gap-5">
+<div class="p-4 grid grid-cols-4 gap-5">
 
-        <c-h1 title="Testing H1" />
-        <c-h2 title="Testing H2" />
-        <c-h3 title="Testing H3" />
-        <c-h4 title="Testing H4" />
-        <c-input label="Testing Input Label" type="email" placeholder="joh@email.com" />
-        <c-textarea label="comment" placeholder="we'd love to hear from you" id="" name="" />
-        <c-password-input placeholder="* * * * * * * *" />
-        <c-button title="Testing" icon="" svg="" url="" />
-        <c-select id="select" label="Choose a car" :options="cars" />
-        <c-select-search id="select-search" label="Choose a car" :options="cars" />
-        <c-select-multiple id="multiple" label="Choose a car" :options="cars" />
-        <c-checkbox id="checkbox" label="Checkbox" description="Checkbox description" />
-        <c-toggle id="toggle" label="Toggle" />
-        <c-radio id="radio" label="Radio" description="radio description" />
 
+    {% comment %}
+
+    <c-h1 title="Testing H1" />
+    <c-h2 title="Testing H2" />
+    <c-h3 title="Testing H3" />
+    <c-h4 title="Testing H4" />
+    <c-input label="Testing Input Label" type="email" placeholder="joh@email.com" />
+    <c-textarea label="comment" placeholder="we'd love to hear from you" id="" name="" />
+    <c-password-input placeholder="* * * * * * * *" />
+    <c-button title="Testing" icon="" svg="" url="" />
+    <c-select id="select" label="Choose a car" :options="cars" />
+    <c-select-search id="select-search" label="Choose a car" :options="cars" />
+    <c-select-multiple id="multiple" label="Choose a car" :options="cars" />
+    <c-checkbox id="checkbox" label="Checkbox" description="Checkbox description" />
+    <c-toggle id="toggle" label="Toggle" />
+    <c-radio id="radio" label="Radio" description="radio description" />
+
+    {% endcomment %}
+
+    <div class="col-span-4">
+        <br>
+        <c-h2 title="Table" />
+        <c-table :th="['manufacturer','model','year','transmission','color']" :tr="cars" />
     </div>
+
+</div>
 {% endblock content %}
