@@ -12,6 +12,14 @@
                                                                       ],
                                                                       getValues(item) {
                                                                       return Object.keys(item).map(key => item[key]);
+                                                                      },
+                                                                      filteredItems() {
+                                                                      const searchTerm = this.search.toLowerCase();
+                                                                      return this.items.filter(item => {
+                                                                      return Object.values(item).some(value =>
+                                                                      String(value).toLowerCase().includes(searchTerm)
+                                                                      );
+                                                                      });
                                                                       }
                                                                       }" x-init="console.log(items)">
     <div class="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
@@ -121,7 +129,7 @@
             </tr>
         </thead>
         <tbody>
-            <template x-for="item in items" :key="item.id">
+            <template x-for="item in filteredItems" :key="item.id">
                 <tr
                     class="bg-white border-b dark:bg-primary-800 dark:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-600">
                     <td class="w-4 p-4">
