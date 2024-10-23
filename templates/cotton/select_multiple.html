@@ -59,7 +59,7 @@
                 x-on:keydown.down.prevent="openedWithKeyboard = true" x-on:keydown.enter.prevent="openedWithKeyboard = true"
                 x-on:keydown.space.prevent="openedWithKeyboard = true" x-bind:aria-label="setLabelText()"
                 x-bind:aria-expanded="isOpen || openedWithKeyboard">
-            <span class="text-sm w-full font-normal text-start overflow-hidden text-ellipsis  whitespace-nowrap"
+            <span class="text-sm w-full font-normal text-start overflow-hidden text-ellipsis whitespace-nowrap lg:block"
                   x-text="setLabelText()"></span>
             <!-- Chevron  -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -81,13 +81,13 @@
                 <li role="option">
                     <label
                         class="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-medium text-primary-600 hover:bg-primary-950/5 has-[:focus]:bg-primary-950/5 dark:text-primary-300 dark:hover:bg-white/5 dark:has-[:focus]:bg-white/5 [&:has(input:checked)]:text-primary-900 dark:[&:has(input:checked)]:text-white [&:has(input:disabled)]:cursor-not-allowed [&:has(input:disabled)]:opacity-75"
-                        x-bind:for="'checkboxOption' + index">
+                        x-bind:for="'{{ id }}-' + index">
                         <div class="relative flex items-center">
                             <input type="checkbox"
                                    class="combobox-option before:content[''] peer relative size-4 cursor-pointer appearance-none overflow-hidden border border-primary-300 bg-primary-50 before:absolute before:inset-0 checked:border-black checked:before:bg-black focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-primary-800 checked:focus:outline-black active:outline-offset-0 disabled:cursor-not-allowed dark:border-primary-700 rounded dark:bg-primary-900 dark:checked:border-white dark:checked:before:bg-white dark:focus:outline-primary-300 dark:checked:focus:outline-white"
                                    x-on:change="handleOptionToggle($el)"
                                    x-on:keydown.enter.prevent="$el.checked = ! $el.checked; handleOptionToggle($el)"
-                                   x-bind:value="item.value" x-bind:id="'checkboxOption' + index" />
+                                   x-bind:value="item.value" x-bind:id="'{{ id }}-' + index" />
                             <!-- Checkmark  -->
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                  fill="none" stroke-width="4"
