@@ -23,8 +23,7 @@
         <div class="col-span-4">
             <br>
             <c-h2 title="Table" />
-            <c-table :th="['id','manufacturer','model','year','transmission','color']" :tr="table_cars"
-                     :searchColumns="['id','manufacturer','year']" />
+            <c-table :th="['manufacturer','model','year','transmission']" :tr="table_cars" search />
         </div>
 
     </div>

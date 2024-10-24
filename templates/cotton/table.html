@@ -11,12 +11,12 @@
                                                                       {% endfor %}
                                                                       ],
                                                                       columns: [
-                                                                      {% for column in searchColumns %}
+                                                                      {% for column in th %}
                                                                           '{{ column }}'{% if not forloop.last %}, {% endif %}
                                                                       {% endfor %}
                                                                       ],
                                                                       getValues(item) {
-                                                                      return Object.keys(item).map(key => item[key]);
+                                                                      return this.columns.map(column => item[column]);
                                                                       },
                                                                       filteredItems() {
                                                                       const searchTerm = this.search.toLowerCase();
@@ -44,7 +44,7 @@
                 <c-filter id="table-filter" :filters="filters" />
             </div>
         {% endif %}
-        {% if searchColumns %}
+        {% if search %}
             <label for="table-search" class="sr-only">Search</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 rtl:inset-r-0 rtl:right-0 flex items-center ps-3 pointer-events-none">
