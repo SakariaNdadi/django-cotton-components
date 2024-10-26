@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-cotton-components"
+version = "0.1.0"
+description = "A Django package with pre-built cotton-based UI components for rapid development."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Sakaria Ndadi", email = "oipapi.ndadi@gmail.com"}
+]
+keywords = ["django", "components", "ui", "cotton"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+]
+
+dependencies = [
+    "django-cotton==1.2.1"
+]
+
+[tool.setuptools.packages.find]
+exclude = [
+    ".venv",
+    "config",
+    "migrations",
+    "admin.py",
+    "models.py",
+    "views.py",
+    "*.pyc",
+    "__pycache__",
+    "db.sqlite3"
+]
+
+[tool.isort]
+profile = "black"
