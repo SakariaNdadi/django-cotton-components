@@ -33,8 +33,9 @@ A collection of pre-built, stylish, and functional form components to streamline
 
     INSTALLED_APPS = [
         ...
-        "django-cotton"
-        "django-cotton-components"
+        "django_cotton",
+        "django_cotton_components",
+        ...
     ]
 
 ```
