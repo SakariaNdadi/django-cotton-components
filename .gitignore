@@ -5,3 +5,5 @@ migrations
 admin.py
 models.py
 views.py
+*.pyc
+__pycache__
