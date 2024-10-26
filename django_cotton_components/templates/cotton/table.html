@@ -1,0 +1,218 @@
+<div x-data="{
+             search: '',
+             items: [
+             {% for option in tr %}
+                 {
+                 {% for key, value in option.items %}
+                     '{{ key }}': '{{ value }}'{% if not forloop.last %}, {% endif %}
+                 {% endfor %}
+                 }
+                 {% if not forloop.last %}, {% endif %}
+             {% endfor %}
+             ],
+             columns: [
+             {% for column in th %}
+                 '{{ column }}'{% if not forloop.last %}, {% endif %}
+             {% endfor %}
+             ],
+             paginate_by: {% if paginate_by %}{{ paginate_by }}{% else %}0{% endif %},
+             currentPage: 1,
+             getValues(item) {
+             return this.columns.map(column => item[column]);
+             },
+             get filteredItems() {
+             const searchTerm = this.search.toLowerCase();
+             let filtered = this.items.filter(item => {
+             return this.columns.some(column => String(item[column]).toLowerCase().includes(searchTerm));
+             });
+
+             // Apply pagination
+             if (this.paginate_by) {
+             const start = (this.currentPage - 1) * this.paginate_by;
+             const end = start + this.paginate_by;
+             return filtered.slice(start, end);
+             }
+             return filtered;
+             },
+             get totalPages() {
+             return this.paginate_by > 0 ? Math.ceil(this.items.length / this.paginate_by) : 1;
+             },
+             getValues(item) {
+             return this.columns.map(column => item[column]);
+             },
+             goToPage(page) {
+             if (page >= 1 && page <= this.totalPages) {
+             this.currentPage = page;
+             }
+             }
+             }">
+    <div class="relative overflow-x-auto">
+        <div class="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
+            {% if filters %}
+                <div class="class=" inline-flex items-center text-neutral-500 bg-white border border-neutral-300
+                     focus:outline-none hover:bg-neutral-100 focus:ring-4 focus:ring-neutral-100 font-medium rounded-lg
+                     text-sm px-3 py-1.5 dark:bg-neutral-800 dark:text-white dark:border-neutral-600
+                     dark:hover:bg-neutral-700 dark:hover:border-neutral-600 dark:focus:ring-neutral-700"">
+
+                <!-- Filter -->
+                    <c-filter id="table-filter" :filters="filters" />
+                </div>
+            {% endif %}
+            {% if search %}
+                <label for="{{ id }}-table-search" class="sr-only">Search</label>
+                <div class="relative">
+                    <div
+                        class="absolute inset-y-0 left-0 rtl:inset-r-0 rtl:right-0 flex items-center ps-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true" fill="currentColor"
+                             viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                  clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="{{ id }}-table-search" x-model="search"
+                           class="block p-2 ps-10 text-sm text-neutral-900 border border-neutral-300 rounded-lg w-80 bg-neutral-50 focus:ring-neutral-500 focus:border-neutral-500 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-neutral-500 dark:focus:border-neutral-500"
+                           placeholder="Search for items">
+                </div>
+            {% endif %}
+        </div>
+        <table id="{{ id }}-table"
+               class="w-full text-sm text-left rtl:text-right text-neutral-500 dark:text-neutral-400 border">
+            <thead
+                class="{% if thClass %}{{ thClass }}{% else %}text-xs text-neutral-50 uppercase bg-neutral-950 dark:bg-neutral-700 dark:text-neutral-400{% endif %}">
+                <tr>
+                    <!-- <th scope="col" class="p-4">
+                    <div class="flex items-center">
+                        <input id="checkbox-all-search" type="checkbox"
+                            class="w-4 h-4 text-neutral-600 bg-neutral-100 border-neutral-300 rounded focus:ring-neutral-500 dark:focus:ring-neutral-600 dark:ring-offset-neutral-800 dark:focus:ring-offset-neutral-800 focus:ring-2 dark:bg-neutral-700 dark:border-neutral-600">
+                        <label for="checkbox-all-search" class="sr-only">checkbox</label>
+                    </div>
+                </th> -->
+                    {% for heading in th %}
+                        <th scope="col" class="px-6 py-3">
+                            {{ heading }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for=" item in filteredItems" :key="item.id">
+                    <tr
+                        class="{% if trClass %}{{ trClass }}{% else %}bg-white border-b dark:bg-neutral-800 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600{% endif %}">
+                        <!-- <td class="w-4 p-4">
+                        <div class="flex items-center">
+                            <input id="checkbox-table-search-1" type="checkbox"
+                                class="w-4 h-4 text-neutral-600 bg-neutral-100 border-neutral-300 rounded focus:ring-neutral-500 dark:focus:ring-neutral-600 dark:ring-offset-neutral-800 dark:focus:ring-offset-neutral-800 focus:ring-2 dark:bg-neutral-700 dark:border-neutral-600">
+                            <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+                        </div>
+                    </td> -->
+                        <template x-for="(value, index) in getValues(item)" :key="index">
+                            <td class="px-6 py-4" x-text="value"></td>
+                        </template>
+                    </tr>
+                </template>
+                <template x-if="filteredItems.length === 0">
+                    <tr
+                        class="{% if trClass %}{{ trClass }}{% else %}bg-white border-b dark:bg-neutral-800 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600{% endif %}">
+                        <td colspan="{{ th|length }}" class="px-6 py-4 text-center">No results found</td>
+                    </tr>
+                </template>
+
+            </tbody>
+
+            <!-- Pagination -->
+            <template x-if="{{ paginate_by }}">
+                <tfoot
+                    class="text-xs text-neutral-700 uppercase bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-400">
+                    <tr>
+                        <td colspan="{{ th|length }}">
+                            <nav aria-label="pagination">
+                                <ul class="flex flex-shrink-0 items-center gap-2 text-sm font-medium md:justify-center">
+                                    <svg x-show="currentPage !== 1" xmlns="http://www.w3.org/2000/svg"
+                                         viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
+                                        <path fill-rule="evenodd"
+                                              d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+                                              clip-rule="evenodd" />
+                                    </svg>
+                                    <li>
+                                        <button type="button" @click="goToPage(currentPage - 1)"
+                                                x-show="currentPage > 1" :disabled="currentPage === 1"
+                                                class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                                aria-label="previous page">
+
+                                            Previous
+                                        </button>
+                                    </li>
+
+                                    <li x-show="currentPage > 1">
+                                        <button @click="goToPage(1)"
+                                                class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                                aria-label="page 1">1</button>
+                                    </li>
+
+                                    <li x-show="currentPage > 2">
+                                        <span
+                                            class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="more pages">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" aria-hidden="true" stroke="currentColor"
+                                                 class="w-6 h-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                            </svg>
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <span x-text="`${currentPage}`"
+                                              class="flex size-6 items-center justify-center rounded-md bg-black p-1 font-bold text-neutral-100 dark:bg-white dark:text-black"
+                                              aria-current="page" aria-label="current page"></span>
+                                    </li>
+
+                                    <li x-show="currentPage < totalPages - 1">
+                                        <span
+                                            class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="more pages">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" aria-hidden="true" stroke="currentColor"
+                                                 class="w-6 h-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                            </svg>
+                                        </span>
+                                    </li>
+
+
+
+                                    <li x-show="currentPage !== totalPages">
+                                        <span x-text="totalPages"
+                                              class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                              aria-label="total pages"></span>
+                                    </li>
+
+                                    <li x-show="currentPage !== totalPages">
+                                        <button @click="goToPage(currentPage + 1)"
+                                                :disabled="currentPage === totalPages"
+                                                class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                                aria-label="next page">
+                                            Next
+
+                                        </button>
+                                    </li>
+                                    <svg x-show="currentPage !== totalPages" xmlns="http://www.w3.org/2000/svg"
+                                         viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
+                                        <path fill-rule="evenodd"
+                                              d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                              clip-rule="evenodd" />
+                                    </svg>
+                                </ul>
+                            </nav>
+
+                        </td>
+                    </tr>
+                </tfoot>
+            </template>
+            <!-- Pagination end -->
+        </table>
+    </div>
+</div>

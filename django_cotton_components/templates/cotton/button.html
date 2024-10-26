@@ -1,0 +1,28 @@
+{% if url %}
+    <a href="{{ url }}" id="{{ id }}"
+       class="cursor-pointer inline-flex justify-center items-center gap-2 whitespace-nowrap rounded-md bg-black px-4 py-2 text-sm font-medium tracking-wide text-neutral-100 transition hover:opacity-75 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:focus-visible:outline-white">
+{% else %}
+    <button id="{{ id }}" type="{% if type %}{{ type }}{% else %}button{% endif %}" {{ attrs }}
+            class="cursor-pointer inline-flex justify-center items-center gap-2 whitespace-nowrap rounded-md bg-black px-4 py-2 text-sm font-medium tracking-wide text-neutral-100 transition hover:opacity-75 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:opacity-100 active:outline-offset-0 disabled:opacity-75 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:focus-visible:outline-white">
+{% endif %}
+
+{% if icon %}
+    <span class="size-5 fill-neutral-100 dark:fill-black" fill="currentColor">
+        <img src="{{ icon }}" class="size-5 fill-neutral-100 dark:fill-black" />
+    </span>
+{% endif %}
+
+{% if svg %}
+    <span class="size-5 fill-neutral-100 dark:fill-black" fill="currentColor">
+        {{ svg }}
+    </span>
+{% endif %}
+
+{{ title }}
+{{ slot }}
+
+{% if url %}
+    </a>
+{% else %}
+    </button>
+{% endif %}

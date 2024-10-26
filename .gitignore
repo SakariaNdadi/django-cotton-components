@@ -1,0 +1,7 @@
+.venv
+config
+manage.py
+migrations
+admin.py
+models.py
+views.py
