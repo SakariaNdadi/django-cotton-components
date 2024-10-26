@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-cotton-components"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Django package with pre-built cotton-based UI components for rapid development."
-readme = "README.md"
+readme = "README.MD"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 authors = [
@@ -27,17 +27,16 @@ dependencies = [
     "django-cotton==1.2.1"
 ]
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
+include = ["django_cotton_components*"]
 exclude = [
     ".venv",
     "config",
-    "migrations",
-    "admin.py",
-    "models.py",
-    "views.py",
     "*.pyc",
     "__pycache__",
-    "db.sqlite3"
 ]
 
 [tool.isort]

@@ -7,3 +7,5 @@ models.py
 views.py
 *.pyc
 __pycache__
+dist
+*.egg-info
