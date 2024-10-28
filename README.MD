@@ -112,7 +112,14 @@ You can add extra attributes on the button, example, `<c-button id="" title="Tes
 ##### Single Select
 
 ```html
-<c-select id="" label="" :options="['Option1','Option2']" :data="cars" search />
+<c-select
+	id=""
+	label=""
+	name=""
+	:options="['Option1','Option2']"
+	:data="cars"
+	search
+/>
 ```
 
 - id: Unique identifier for the select.
@@ -126,7 +133,7 @@ Note: If you use ':data' and no data is provided an 'IndexError' will be produce
 ##### MultiSelect
 
 ```html
-<c-select-multiple id="" label="" :options="[]" :data="" />
+<c-select-multiple id="" label="" name="" :options="[]" :data="" />
 ```
 
 - id: Unique identifier for the select.
