@@ -133,13 +133,14 @@ Note: If you use ':data' and no data is provided an 'IndexError' will be produce
 ##### MultiSelect
 
 ```html
-<c-select-multiple id="" label="" name="" :options="[]" :data="" />
+<c-select-multiple id="" label="" name="" :options="[]" :data="" :values="" />
 ```
 
 - id: Unique identifier for the select.
 - label: Label displayed above the select.
 - options: Array of options to be displayed in the select.
 - data: Data passed from your view ( `cars = Car.objects.all()` ).
+- values: When provided, the component checks each item in the values array against the data (e.g., an array of objects) and marks the matching options as selected.
 
 Note: Being worked on, display of selected options when using ':data' not on par with ':options'
 
