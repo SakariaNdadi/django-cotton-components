@@ -54,38 +54,38 @@ A collection of pre-built, stylish, and functional form components to streamline
 ### Input
 
 ```html
-<c-input id="" label="" type="" placeholder="" />
+<c-input id="" class="" type="" errorTimer="" validationUrl="" {{ attrs }} />
 ```
 
 By default it is a text input if no type is provided.
 
 - id: Unique identifier for the input.
-- label: The label displayed above the input.
-- type: Input type (text, email, number, etc.).
-- placeholder: Placeholder text within the input.
+- class: By default this uses TailwindCSS, to customise to your preference add your own.
+- type: By default this is text. Define your type (date, email, number, etc.).
+- errorTimer: If variable is not passed the form errors will show indefinitely. Pass milliseconds to prop to display how long the error will be displayed for.
+- validationUrl: Requires [HTMX](https://htmx.org/). This will validate your input such as username, checkout [example](https://youtu.be/yf7_txKvexk?si=WAuxBFEfnrqmCYWp).
+- attrs: Do not reference attrs. Add extra attributes such as 'name', 'value', 'placeholder', 'required' etc.
 
 ### Textarea
 
 ```html
-<c-textarea id="" label="" placeholder="" name="" rows="" />
+<c-textarea id="" class="" errorTimer="" validationUrl="" {{ attrs }} />
 ```
 
 - id: Unique identifier for the input.
-- label: The label displayed above the input.
-- type: Input type (text, email, number, etc.).
-- placeholder: Placeholder text within the input.
-- rows: Number of visible rows.
+- errorTimer: If variable is not passed the form errors will show indefinitely. Pass milliseconds to prop to display how long the error will be displayed for.
+- validationUrl: Requires [HTMX](https://htmx.org/). This will validate your input such as username, checkout [example](https://youtu.be/yf7_txKvexk?si=WAuxBFEfnrqmCYWp).
+- attrs: Do not reference attrs. Add extra attributes such as 'name', 'value', 'placeholder', 'rows' etc.
 
 ### Password Input
 
 ```html
-<c-password-input id="" label="" placeholder="" show />
+<c-password-input id="" name="" show {{ attrs }} />
 ```
 
 - id: Unique identifier for the password input.
-- label: Label displayed above the input.
-- placeholder: Placeholder text within the input.
 - show: Enables password visibility toggle.
+- attrs: Do not reference attrs. Add extra attributes such as 'name', 'value', 'placeholder', 'required' etc.
 
 ### Button
 

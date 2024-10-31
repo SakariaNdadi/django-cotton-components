@@ -10,23 +10,27 @@
 <div x-data="{ 
     errors: '', 
     showError: false, 
-    errorTimer: {% if errorTimer %}{{ error_timer }}{% else %}null{% endif %} 
+    errorTimer: {% if errorTimer %}{{ errorTimer }}{% else %}null{% endif %}
     }" x-init="
         if ({% if field_errors %}true{% else %}false{% endif %}) {
         showError = true; 
-        errors = true; 
+        errors = '{{ field_errors|join:', ' }}'; 
         if (errorTimer && errorTimer > 0) { 
             setTimeout(() => { showError = false; }, errorTimer); 
         }
-    }" class="flex w-full flex-col gap-1 text-neutral-600 dark:text-neutral-300">
-    {% if label %}
-    <label for="{{ id }}" class="w-fit pl-0.5 text-sm">{{ label }}</label>
-    {% endif %}
-    <input id="{{ id }}" type="{{ type }}" {{ attrs }} value="{{ value }}"
-        class="w-full rounded-md border border-neutral-300 bg-neutral-50 px-2 py-2 text-sm focus-visible:outline focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-75 dark:border-neutral-700 dark:bg-neutral-900/50 dark:focus-visible:outline-white"
-        :class="{ 'border-red-500 focus-visible:outline-red-500': showError }" name="{{ name }}"
-        placeholder="{{ placeholder }}" />
+    }">
+    <input id="{{ id }}" type="{{ type }}" {{ attrs }}
+        :class="{ 'border-red-500 focus-visible:outline-red-500': showError }" name="{{ name }}" {% if validationUrl %}
+        hx-post="{{ validationUrl }}" hx-target="#error" hx-trigger="keyup delay:500ms" {% endif %}
+        class="{% if class %}{{ class }}{% else %}w-full rounded-md border bg-neutral-50 px-2 py-2 text-sm focus-visible:outline focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-75 dark:border-neutral-700 dark:bg-neutral-900/50 dark:focus-visible:outline-white{% endif %}" />
+
+    <!-- form-errors -->
     <template x-if="showError">
-        <div class="text-red-500 text-sm mt-1">{{ field_errors|join:", " }}</div>
+        <div class="text-red-500 text-sm mt-1" x-text="errors"></div>
     </template>
+    <!-- form-errors end -->
+
+    <!-- htmx-error -->
+    <div id="error"></div>
+    <!-- htmx-error end -->
 </div>
