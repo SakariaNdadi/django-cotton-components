@@ -56,7 +56,6 @@
              },
              }" class="w-full max-w-xs flex flex-col gap-1" x-on:keydown="highlightFirstMatchingOption($event.key)"
     x-on:keydown.esc.window="isOpen = false, openedWithKeyboard = false">
-    <label for="{{ id }}" class="w-fit pl-0.5 text-sm text-neutral-600 dark:text-neutral-300">{{ label }}</label>
     <div class="relative">
         <!-- trigger button  -->
         <button type="button" role="combobox"

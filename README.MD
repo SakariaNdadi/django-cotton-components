@@ -45,10 +45,10 @@ A collection of pre-built, stylish, and functional form components to streamline
 ### Headers
 
 ```html
-<c-h1 title="Testing H1" />
-<c-h2 title="Testing H2" />
-<c-h3 title="Testing H3" />
-<c-h4 title="Testing H4" />
+<c-h1 title="Testing H1">`extra content`</c-h1>
+<c-h2 title="Testing H2">`extra content`</c-h2>
+<c-h3 title="Testing H3">`extra content`</c-h3>
+<c-h4 title="Testing H4">`extra content`</c-h4>
 ```
 
 ### Input
@@ -114,19 +114,19 @@ You can add extra attributes on the button, example, `<c-button id="" title="Tes
 ```html
 <c-select
 	id=""
-	label=""
 	name=""
 	:options="['Option1','Option2']"
 	:data="cars"
 	search
+	value=""
 />
 ```
 
 - id: Unique identifier for the select.
-- label: Label displayed above the select.
 - options: Array of options to be displayed in the select.
 - data: Data passed from your view ( `cars = Car.objects.all()` ).
 - search: Enables search functionality.
+- value: When provided, the component checks each item in the values array against the data (e.g, an array of objects) and marks the matching options as selected.
 
 Note: If you use ':data' and no data is provided an 'IndexError' will be produced.
 
@@ -140,7 +140,7 @@ Note: If you use ':data' and no data is provided an 'IndexError' will be produce
 - label: Label displayed above the select.
 - options: Array of options to be displayed in the select.
 - data: Data passed from your view ( `cars = Car.objects.all()` ).
-- values: When provided, the component checks each item in the values array against the data (e.g., an array of objects) and marks the matching options as selected.
+- values: When provided, the component checks each item in the values array against the data (e.g, an array of objects) and marks the matching options as selected.
 
 Note: Being worked on, display of selected options when using ':data' not on par with ':options'
 
