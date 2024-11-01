@@ -40,21 +40,37 @@ A collection of pre-built, stylish, and functional form components to streamline
 
 ```
 
+## DISCLAIMER
+
+The package is under active development. More changes will occur. The package is not yet stable. When using it and run into issues and/or have suggestions please create an ISSUE on [GITHUB](https://github.com/SakariaNdadi/django-cotton-components)
+
+## Inheritance
+
+In your 'templates' directory, create a cotton directory.
+
+example: create `input.html`
+
+```html
+<c-dcc-input class="styling classes" errorTimer="1000" />
+```
+
+In your project reference your component, `<c-input id="thisInput" type="date" />`.
+
 ## Components
 
 ### Headers
 
 ```html
-<c-h1 title="Testing H1">`extra content`</c-h1>
-<c-h2 title="Testing H2">`extra content`</c-h2>
-<c-h3 title="Testing H3">`extra content`</c-h3>
-<c-h4 title="Testing H4">`extra content`</c-h4>
+<c-dcc-h1 title="" class="">`extra content`</c-dcc-h1>
+<c-dcc-h2 title="" class="">`extra content`</c-dcc-h2>
+<c-dcc-h3 title="" class="">`extra content`</c-dcc-h3>
+<c-dcc-h4 title="" class="">`extra content`</c-dcc-h4>
 ```
 
 ### Input
 
 ```html
-<c-input id="" class="" type="" errorTimer="" validationUrl="" {{ attrs }} />
+<c-dcc-input id="" class="" type="" errorTimer="" validationUrl="" {{attrs}} />
 ```
 
 By default it is a text input if no type is provided.
@@ -69,7 +85,7 @@ By default it is a text input if no type is provided.
 ### Textarea
 
 ```html
-<c-textarea id="" class="" errorTimer="" validationUrl="" {{ attrs }} />
+<c-dcc-textarea id="" class="" errorTimer="" validationUrl="" {{ attrs }} />
 ```
 
 - id: Unique identifier for the input.
@@ -80,7 +96,7 @@ By default it is a text input if no type is provided.
 ### Password Input
 
 ```html
-<c-password-input id="" name="" show {{ attrs }} />
+<c-dcc-password-input id="" name="" show {{ attrs }} />
 ```
 
 - id: Unique identifier for the password input.
@@ -90,10 +106,11 @@ By default it is a text input if no type is provided.
 ### Button
 
 ```html
-<c-button id="" title="Testing" icon="" svg="" url="" />
+<c-dcc-button id="" class="" title="" icon="" svg="" url="" />
 ```
 
 - id: Unique identifier for the button.
+- class: Add styling to your button.
 - title: Button text.
 - type: Button type(submit, reset etc.).
 - url: If provided, the button renders as `<a href="...">` otherwise, it renders as `<button>`.
@@ -112,7 +129,7 @@ You can add extra attributes on the button, example, `<c-button id="" title="Tes
 ##### Single Select
 
 ```html
-<c-select
+<c-dcc-select
 	id=""
 	name=""
 	:options="['Option1','Option2']"
@@ -133,7 +150,14 @@ Note: If you use ':data' and no data is provided an 'IndexError' will be produce
 ##### MultiSelect
 
 ```html
-<c-select-multiple id="" label="" name="" :options="[]" :data="" :values="" />
+<c-dcc-select-multiple
+	id=""
+	label=""
+	name=""
+	:options="[]"
+	:data=""
+	:values=""
+/>
 ```
 
 - id: Unique identifier for the select.
@@ -147,7 +171,7 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Checkbox
 
 ```html
-<c-checkbox id="" label="" description="" value="" />
+<c-dcc-checkbox id="" label="" description="" value="" />
 ```
 
 - id: Unique identifier for the checkbox.
@@ -158,7 +182,7 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Toggle
 
 ```html
-<c-toggle id="" label="" value="" />
+<c-dcc-toggle id="" label="" value="" />
 ```
 
 - id: Unique identifier for the toggle.
@@ -168,7 +192,7 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Radio
 
 ```html
-<c-radio id="" label="" description="" value="" />
+<c-dcc-radio id="" label="" description="" value="" />
 ```
 
 - id: Unique identifier for the radio.
@@ -179,9 +203,9 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Modal
 
 ```html
-<c-modal id="" header="" label="">
+<c-dcc-modal id="" header="" label="">
 	<!-- Your content -->
-</c-modal>
+</c-dcc-modal>
 ```
 
 - header: Header text for the modal.
@@ -190,7 +214,15 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Table
 
 ```html
-<c-table id="" :th="[]" thClass="" :tr="" trClass="" paginate_by="" search />
+<c-dcc-table
+	id=""
+	:th="[]"
+	thClass=""
+	:tr=""
+	trClass=""
+	paginate_by=""
+	search
+/>
 ```
 
 - id: Unique identifier for the table.
