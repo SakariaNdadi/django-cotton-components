@@ -1,0 +1,10 @@
+{% if url %}
+<a href="{{ url }}" class="{{ class }}" {{ attrs }}>
+    {% endif %}
+    <h1 class="{{ class }}" {{ attrs }}>
+        {{ title }}
+        {{ slot }}
+    </h1>
+    {% if url %}
+</a>
+{% endif %}

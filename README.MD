@@ -5,7 +5,6 @@ A collection of pre-built, stylish, and functional form components to streamline
 ## Key Features:
 
 - Pre-built Components: Quickly add common form elements like text inputs, textareas, select boxes, and more.
-- Tailwind CSS Integration: Seamlessly integrate with your existing Tailwind CSS setup for consistent styling.
 - Alpine.js for Interactivity: Leverage Alpine.js to add dynamic behavior to your components without relying on full-fledged JavaScript frameworks.
 - Easy to Use: Simple installation and configuration, allowing you to focus on building your application.
 
@@ -13,7 +12,7 @@ A collection of pre-built, stylish, and functional form components to streamline
 
 - [Django-Cotton](https://django-cotton.com/)
 - [AlpineJs](https://alpinejs.dev/)
-- [TailwindCSS](https://tailwindcss.com/)
+- [TailwindCSS](https://tailwindcss.com/) (optional)
 
 ## Installation:
 
@@ -58,25 +57,39 @@ In your project reference your component, `<c-input id="thisInput" type="date" /
 
 ## Components
 
+By default some components come with TailwindCSS styling.
+
 ### Headers
 
 ```html
-<c-dcc-h1 title="" class="">`extra content`</c-dcc-h1>
-<c-dcc-h2 title="" class="">`extra content`</c-dcc-h2>
-<c-dcc-h3 title="" class="">`extra content`</c-dcc-h3>
-<c-dcc-h4 title="" class="">`extra content`</c-dcc-h4>
+<c-dcc-h title="" class="" url="" {{ attrs }}>`extra content`</c-dcc-h>
 ```
+
+By default it is a `h1`, no styling is provided.
+
+- id: Unique identifier for the input.
+- class: Customise to your preference add your own.
+- url: If provided, the heading becomes a link.
 
 ### Input
 
 ```html
-<c-dcc-input id="" class="" type="" errorTimer="" validationUrl="" {{attrs}} />
+<c-dcc-input
+	id=""
+	class=""
+	type=""
+	errorTimer=""
+	borderErrorClass=""
+	errorDivClass=""
+	validationUrl=""
+	{{attrs}}
+/>
 ```
 
-By default it is a text input if no type is provided.
+By default it is a text input if no type is provided..
 
 - id: Unique identifier for the input.
-- class: By default this uses TailwindCSS, to customise to your preference add your own.
+- class: Customise to your preference add your own.
 - type: By default this is text. Define your type (date, email, number, etc.).
 - errorTimer: If variable is not passed the form errors will show indefinitely. Pass milliseconds to prop to display how long the error will be displayed for.
 - validationUrl: Requires [HTMX](https://htmx.org/). This will validate your input such as username, checkout [example](https://youtu.be/yf7_txKvexk?si=WAuxBFEfnrqmCYWp).
@@ -85,7 +98,14 @@ By default it is a text input if no type is provided.
 ### Textarea
 
 ```html
-<c-dcc-textarea id="" class="" errorTimer="" validationUrl="" {{ attrs }} />
+<c-dcc-textarea
+	id=""
+	class=""
+	errorTimer=""
+	errorDivClass=""
+	validationUrl=""
+	{{attrs}}
+/>
 ```
 
 - id: Unique identifier for the input.
@@ -203,7 +223,16 @@ Note: Being worked on, display of selected options when using ':data' not on par
 ### Modal
 
 ```html
-<c-dcc-modal id="" header="" label="">
+<c-dcc-modal
+	id=""
+	buttonClass=""
+	modalClass=""
+	headerClass=""
+	headerLabelClass=""
+	bodyClass=""
+	header=""
+	label=""
+>
 	<!-- Your content -->
 </c-dcc-modal>
 ```
@@ -238,9 +267,9 @@ Note: Being worked on, display of selected options when using ':data' not on par
 
 ## Attributes
 
-- You can add your own `class=""` to any of the components to suit your css, example Bootstrap.
 - You can add other attributes to the components such as `aria-label` etc.
 - You can also add custom attributes to the components to suit your needs such as HTMX.
+- Read more about [{{ attrs }}](https://django-cotton.com/docs/components#attrs)
 
 ### Mentions
 

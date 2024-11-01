@@ -48,36 +48,38 @@
              }">
     <div class="relative overflow-x-auto">
         <div class="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
+            {#
             {% if filters %}
-                <div class="class=" inline-flex items-center text-neutral-500 bg-white border border-neutral-300
+            <div class="inline-flex items-center text-neutral-500 bg-white border border-neutral-300
                      focus:outline-none hover:bg-neutral-100 focus:ring-4 focus:ring-neutral-100 font-medium rounded-lg
                      text-sm px-3 py-1.5 dark:bg-neutral-800 dark:text-white dark:border-neutral-600
-                     dark:hover:bg-neutral-700 dark:hover:border-neutral-600 dark:focus:ring-neutral-700"">
+                     dark:hover:bg-neutral-700 dark:hover:border-neutral-600 dark:focus:ring-neutral-700">
 
                 <!-- Filter -->
-                    <c-filter id="table-filter" :filters="filters" />
-                </div>
+                <c-filter id="table-filter" :filters="filters" />
+            </div>
             {% endif %}
+            #}
             {% if search %}
-                <label for="{{ id }}-table-search" class="sr-only">Search</label>
-                <div class="relative">
-                    <div
-                        class="absolute inset-y-0 left-0 rtl:inset-r-0 rtl:right-0 flex items-center ps-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true" fill="currentColor"
-                             viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                  clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                    <input type="text" id="{{ id }}-table-search" x-model="search"
-                           class="block p-2 ps-10 text-sm text-neutral-900 border border-neutral-300 rounded-lg w-80 bg-neutral-50 focus:ring-neutral-500 focus:border-neutral-500 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-neutral-500 dark:focus:border-neutral-500"
-                           placeholder="Search for items">
+            <label for="{{ id }}-table-search" class="sr-only">Search</label>
+            <div class="relative">
+                <div
+                    class="absolute inset-y-0 left-0 rtl:inset-r-0 rtl:right-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-5 h-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true" fill="currentColor"
+                        viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                            clip-rule="evenodd"></path>
+                    </svg>
                 </div>
+                <input type="text" id="{{ id }}-table-search" x-model="search"
+                    class="block p-2 ps-10 text-sm text-neutral-900 border border-neutral-300 rounded-lg w-80 bg-neutral-50 focus:ring-neutral-500 focus:border-neutral-500 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-neutral-500 dark:focus:border-neutral-500"
+                    placeholder="Search for items">
+            </div>
             {% endif %}
         </div>
         <table id="{{ id }}-table"
-               class="w-full text-sm text-left rtl:text-right text-neutral-500 dark:text-neutral-400 border">
+            class="w-full text-sm text-left rtl:text-right text-neutral-500 dark:text-neutral-400 border">
             <thead
                 class="{% if thClass %}{{ thClass }}{% else %}text-xs text-neutral-50 uppercase bg-neutral-950 dark:bg-neutral-700 dark:text-neutral-400{% endif %}">
                 <tr>
@@ -89,9 +91,9 @@
                     </div>
                 </th> -->
                     {% for heading in th %}
-                        <th scope="col" class="px-6 py-3">
-                            {{ heading }}
-                        </th>
+                    <th scope="col" class="px-6 py-3">
+                        {{ heading }}
+                    </th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -129,16 +131,16 @@
                             <nav aria-label="pagination">
                                 <ul class="flex flex-shrink-0 items-center gap-2 text-sm font-medium md:justify-center">
                                     <svg x-show="currentPage !== 1" xmlns="http://www.w3.org/2000/svg"
-                                         viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
+                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
                                         <path fill-rule="evenodd"
-                                              d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-                                              clip-rule="evenodd" />
+                                            d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+                                            clip-rule="evenodd" />
                                     </svg>
                                     <li>
                                         <button type="button" @click="goToPage(currentPage - 1)"
-                                                x-show="currentPage > 1" :disabled="currentPage === 1"
-                                                class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-                                                aria-label="previous page">
+                                            x-show="currentPage > 1" :disabled="currentPage === 1"
+                                            class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="previous page">
 
                                             Previous
                                         </button>
@@ -146,8 +148,8 @@
 
                                     <li x-show="currentPage > 1">
                                         <button @click="goToPage(1)"
-                                                class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-                                                aria-label="page 1">1</button>
+                                            class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="page 1">1</button>
                                     </li>
 
                                     <li x-show="currentPage > 2">
@@ -155,18 +157,18 @@
                                             class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
                                             aria-label="more pages">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                 stroke-width="1.5" aria-hidden="true" stroke="currentColor"
-                                                 class="w-6 h-6">
+                                                stroke-width="1.5" aria-hidden="true" stroke="currentColor"
+                                                class="w-6 h-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                                    d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                                             </svg>
                                         </span>
                                     </li>
 
                                     <li>
                                         <span x-text="`${currentPage}`"
-                                              class="flex size-6 items-center justify-center rounded-md bg-black p-1 font-bold text-neutral-100 dark:bg-white dark:text-black"
-                                              aria-current="page" aria-label="current page"></span>
+                                            class="flex size-6 items-center justify-center rounded-md bg-black p-1 font-bold text-neutral-100 dark:bg-white dark:text-black"
+                                            aria-current="page" aria-label="current page"></span>
                                     </li>
 
                                     <li x-show="currentPage < totalPages - 1">
@@ -174,10 +176,10 @@
                                             class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
                                             aria-label="more pages">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                 stroke-width="1.5" aria-hidden="true" stroke="currentColor"
-                                                 class="w-6 h-6">
+                                                stroke-width="1.5" aria-hidden="true" stroke="currentColor"
+                                                class="w-6 h-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                                                    d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                                             </svg>
                                         </span>
                                     </li>
@@ -186,24 +188,24 @@
 
                                     <li x-show="currentPage !== totalPages">
                                         <span x-text="totalPages"
-                                              class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-                                              aria-label="total pages"></span>
+                                            class="flex size-6 items-center justify-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="total pages"></span>
                                     </li>
 
                                     <li x-show="currentPage !== totalPages">
                                         <button @click="goToPage(currentPage + 1)"
-                                                :disabled="currentPage === totalPages"
-                                                class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-                                                aria-label="next page">
+                                            :disabled="currentPage === totalPages"
+                                            class="flex items-center rounded-md p-1 text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                                            aria-label="next page">
                                             Next
 
                                         </button>
                                     </li>
                                     <svg x-show="currentPage !== totalPages" xmlns="http://www.w3.org/2000/svg"
-                                         viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
+                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="size-6">
                                         <path fill-rule="evenodd"
-                                              d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-                                              clip-rule="evenodd" />
+                                            d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                            clip-rule="evenodd" />
                                     </svg>
                                 </ul>
                             </nav>

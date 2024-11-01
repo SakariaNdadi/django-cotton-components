@@ -24,7 +24,8 @@
 
     <!-- form-errors -->
     <template x-if="showError">
-        <div class="text-red-500 text-sm mt-1" x-text="errors"></div>
+        <div class="{% if errorDivClass %}{{ errorDivClass }}{% else %}text-red-500 text-sm mt-1{% endif %}"
+            x-text="errors"></div>
     </template>
     <!-- form-errors end -->
 
