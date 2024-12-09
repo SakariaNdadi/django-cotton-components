@@ -7,32 +7,53 @@
 
 <c-vars type="text" errors />
 
-<div x-data="{ 
-    errors: '', 
-    showError: false, 
-    errorTimer: {% if errorTimer %}{{ errorTimer }}{% else %}null{% endif %}
-    }" x-init="
-        if ({% if field_errors %}true{% else %}false{% endif %}) {
-        showError = true; 
-        errors = '{{ field_errors|join:', ' }}'; 
-        if (errorTimer && errorTimer > 0) { 
-            setTimeout(() => { showError = false; }, errorTimer); 
-        }
-    }">
-    <input id="{{ id }}" type="{{ type }}" {{ attrs }}
-        :class="{ '{% if borderErrorClass %}{{ borderErrorClass }}{% else %}border-red-500 focus-visible:outline-red-500{% endif %}': showError }"
-        name="{{ name }}" {% if validationUrl %} hx-post="{{ validationUrl }}" hx-target="#error"
-        hx-trigger="keyup delay:500ms" {% endif %}
-        class="{% if class %}{{ class }}{% else %}w-full rounded-md border bg-neutral-50 px-2 py-2 text-sm focus-visible:outline focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-75 dark:border-neutral-700 dark:bg-neutral-900/50 dark:focus-visible:outline-white{% endif %}" />
+<div x-data="{
+             errors: '',
+             showError: false,
+             errorTimer: {% if errorTimer %}{{ errorTimer }}{% else %}null{% endif %}
+             }" x-init="
+                             if ({% if field_errors %}true{% else %}false{% endif %}) {
+                             showError = true;
+                             errors = '{{ field_errors|join:', ' }}';
+                             if (errorTimer && errorTimer > 0) {
+                             setTimeout(() => { showError = false; }, errorTimer);
+                             }}">
+
+
+    {% if label %}
+    {% if not placement == "bottom" %}
+    <label for="{{ id }}" class="{% if labelClass %}{{ labelClass }}{% else %}w-fit pl-0.5 text-sm{% endif %}">
+        {{ label }}{% if required %}<span style="color:red">*</span>{% endif %}
+    </label>
+    {% endif %}
+    {% endif %}
+
+    <input id="{{ id }}" type="{{ type }}"
+        class="{% if class %} {{ class }} {% else %} w-full border border-neutral-300 bg-neutral-50 px-2 py-2 text-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-75 dark:border-neutral-700 dark:bg-neutral-900/50 dark:focus-visible:outline-white {% endif %}"
+        {{ attrs }} :class="{ 'border-red-500 focus-visible:outline-red-500': showError }" {% if validationUrl %}
+        hx-post="{{ validationUrl }}" hx-target="#{{ id }}-error" hx-trigger="keyup delay:500ms" {% endif %} />
+
+    {% if not label %}{% if required %}{% if placement == "bottom" %}<br>{% endif %}<span
+        style="color:red;font-size:x-small;">required</span>{% endif %}{% endif %}
+
+    {% if label %}
+    {% if placement == "bottom" %}
+    <br>
+    <label for="{{ id }}"
+        class="{% if labelClass %}{{ labelClass }}{% else %}w-fit pl-0.5 text-sm{% endif %}">{{ label }}{% if required %}<span
+            style="color:red">*</span>{% endif %}</label>
+    {% endif %}
+    {% endif %}
 
     <!-- form-errors -->
     <template x-if="showError">
-        <div class="{% if errorDivClass %}{{ errorDivClass }}{% else %}text-red-500 text-sm mt-1{% endif %}"
-            x-text="errors"></div>
+        <div class="{{ errorDivClass }}" x-text="errors"></div>
     </template>
     <!-- form-errors end -->
 
-    <!-- htmx-error -->
-    <div id="error"></div>
-    <!-- htmx-error end -->
+    <!-- validationUrl-error -->
+    {% if validationUrl %}
+    <div id="{{ id }}-error"></div>
+    {% endif %}
+    <!-- validationUrl-error end -->
 </div>
