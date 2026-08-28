@@ -1,0 +1,22 @@
+{% extends "demo/base.html" %}
+{% block title %}Articles{% endblock %}
+{% block crumbs %} / Articles{% endblock %}
+{% block topbar_actions %}
+  <a class="dcc-btn dcc-btn--primary" href="{% url 'demo:article-create' %}">New article</a>
+{% endblock %}
+
+{% block content %}
+  <div class="demo-page-head">
+    <div>
+      <h1>Articles</h1>
+      <p>Client-side rendering (zero requests) below ~200 rows; seed with
+        <code>--big 60000</code> to see it switch to server-side htmx.</p>
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card__body">
+      {{ table_html }}
+    </div>
+  </div>
+{% endblock %}

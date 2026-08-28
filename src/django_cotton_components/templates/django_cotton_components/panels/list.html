@@ -1,0 +1,8 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header">
+    <h1>{{ resource_label }}</h1>
+    {% if can_create %}<a class="dcc-btn dcc-btn--primary" href="{{ create_url }}">New</a>{% endif %}
+  </header>
+  {{ table_html }}
+{% endblock %}

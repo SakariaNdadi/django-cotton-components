@@ -1,0 +1,6 @@
+<div class="dcc-tabs" x-data="{ tab: 0 }"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>
+  <div class="dcc-tabs__list" role="tablist">
+    {% for t in tabs %}<button type="button" class="dcc-tabs__tab" role="tab" x-bind:aria-selected="tab === {{ forloop.counter0 }}" x-on:click="tab = {{ forloop.counter0 }}">{{ t.title }}</button>{% endfor %}
+  </div>
+  {% for t in tabs %}<div class="dcc-tabs__panel" role="tabpanel" x-show="tab === {{ forloop.counter0 }}" x-cloak>{{ t.html }}</div>{% endfor %}
+</div>

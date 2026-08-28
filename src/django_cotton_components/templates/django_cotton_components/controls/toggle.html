@@ -1,0 +1,7 @@
+<div class="dcc-field{% if errors %} dcc-field--invalid{% endif %}"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>
+  <label class="dcc-toggle">
+    {% if widget_html %}{{ widget_html }}{% else %}<input id="{{ id }}" name="{{ name }}" type="checkbox" role="switch" value="{{ value|default:'on' }}"{% if checked %} checked{% endif %}{% if disabled %} disabled{% endif %} {{ attrs }} />{% endif %}
+    <span class="dcc-toggle__track" aria-hidden="true"></span>
+    <span class="dcc-choice__label">{{ label }}</span>
+  </label>
+  {% include "django_cotton_components/controls/_close.html" %}

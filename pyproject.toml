@@ -1,43 +1,123 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "django-cotton-components"
-version = "0.1.5"
-description = "A Django package with pre-built cotton-based UI components for rapid development."
-readme = "README.MD"
-requires-python = ">=3.8"
-license = {file = "LICENSE"}
-authors = [
-    {name = "Sakaria Ndadi", email = "oipapi.ndadi@gmail.com"}
-]
-keywords = ["django", "components", "ui", "cotton"]
+version = "1.0.0b1"
+description = "Filament-inspired schema, table, and action builders for Django, rendered through django-cotton."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Sakaria Ndadi", email = "sakariandadi@gmail.com" }]
+keywords = ["django", "components", "ui", "cotton", "forms", "tables", "filament"]
 
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
     "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 
 dependencies = [
-    "django-cotton==1.2.1"
+    "django>=5.2",
+    "django-cotton>=2.7,<3",
 ]
 
-[tool.setuptools]
-include-package-data = true
+[project.optional-dependencies]
+images = ["pillow>=11"]
+wizard = ["django-formtools>=2.5"]
 
-[tool.setuptools.packages.find]
-include = ["django_cotton_components*"]
-exclude = [
-    ".venv",
-    "config",
-    "*.pyc",
-    "__pycache__",
+[project.urls]
+Homepage = "https://github.com/SakariaNdadi/django-cotton-components"
+Documentation = "https://github.com/SakariaNdadi/django-cotton-components#readme"
+Source = "https://github.com/SakariaNdadi/django-cotton-components"
+Changelog = "https://github.com/SakariaNdadi/django-cotton-components/blob/master/CHANGELOG.md"
+Issues = "https://github.com/SakariaNdadi/django-cotton-components/issues"
+
+[dependency-groups]
+dev = [
+    "django",
+    "pillow>=11",
+    "django-formtools>=2.5",
+    "pytest>=8",
+    "pytest-django>=4.9",
+    "pytest-cov>=6",
+    "beautifulsoup4>=4.12",
+    "syrupy>=4.8",
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "django-stubs>=5.1",
+    "nox>=2024.10",
+    "diff-cover>=9",
 ]
 
-[tool.isort]
-profile = "black"
+[tool.hatch.build.targets.wheel]
+packages = ["src/django_cotton_components"]
+artifacts = ["src/django_cotton_components/static/**/*"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/css", "/README.md", "/CHANGELOG.md", "/LICENSE"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--strict-markers --strict-config"
+
+[tool.coverage.run]
+branch = true
+source = ["django_cotton_components"]
+omit = ["*/tests/*", "*/example/*", "*/migrations/*"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "C4", "SIM", "RUF", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "DJ", "RUF012"]
+"example/*" = ["S", "DJ", "RUF012", "I001"]
+"noxfile.py" = ["S", "E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["django_cotton_components"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+strict = true
+warn_return_any = false
+files = ["src/django_cotton_components"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.django-stubs]
+django_settings_module = "tests.settings"

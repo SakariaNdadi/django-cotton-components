@@ -1,0 +1,16 @@
+{% include "django_cotton_components/controls/_open.html" %}
+  {% with data_id=id|add:"-data" %}
+  <div class="dcc-select" x-data="dccSelect('{{ data_id }}')" x-on:keydown.escape="close()">
+    {{ options|json_script:data_id }}
+    <select id="{{ id }}" name="{{ name }}" class="dcc-select__native" x-ref="native"{% if multiple %} multiple{% endif %}{% if required %} required{% endif %}{% if disabled %} disabled{% endif %} x-on:change="syncFromNative()" {{ attrs }}>
+      {% if not multiple %}<option value=""{% if not selected_values %} selected{% endif %}>{{ placeholder|default:"Select…" }}</option>{% endif %}
+      {% for opt_value, opt_label in options %}<option value="{{ opt_value }}"{% if opt_value|stringformat:'s' in selected_values %} selected{% endif %}>{{ opt_label }}</option>{% endfor %}
+    </select>
+    <button type="button" class="dcc-select__trigger" x-on:click="toggle()" x-bind:aria-expanded="open" aria-haspopup="listbox"><span x-text="triggerLabel() || '{{ placeholder|default:"Select…" }}'"></span><span aria-hidden="true">▾</span></button>
+    <ul class="dcc-select__list" x-show="open" x-cloak role="listbox" x-on:click.outside="close()">
+      <template x-if="searchable"><li><input type="text" class="dcc-select__search" placeholder="Search…" x-model="query" x-ref="search" aria-label="Filter options"></li></template>
+      <template x-for="opt in filtered()" x-bind:key="opt.value"><li class="dcc-select__option" role="option" x-bind:aria-selected="isSelected(opt.value)" x-on:click="choose(opt.value)" x-text="opt.label"></li></template>
+    </ul>
+  </div>
+  {% endwith %}
+  {% include "django_cotton_components/controls/_close.html" %}

@@ -1,0 +1,11 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% block content %}
+  <h1>{{ resource_label }}</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ schema_html }}
+    <div class="dcc-panel__actions">
+      <button type="submit" class="dcc-btn dcc-btn--primary">Save</button>
+    </div>
+  </form>
+{% endblock %}

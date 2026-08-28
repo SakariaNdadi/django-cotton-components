@@ -1,0 +1,5 @@
+<div class="dcc-form">
+  {% for hidden in hidden_html %}{{ hidden }}{% endfor %}
+  {% if non_field_errors %}<ul class="dcc-field__errors" role="alert">{% for e in non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  {{ children_html }}
+</div>

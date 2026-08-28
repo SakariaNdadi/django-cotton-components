@@ -1,0 +1,4 @@
+{% extends "demo/base.html" %}
+{% comment %}Demo override: render panel pages inside the demo app-shell.{% endcomment %}
+{% block title %}{{ resource_label }}{% endblock %}
+{% block crumbs %} / <a href="{% url 'demo:index' %}">Panel</a> / {{ resource_label }}{% endblock %}

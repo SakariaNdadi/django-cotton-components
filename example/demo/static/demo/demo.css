@@ -1,0 +1,269 @@
+/*
+ * Demo shell — additive styling on top of the shipped dcc.css.
+ * Reuses the --dcc-* design tokens so light/dark just works.
+ */
+
+:root {
+  --demo-sidebar-w: 15rem;
+  --demo-shell-bg: color-mix(in srgb, var(--dcc-surface) 60%, var(--dcc-bg));
+  --demo-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.12);
+  --demo-ring: color-mix(in srgb, var(--dcc-primary) 18%, transparent);
+}
+
+* { box-sizing: border-box; }
+
+body.dcc-body {
+  background: var(--demo-shell-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- app shell ---------- */
+
+.demo-shell {
+  display: grid;
+  grid-template-columns: var(--demo-sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+.demo-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.25rem 0.875rem;
+  background: var(--dcc-bg);
+  border-inline-end: 1px solid var(--dcc-border);
+  overflow-y: auto;
+}
+
+.demo-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0.5rem 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1rem;
+}
+.demo-brand__mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  display: grid;
+  place-items: center;
+  background: var(--dcc-primary);
+  color: var(--dcc-primary-fg);
+  font-size: 0.9rem;
+}
+
+.demo-navgroup {
+  margin-top: 0.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dcc-muted);
+}
+
+.demo-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  color: var(--dcc-fg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.12s;
+}
+.demo-nav:hover { background: var(--dcc-surface); }
+.demo-nav.is-active {
+  background: var(--demo-ring);
+  color: var(--dcc-fg);
+}
+.demo-nav__icon { width: 1.1rem; text-align: center; opacity: 0.7; }
+.demo-nav.is-active .demo-nav__icon { opacity: 1; }
+
+.demo-sidebar__foot {
+  margin-top: auto;
+  padding: 0.75rem 0.5rem 0;
+  border-top: 1px solid var(--dcc-border);
+  font-size: 0.75rem;
+  color: var(--dcc-muted);
+}
+
+/* ---------- main ---------- */
+
+.demo-main { min-width: 0; display: flex; flex-direction: column; }
+
+.demo-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.75rem;
+  background: color-mix(in srgb, var(--dcc-bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--dcc-border);
+}
+.demo-topbar__crumbs { font-size: 0.8125rem; color: var(--dcc-muted); }
+.demo-topbar__crumbs a { color: inherit; text-decoration: none; }
+.demo-topbar__crumbs a:hover { color: var(--dcc-fg); }
+.demo-topbar__actions { display: flex; gap: 0.5rem; }
+
+.demo-content { padding: 1.75rem; max-width: 76rem; width: 100%; }
+
+.demo-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.demo-page-head h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
+.demo-page-head p { margin: 0.375rem 0 0; color: var(--dcc-muted); font-size: 0.9rem; }
+
+/* ---------- cards & tiles ---------- */
+
+.demo-card {
+  background: var(--dcc-bg);
+  border: 1px solid var(--dcc-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--demo-shadow);
+}
+.demo-card__body { padding: 1.25rem 1.5rem; }
+.demo-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--dcc-border);
+  font-weight: 600;
+}
+
+.demo-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.demo-stat {
+  background: var(--dcc-bg);
+  border: 1px solid var(--dcc-border);
+  border-radius: 0.75rem;
+  padding: 1.125rem 1.25rem;
+  box-shadow: var(--demo-shadow);
+}
+.demo-stat__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dcc-muted);
+}
+.demo-stat__value {
+  margin-top: 0.375rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.demo-stat__meta { margin-top: 0.25rem; font-size: 0.8125rem; color: var(--dcc-muted); }
+.demo-stat__meta--up { color: var(--dcc-success); }
+
+.demo-grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.25rem; align-items: start; }
+
+/* ---------- lists ---------- */
+
+.demo-feed { list-style: none; margin: 0; padding: 0; }
+.demo-feed li {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--dcc-border);
+}
+.demo-feed li:first-child { border-top: 0; }
+.demo-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--dcc-surface);
+}
+.demo-feed__title { font-weight: 500; font-size: 0.9rem; }
+.demo-feed__meta { font-size: 0.8rem; color: var(--dcc-muted); }
+.demo-feed__spacer { margin-inline-start: auto; }
+
+/* dcc badge status colours in the demo */
+.dcc-badge.is-live { background: color-mix(in srgb, var(--dcc-success) 16%, var(--dcc-bg)); border-color: transparent; color: var(--dcc-success); }
+.dcc-badge.is-draft { color: var(--dcc-muted); }
+.dcc-badge.is-archived { opacity: 0.7; }
+
+/* table: author cell with avatar */
+.demo-authorcell { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+/* ---------- empty state ---------- */
+.demo-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--dcc-muted);
+}
+.demo-empty__icon { font-size: 2rem; }
+
+/* ---------- forms polish ---------- */
+.demo-formwrap { max-width: 44rem; }
+
+/* style bare Django widgets used outside the schema layer (login form) */
+.demo-card .dcc-field input:not([type="checkbox"]):not([type="radio"]),
+.demo-card .dcc-field select,
+.demo-card .dcc-field textarea {
+  width: 100%;
+  border: 1px solid var(--dcc-border);
+  background: var(--dcc-surface);
+  color: var(--dcc-fg);
+  border-radius: var(--dcc-radius);
+  padding: 0.5rem 0.625rem;
+  font: inherit;
+  font-size: 0.875rem;
+}
+.demo-form-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--dcc-border);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 60rem) {
+  .demo-shell { grid-template-columns: 1fr; }
+  .demo-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: var(--demo-sidebar-w);
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+  }
+  .demo-shell.nav-open .demo-sidebar { transform: none; }
+  .demo-grid-2 { grid-template-columns: 1fr; }
+  .demo-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgb(0 0 0 / 0.4);
+  }
+}
+@media (min-width: 60.001rem) {
+  .demo-navtoggle, .demo-scrim { display: none; }
+}

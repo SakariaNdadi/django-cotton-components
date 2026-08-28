@@ -1,0 +1,33 @@
+<div class="dcc-table" id="{{ table_id }}">
+  {% if refresh_htmx %}<span hidden {{ refresh_htmx }}></span>{% endif %}
+  {% if bulk_action_triggers %}
+  <div class="dcc-table__bulk">{% for trigger in bulk_action_triggers %}{{ trigger }}{% endfor %}</div>
+  {% endif %}
+  {% if has_actions %}<div id="dcc-modal-{{ owner_key_slug }}" class="dcc-modal-mount"></div>{% endif %}
+  {% if searchable or filters %}
+  <form class="dcc-table__toolbar"
+    {% if filter_htmx %}{{ filter_htmx }}{% elif toolbar_htmx %}{{ toolbar_htmx }}{% endif %}
+    {% if mode == "client" %}x-data x-on:submit.prevent{% endif %}>
+    {% if searchable %}
+    <input type="search" name="{{ search_param }}" value="{{ search }}" placeholder="Search…"
+      class="dcc-input dcc-table__search"
+      {% if mode == "client" %}x-on:input.debounce.150ms="$dispatch('dcc-table-search', $event.target.value)"{% endif %}>
+    {% endif %}
+    {% for filter in filters %}
+    <label class="dcc-table__filter">
+      <span>{{ filter.header }}</span>
+      <select name="{{ filter.param }}" class="dcc-input">
+        {% for value, label in filter.choices %}
+        <option value="{{ value }}" {% if value == filter.value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endfor %}
+    <noscript><button type="submit" class="dcc-btn dcc-btn--secondary">Apply</button></noscript>
+  </form>
+  {% endif %}
+
+  <div id="{{ table_id }}-content">
+    {{ content_html }}
+  </div>
+</div>

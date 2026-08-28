@@ -1,0 +1,56 @@
+name: test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+        django: ["5.2", "6.1"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install ${{ matrix.python }}
+      - name: tests
+        run: >
+          uv run --python ${{ matrix.python }}
+          --with "django~=${{ matrix.django }}.0"
+          pytest -q --cov --cov-report=xml
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run nox -s coverage
+      - name: diff coverage
+        if: github.event_name == 'pull_request'
+        run: |
+          uv run --with diff-cover diff-cover coverage.xml \
+            --compare-branch=origin/${{ github.base_ref }} --fail-under=100
+
+  packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run nox -s packaging

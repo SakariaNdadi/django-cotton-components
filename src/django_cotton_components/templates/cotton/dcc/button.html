@@ -1,0 +1,2 @@
+<c-vars type="button" variant="primary" url="" disabled="False" icon="" label="" />
+{% if url %}<a href="{{ url }}" class="dcc-btn dcc-btn--{{ variant }} {{ class }}" {{ attrs }}>{{ icon }}{{ label }}{{ slot }}</a>{% else %}<button type="{{ type }}" class="dcc-btn dcc-btn--{{ variant }} {{ class }}"{% if disabled %} disabled{% endif %} {{ attrs }}>{{ icon }}{{ label }}{{ slot }}</button>{% endif %}

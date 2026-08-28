@@ -1,0 +1,54 @@
+{% load static dcc_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · django-cotton-components</title>
+  {% dcc_assets %}
+  <link rel="stylesheet" href="{% static 'demo/demo.css' %}">
+</head>
+<body class="dcc-body">
+  <div class="demo-shell" x-data="{ nav: false }" :class="{ 'nav-open': nav }">
+    <aside class="demo-sidebar">
+      <div class="demo-brand">
+        <span class="demo-brand__mark">dc</span>
+        <span>cotton&nbsp;components</span>
+      </div>
+      {% for group, items in demo_nav %}
+        <div class="demo-navgroup">{{ group }}</div>
+        {% for label, urlname, icon, match in items %}
+          <a class="demo-nav {% if demo_current in match %}is-active{% endif %}"
+             href="{% url urlname %}">
+            <span class="demo-nav__icon" aria-hidden="true">{{ icon|slice:':1'|upper }}</span>
+            {{ label }}
+          </a>
+        {% endfor %}
+      {% endfor %}
+      <div class="demo-sidebar__foot">
+        {% if user.is_authenticated %}
+          Signed in as <strong>{{ user.username }}</strong> · <a href="{% url 'demo:logout' %}">sign out</a>
+        {% else %}
+          <a href="{% url 'demo:login' %}?next={{ request.path }}">Sign in</a> to use the admin panel
+        {% endif %}
+      </div>
+    </aside>
+
+    <div class="demo-scrim" x-show="nav" x-on:click="nav = false" x-cloak></div>
+
+    <div class="demo-main">
+      <header class="demo-topbar">
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <button class="dcc-btn dcc-btn--secondary demo-navtoggle" x-on:click="nav = !nav" aria-label="Menu">☰</button>
+          <nav class="demo-topbar__crumbs">
+            <a href="{% url 'demo:index' %}">Home</a>{% block crumbs %}{% endblock %}
+          </nav>
+        </div>
+        <div class="demo-topbar__actions">{% block topbar_actions %}{% endblock %}</div>
+      </header>
+      <main class="demo-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>

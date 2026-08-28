@@ -1,0 +1,24 @@
+{% load dcc_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ resource_label }}{% endblock %}</title>
+  {% dcc_assets %}
+</head>
+<body class="dcc-body">
+  <div class="dcc-panel">
+    <nav class="dcc-panel__nav">
+      <strong>{{ panel.name|title }}</strong>
+      <ul>
+        {% for item in nav %}
+        <li><a href="{{ item.url }}">{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    <main class="dcc-panel__main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

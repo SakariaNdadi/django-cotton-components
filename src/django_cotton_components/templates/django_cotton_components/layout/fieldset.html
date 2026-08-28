@@ -1,0 +1,4 @@
+<fieldset class="dcc-fieldset"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>
+  {% if title %}<legend>{{ title }}</legend>{% endif %}
+  <div class="dcc-grid" style="--dcc-cols: {{ columns|default:1 }}">{{ children_html }}{{ slot }}</div>
+</fieldset>

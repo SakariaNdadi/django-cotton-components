@@ -1,0 +1,28 @@
+{% extends "demo/base.html" %}
+{% block title %}{% if is_edit %}Edit article{% else %}New article{% endif %}{% endblock %}
+{% block crumbs %} / <a href="{% url 'demo:article-list' %}">Articles</a> / {% if is_edit %}Edit{% else %}New{% endif %}{% endblock %}
+
+{% block content %}
+  <div class="demo-page-head">
+    <div>
+      <h1>{% if is_edit %}Edit article{% else %}New article{% endif %}</h1>
+      <p>Rendered from a Python <code>Schema</code> that decorates the existing
+        <code>ArticleForm</code>. Submit with JavaScript disabled and it still validates.</p>
+    </div>
+  </div>
+
+  <div class="demo-card demo-formwrap">
+    <div class="demo-card__body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ schema_html }}
+        <div class="demo-form-foot">
+          <a class="dcc-btn dcc-btn--secondary" href="{% url 'demo:article-list' %}">Cancel</a>
+          <button type="submit" class="dcc-btn dcc-btn--primary">
+            {% if is_edit %}Save changes{% else %}Create article{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+name: css
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    paths:
+      - "css/**"
+      - "src/django_cotton_components/templates/**"
+      - "src/django_cotton_components/static/**"
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: rebuild stylesheet and fail on drift
+        run: uv run nox -s css_check

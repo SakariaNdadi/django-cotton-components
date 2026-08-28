@@ -1,0 +1,15 @@
+<c-vars id="dcc-modal" header="" trigger_label="Open" trigger_variant="primary" />
+<div x-data="{ open: false }">
+  <button type="button" class="dcc-btn dcc-btn--{{ trigger_variant }}" x-on:click="open = true">{{ trigger_label }}</button>
+  <template x-teleport="body">
+    <div class="dcc-modal__overlay" x-show="open" x-cloak x-transition.opacity x-on:keydown.escape.window="open = false" x-on:click.self="open = false" role="dialog" aria-modal="true" aria-labelledby="{{ id }}-title">
+      <div class="dcc-modal__dialog" x-trap.inert.noscroll="open" x-transition>
+        <div class="dcc-modal__header">
+          <h3 id="{{ id }}-title" class="dcc-heading">{{ header }}</h3>
+          <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="open = false" aria-label="Close">✕</button>
+        </div>
+        <div class="dcc-modal__body">{{ slot }}</div>
+      </div>
+    </div>
+  </template>
+</div>

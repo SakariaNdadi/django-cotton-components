@@ -1,0 +1,11 @@
+{% extends "demo/base.html" %}
+{% block content %}
+  <h1>django-cotton-components</h1>
+  <p>Filament-inspired builders for Django. Demo pages:</p>
+  <ul>
+    {% for label, urlname in pages %}
+      <li><a href="{% url urlname %}">{{ label }}</a></li>
+    {% endfor %}
+  </ul>
+  <p style="margin-top:2rem"><a href="/admin/">Django admin</a> · panel demo needs a superuser + login</p>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "demo/base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+  <div class="demo-page-head"><div><h1>Sign in</h1>
+    <p>The admin panel demo needs a session. Seeded credentials: <code>demo</code> / <code>demo</code>.</p></div></div>
+  <div class="demo-card demo-formwrap" style="max-width:24rem">
+    <div class="demo-card__body">
+      <form method="post" class="dcc-form">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="dcc-field{% if field.errors %} dcc-field--invalid{% endif %}">
+          <label class="dcc-field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="dcc-field__errors">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        {% for error in form.non_field_errors %}<p class="dcc-field__errors">{{ error }}</p>{% endfor %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="demo-form-foot">
+          <button type="submit" class="dcc-btn dcc-btn--primary">Sign in</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

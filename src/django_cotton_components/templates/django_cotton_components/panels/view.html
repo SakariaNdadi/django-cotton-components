@@ -1,0 +1,12 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header">
+    <h1>{{ object }}</h1>
+    <a class="dcc-btn dcc-btn--secondary" href="{{ edit_url }}">Edit</a>
+  </header>
+  <dl class="dcc-infolist">
+    {% for label, value in fields %}
+    <div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+    {% endfor %}
+  </dl>
+{% endblock %}

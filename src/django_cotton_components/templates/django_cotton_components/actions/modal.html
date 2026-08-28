@@ -1,0 +1,20 @@
+<div class="dcc-modal__overlay" x-data="{ open: true }" x-show="open"
+  x-on:keydown.escape.window="open = false" x-on:click.self="open = false"
+  role="dialog" aria-modal="true">
+  <div class="dcc-modal__dialog">
+    <div class="dcc-modal__header">
+      <h3 class="dcc-heading">{{ heading }}</h3>
+      <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="open = false" aria-label="Close">✕</button>
+    </div>
+    <form class="dcc-modal__body" {{ post_attrs }}>
+      {% csrf_token %}
+      {% if description %}<p class="dcc-field__help">{{ description }}</p>{% endif %}
+      {% for pk in record_ids %}<input type="hidden" name="records" value="{{ pk }}">{% endfor %}
+      {{ form_html }}
+      <div class="dcc-modal__actions">
+        <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="open = false">Cancel</button>
+        <button type="submit" class="dcc-btn dcc-btn--primary">{{ confirm_label }}</button>
+      </div>
+    </form>
+  </div>
+</div>

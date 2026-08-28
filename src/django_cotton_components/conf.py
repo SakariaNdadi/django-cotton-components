@@ -1,0 +1,47 @@
+"""Settings shim.
+
+Consumers configure the library through a single ``DCC`` dict in their Django
+settings. Access values via ``dcc_settings`` so defaults live in exactly one
+place and a typo in a key raises instead of silently returning ``None``.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from django.conf import settings
+from django.core.signals import setting_changed
+from django.dispatch import receiver
+
+DEFAULTS: dict[str, Any] = {
+    # Tables render client-side (zero requests) at or below this row count.
+    "TABLE_CLIENT_SIDE_MAX_ROWS": 200,
+    # Page-size options offered by table pagination.
+    "TABLE_PER_PAGE_CHOICES": [10, 25, 50, 100],
+    # Debounce (ms) applied to opt-in live field validation.
+    "LIVE_VALIDATION_DEBOUNCE_MS": 400,
+    # Pillow decompression-bomb ceiling for uploaded images.
+    "IMAGE_MAX_PIXELS": 24_000_000,
+    # Dotted path to the thumbnail backend. None => auto-detect.
+    "THUMBNAIL_BACKEND": None,
+    # Prefix for htmx-driven internal endpoints (schemas, actions).
+    "URL_PREFIX": "dcc/",
+}
+
+
+class _Settings:
+    def __getattr__(self, name: str) -> Any:
+        if name not in DEFAULTS:
+            raise AttributeError(f"Unknown DCC setting: {name!r}. Valid keys: {sorted(DEFAULTS)}")
+        user = getattr(settings, "DCC", {})
+        return user.get(name, DEFAULTS[name])
+
+
+dcc_settings = _Settings()
+
+
+@receiver(setting_changed)
+def _reset_on_change(*, setting: str, **kwargs: Any) -> None:
+    # _Settings reads live each access, so nothing to cache-bust; hook kept so
+    # tests overriding DCC via ``override_settings`` are self-documenting.
+    return

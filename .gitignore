@@ -1,11 +1,41 @@
-.venv
-config
-manage.py
-migrations
-admin.py
-models.py
-views.py
-*.pyc
-__pycache__
-dist
-*.egg-info
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# uv
+# uv.lock IS committed — it is the reproducible lock for contributors
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Build output that is regenerated from source
+src/django_cotton_components/static/dcc/dcc.css.map
+
+# Example project local state
+example/db.sqlite3
+example/media/
+example/.env
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Node (Tailwind CLI for CSS build)
+node_modules/

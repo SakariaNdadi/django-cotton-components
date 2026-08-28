@@ -1,0 +1,5 @@
+<section class="dcc-section"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>
+  {% if title %}<h3 class="dcc-section__title">{{ title }}</h3>{% endif %}
+  {% if description %}<p class="dcc-section__description">{{ description }}</p>{% endif %}
+  <div class="dcc-grid" style="--dcc-cols: {{ columns|default:1 }}">{{ children_html }}{{ slot }}</div>
+</section>
