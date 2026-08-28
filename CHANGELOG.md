@@ -9,7 +9,34 @@ All notable changes to this project are documented here. Format loosely follows
 Complete rebuild. The package moves from a set of hand-authored cotton templates
 to a Python component layer (Filament-inspired) that drives `django.forms`.
 
+### Fixed
+
+- Client-mode tables: row selection and the bulk-action toolbar are now live
+  (the shared selection state was never wired into the client engine, and
+  `selectedCount`/`allSelected` were frozen by an object spread).
+- Bulk action `hx-include` selected zero records (`closest .dcc-table [x]:checked`
+  resolves to `elt.closest()` and is always null) — the ticked pks now ride as
+  hidden inputs.
+- Quick-edit / `.modal(schema)` actions bound the whole `ModelForm` and always
+  failed validation; they now bind only the declared fields, and a successful
+  modal action closes the dialog.
+- A non-searchable `<c-dcc.form.select>` no longer renders its filter box.
+- Table width no longer changes with the result count (`<table>` was
+  `display:block`); the actions cell no longer offsets its bottom border.
+
 ### Added
+
+- Tables — `Table.record_url(fn)` (whole-row click → full-page nav),
+  `.record_action(Action)` (row click → modal / navigate), `.record_preview(fn)`
+  (hover card); `Action.collapsed()` folds a row action into a "⋯" menu;
+  `.presentation("feed")` renders rows as a borderless list;
+  `.pagination_position("left"|"center"|"right")`; `.infinite_scroll()`;
+  a **"Rows per page"** picker appears when `.paginate([…])` is passed with >1
+  choice (otherwise the size is a fixed 10).
+- `Schema.build_standalone_form()` — bind only the declared fields (action
+  modals, filter forms) instead of the whole `ModelForm`.
+- Component docs: `docs/schemas.md`, `docs/actions.md`, `docs/wizards.md`,
+  `docs/ui.md`, `docs/images.md`, and a `docs/` index.
 - `django_cotton_components.ui` — canonical primitives (`Button`, `IconButton`,
   `Badge`, `Icon`, `Checkbox`, `Modal`, `Menu`), one component + one leaf
   template each; every subsystem composes them instead of hand-rolled markup.

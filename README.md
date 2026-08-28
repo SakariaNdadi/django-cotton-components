@@ -27,8 +27,11 @@ wired to real `django.forms` validation.
 
 ## Docs
 
-[Tables](docs/tables.md) · [Panels & Resources](docs/panels.md) ·
-[Infolists](docs/infolists.md) · [No-code resources](docs/no-code.md)
+[Schemas / forms](docs/schemas.md) · [Tables](docs/tables.md) ·
+[Actions](docs/actions.md) · [Wizards](docs/wizards.md) ·
+[UI primitives](docs/ui.md) · [Images](docs/images.md) ·
+[Panels & Resources](docs/panels.md) · [Infolists](docs/infolists.md) ·
+[No-code resources](docs/no-code.md) — index: [docs/](docs/README.md)
 
 ## Install
 
