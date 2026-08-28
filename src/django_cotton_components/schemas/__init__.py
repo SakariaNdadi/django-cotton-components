@@ -9,25 +9,32 @@ from .schema import Schema
 
 #: field + layout types a stored schema spec may name
 FIELD_TYPES: TypeRegistry[Component] = TypeRegistry("field")
-for _t in (
-    TextInput,
-    EmailInput,
-    Hidden,
-    Textarea,
-    PasswordInput,
-    Checkbox,
-    Toggle,
-    Select,
-    MultiSelect,
-    Radio,
-    FileUpload,
-    Section,
-    Grid,
-    Fieldset,
-    Tab,
-    Tabs,
+
+for _field_cls, _label, _icon in (
+    (TextInput, "Text", "font"),
+    (EmailInput, "Email", "envelope"),
+    (Hidden, "Hidden", "eye-slash"),
+    (Textarea, "Text area", "align-left"),
+    (PasswordInput, "Password", "key"),
+    (Checkbox, "Checkbox", "square-check"),
+    (Toggle, "Toggle", "toggle-on"),
+    (Select, "Select", "caret-down"),
+    (MultiSelect, "Multi-select", "list-check"),
+    (Radio, "Radio group", "circle-dot"),
+    (FileUpload, "File upload", "upload"),
 ):
-    FIELD_TYPES.register(_t)
+    FIELD_TYPES.register(_field_cls, label=_label, icon=_icon, category="field")
+
+for _layout_cls, _label, _icon in (
+    (Section, "Section", "square"),
+    (Grid, "Grid", "table-cells"),
+    (Fieldset, "Fieldset", "object-group"),
+    (Tab, "Tab", "folder"),
+    (Tabs, "Tabs", "folder-tree"),
+):
+    FIELD_TYPES.register(
+        _layout_cls, label=_label, icon=_icon, category="layout", accepts_children=True
+    )
 
 __all__ = [
     "FIELD_TYPES",

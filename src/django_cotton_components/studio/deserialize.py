@@ -14,6 +14,8 @@ from typing import Any
 
 from django.core.exceptions import FieldDoesNotExist, ValidationError
 
+from ..core.describe import CODE_ONLY_SETTERS
+
 _SCALAR = (str, int, float, bool, type(None))
 
 #: hard ceilings applied to a stored spec before it is walked — a spec is
@@ -21,10 +23,9 @@ _SCALAR = (str, int, float, bool, type(None))
 _MAX_SPEC_BYTES = 64 * 1024
 _MAX_SPEC_DEPTH = 8
 
-# setters that expect a callable / predicate at runtime — never spec-expressible
-_UNSAFE_KEYS = frozenset(
-    {"state", "state_fn", "action", "callback", "authorize", "visible", "hidden"}
-)
+# setters that expect a callable / predicate at runtime — never spec-expressible.
+# Canonical set now lives in core.describe; alias kept for one release.
+_UNSAFE_KEYS = CODE_ONLY_SETTERS
 
 
 def _check_size_and_depth(spec: Any) -> None:
@@ -233,11 +234,14 @@ def resolve_stat_query(spec: dict[str, Any]) -> Any:
     return result["_value"]
 
 
-def validate_spec(spec: dict[str, Any]) -> None:
+def validate_spec(spec: dict[str, Any], *, model: Any = None, request: Any = None) -> None:
     """Raise ``ValidationError`` if any table/infolist node is malformed.
 
-    Called from ``DashboardSpec.clean``. Schema layout is validated lazily when a
-    model is available (``full_clean`` cannot resolve the model list yet).
+    Called from ``DashboardSpec.clean``. When ``model`` is given every ORM path
+    the spec names (column / entry ``name``, ``sortable`` / ``searchable``,
+    filter ``field``, schema layout leaf names) is checked against
+    ``studio.introspect.safe_paths`` so a spec can never reach
+    ``author__user__password``; a schema ``fields: "__all__"`` is also rejected.
     """
     from ..infolists import ENTRY_TYPES
     from ..tables import COLUMN_TYPES, FILTER_TYPES
@@ -249,3 +253,50 @@ def validate_spec(spec: dict[str, Any]) -> None:
         _instantiate(FILTER_TYPES, node, f"table.filters[{i}]")
     for i, node in enumerate((spec.get("infolist") or {}).get("entries", [])):
         _instantiate(ENTRY_TYPES, node, f"infolist.entries[{i}]")
+
+    if model is not None:
+        _validate_spec_paths(spec, model, request)
+
+
+def _validate_spec_paths(spec: dict[str, Any], model: Any, request: Any) -> None:
+    from .introspect import normalize_path, safe_paths
+
+    allowed = safe_paths(model, request)
+
+    def check(path: Any, where: str) -> None:
+        if not isinstance(path, str):
+            return
+        if normalize_path(path) not in allowed:
+            raise ValidationError(f"{where}: {path!r} is not an allowed field of {model.__name__}")
+
+    table = spec.get("table") or {}
+    for i, node in enumerate(table.get("columns", [])):
+        check(node.get("name"), f"table.columns[{i}].name")
+        cfg = node.get("config") or {}
+        if isinstance(cfg.get("sortable"), str):
+            check(cfg["sortable"], f"table.columns[{i}].sortable")
+        searchable = cfg.get("searchable")
+        if isinstance(searchable, list):
+            for j, field in enumerate(searchable):
+                check(field, f"table.columns[{i}].searchable[{j}]")
+    for i, node in enumerate(table.get("filters", [])):
+        cfg = node.get("config") or {}
+        check(cfg.get("field") or node.get("name"), f"table.filters[{i}].field")
+
+    infolist = spec.get("infolist") or {}
+    for i, node in enumerate(infolist.get("entries", [])):
+        check(node.get("name"), f"infolist.entries[{i}].name")
+
+    schema = spec.get("schema") or {}
+    if schema.get("fields") == "__all__":
+        raise ValidationError("schema.fields: '__all__' is not allowed in a stored spec")
+
+    def walk_layout(nodes: Any, where: str) -> None:
+        for i, node in enumerate(nodes or []):
+            children = node.get("children") if isinstance(node, dict) else None
+            if children:
+                walk_layout(children, f"{where}[{i}].children")
+            elif isinstance(node, dict) and node.get("name"):
+                check(node["name"], f"{where}[{i}].name")
+
+    walk_layout(schema.get("layout") or schema.get("components"), "schema.layout")

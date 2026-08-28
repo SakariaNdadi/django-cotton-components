@@ -48,9 +48,12 @@ class DashboardSpec(models.Model):
     def clean(self) -> None:
         if not self.slug:
             self.slug = slugify(self.label or self.model.replace(".", "-"))
-        self.resolve_model()
+        model = self.resolve_model()
         try:
-            validate_spec({"table": self.table, "schema": self.schema, "infolist": self.infolist})
+            validate_spec(
+                {"table": self.table, "schema": self.schema, "infolist": self.infolist},
+                model=model,
+            )
         except ValidationError as exc:
             raise ValidationError({"table": exc.messages}) from None
 

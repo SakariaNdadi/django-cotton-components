@@ -27,6 +27,11 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
   (`_`-prefixed) segments. New shared helper `core.paths.traverse`.
 - `validate_spec` now rejects a stored spec above 64 KB or nested deeper than 8
   levels.
+- `validate_spec(spec, model=…)` checks every ORM path the spec names (column /
+  entry `name`, `sortable` / `searchable`, filter `field`, schema layout leaves)
+  against `introspect.safe_paths`, so a spec can never reach
+  `author__user__password`; a schema `fields: "__all__"` is rejected.
+  `DashboardSpec.clean()` now passes the resolved model.
 
 ### Fixed
 
@@ -45,6 +50,22 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Added
 
+- **Studio metadata layer.** `core.describe` introspects any registered
+  declarative type (`Column` / `Field` / `Entry` / `Widget`, none of which share
+  a base) into `TypeInfo` / `SetterInfo` — control kind, default, choices, help,
+  and whether a setter takes a runtime closure. `TypeRegistry.register` now
+  carries palette metadata (`label`, `icon`, `category`, `accepts_children`,
+  per-setter overrides); `TypeRegistry.info()` / `describe_all()`.
+- **Model introspection & scaffolding.** `studio.introspect`
+  (`installed_models`, `describe_model`, `safe_paths` — the ORM-path allowlist a
+  stored spec is validated against) and `studio.scaffold` (`scaffold_spec`,
+  `scaffold_dashboard`). `manage.py dcc_scaffold app.Model [--all] [--dry-run]`
+  writes `DashboardSpec` rows from live models.
+- `studio.palette.palette(request)` — the JSON the builder renders as draggable
+  blocks; `requires="superuser"` setters (e.g. `Column.allow_html`) stripped for
+  everyone else.
+- `DCC["STUDIO_RESOURCE_MODELS"]` — models the studio picker may target
+  (`None` = all minus the built-in sensitive set).
 - `htmx.boost()` and `htmx.oob()` attribute-bag helpers.
 - `{% dcc_assets %}` loads the Alpine `focus` plugin (opt out with `focus=False`)
   so modal / drawer `x-trap` focus containment works.

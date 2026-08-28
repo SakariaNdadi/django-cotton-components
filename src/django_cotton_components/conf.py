@@ -33,6 +33,10 @@ DEFAULTS: dict[str, Any] = {
     # Models a stored studio spec may aggregate over (``"app_label.Model"``). A
     # widget's ``.query({...})`` refuses any model not in this list.
     "STUDIO_MODELS": [],
+    # Models the studio's resource / scaffold picker may target. ``None`` => every
+    # installed model except the built-in sensitive set; a list => exactly those
+    # (``"app_label.Model"``). The picker also intersects ``view_`` permission.
+    "STUDIO_RESOURCE_MODELS": None,
 }
 
 

@@ -5,8 +5,12 @@ from .resource import Resource
 from .widgets import BarListWidget, ChartWidget, StatWidget, TableWidget, Widget
 
 WIDGET_TYPES: TypeRegistry[Widget] = TypeRegistry("widget")
-for _w in (StatWidget, ChartWidget, BarListWidget):
-    WIDGET_TYPES.register(_w)
+for _widget_cls, _label, _icon in (
+    (StatWidget, "Stat", "hashtag"),
+    (ChartWidget, "Chart", "chart-line"),
+    (BarListWidget, "Bar list", "chart-simple"),
+):
+    WIDGET_TYPES.register(_widget_cls, label=_label, icon=_icon, category="widget")
 
 __all__ = [
     "WIDGET_TYPES",

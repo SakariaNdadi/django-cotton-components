@@ -12,10 +12,29 @@ from .table import Table
 
 COLUMN_TYPES: TypeRegistry[Column] = TypeRegistry("column")
 FILTER_TYPES: TypeRegistry[Filter] = TypeRegistry("filter")
-for _c in (TextColumn, BadgeColumn, BooleanColumn, DateColumn, ImageColumn):
-    COLUMN_TYPES.register(_c)
-for _f in (Filter, SelectFilter, BooleanFilter, TernaryFilter):
-    FILTER_TYPES.register(_f)
+
+for _col_cls, _label, _icon in (
+    (TextColumn, "Text", "font"),
+    (BadgeColumn, "Badge", "tag"),
+    (BooleanColumn, "Boolean", "check"),
+    (DateColumn, "Date", "calendar"),
+    (ImageColumn, "Image", "image"),
+):
+    COLUMN_TYPES.register(
+        _col_cls,
+        label=_label,
+        icon=_icon,
+        category="column",
+        setters={"allow_html": {"requires": "superuser"}},
+    )
+
+for _filter_cls, _label, _icon in (
+    (Filter, "Text filter", "filter"),
+    (SelectFilter, "Select filter", "list"),
+    (BooleanFilter, "Boolean filter", "check"),
+    (TernaryFilter, "Yes / No / Any", "circle-half-stroke"),
+):
+    FILTER_TYPES.register(_filter_cls, label=_label, icon=_icon, category="filter")
 
 __all__ = [
     "COLUMN_TYPES",
