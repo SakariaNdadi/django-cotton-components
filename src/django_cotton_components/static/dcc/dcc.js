@@ -114,20 +114,57 @@
     }));
 
     // Row selection for bulk actions. Shared by the client-side table engine
-    // and by dccBulk (server-side tables). `selected` is an array of pk strings
-    // bound to the row checkboxes via x-model; the bulk trigger reads the
-    // checked boxes straight from the DOM through hx-include.
+    // (dccTable) and by dccBulk (server-side tables). `selected` is an array of
+    // pk strings bound to the row checkboxes via x-model; the bulk trigger reads
+    // the checked boxes straight from the DOM through hx-include.
+    //
+    // A module-level cache keyed by table id keeps the selection alive across
+    // htmx content swaps (a client-mode filter re-creates the whole dccTable).
+    const _selCache = Object.create(null);
+    // A mutating action fires dcc:refresh (htmx re-emits it on <body>); every
+    // table then drops any stale selection. One listener, bound once.
+    let _refreshBound = false;
+    function bindGlobalRefresh() {
+      if (_refreshBound) return;
+      _refreshBound = true;
+      document.body.addEventListener("dcc:refresh", () => {
+        for (const key in _selCache) delete _selCache[key];
+      });
+    }
+
+    // NOTE: `selectedCount` / `allSelected` are METHODS, not getters — this
+    // object is spread into the host components (`{ ...selectionState() }`) and
+    // object spread would freeze a getter to its one-time value. Templates call
+    // `selectedCount()` / `allSelected()`.
     function selectionState() {
       return {
         selected: [],
         selectAll: false, // "every row matching the filter", not just this page
-        rowCount() {
-          return this.$root.querySelectorAll("[data-dcc-bulk]").length;
+        _selId: "",
+        // Restore any cached selection and start mirroring changes back into the
+        // cache. Called from each host's init() once $root/refs are live.
+        _bindSelection(id) {
+          this._selId = id;
+          bindGlobalRefresh();
+          const cached = _selCache[id];
+          this.selected = cached ? cached.selected.slice() : [];
+          this.selectAll = cached ? cached.selectAll : false;
+          const save = () => {
+            _selCache[id] = {
+              selected: this.selected.slice(),
+              selectAll: this.selectAll,
+            };
+          };
+          this.$watch("selected", save);
+          this.$watch("selectAll", save);
         },
-        get selectedCount() {
+        rowCount() {
+          return this.$root ? this.$root.querySelectorAll("[data-dcc-bulk]").length : 0;
+        },
+        selectedCount() {
           return this.selected.length;
         },
-        get allSelected() {
+        allSelected() {
           const n = this.rowCount();
           return n > 0 && this.selected.length >= n;
         },
@@ -151,8 +188,7 @@
     window.Alpine.data("dccBulk", () => ({
       ...selectionState(),
       init() {
-        // an action fires dcc:refresh after mutating; drop stale selection
-        this.$root.addEventListener("dcc:refresh", () => this.clearSelection());
+        this._bindSelection(this.$root.id);
       },
     }));
 
@@ -160,6 +196,7 @@
     // component filters/sorts/paginates by reordering and x-show-ing those
     // real nodes, so rich cells and row actions keep working. Zero requests.
     window.Alpine.data("dccTable", (configId) => ({
+      ...selectionState(),
       meta: {},            // pk -> {"0": text, "1": text, ...}
       order: [],           // pk order as delivered by the server
       search: "",
@@ -167,6 +204,8 @@
       sortDir: 1,
       page: 1,
       perPage: 25,
+      limit: 25,           // infinite-scroll: rows shown so far
+      infiniteScroll: false,
       matchCount: 0,
       _visible: new Set(),
       init() {
@@ -174,6 +213,8 @@
           const el = document.getElementById(configId);
           const cfg = el ? JSON.parse(el.textContent) : {};
           this.perPage = cfg.perPage || 25;
+          this.limit = this.perPage;
+          this.infiniteScroll = !!cfg.infiniteScroll;
           (cfg.rows || []).forEach((r) => {
             this.order.push(r._pk);
             this.meta[r._pk] = r;
@@ -181,8 +222,32 @@
         } catch (e) {
           /* keep empty */
         }
-        this.$watch("search", () => this.recompute());
+        this._bindSelection(configId.replace(/-config$/, ""));
+        this.$watch("search", () => {
+          this.page = 1;
+          this.limit = this.perPage;
+          this.recompute();
+        });
+        this.$watch("perPage", () => {
+          this.page = 1;
+          this.limit = this.perPage;
+          this.recompute();
+        });
+        if (this.infiniteScroll) this._observeSentinel();
         this.recompute();
+      },
+      _observeSentinel() {
+        const sentinel = this.$root.querySelector("[data-dcc-sentinel]");
+        if (!sentinel || !window.IntersectionObserver) return;
+        new IntersectionObserver((entries) => {
+          if (entries.some((e) => e.isIntersecting)) this.loadMore();
+        }).observe(sentinel);
+      },
+      loadMore() {
+        if (this.limit < this.matchCount) {
+          this.limit += this.perPage;
+          this.recompute();
+        }
       },
       _matches(pk) {
         const row = this.meta[pk] || {};
@@ -214,9 +279,14 @@
       recompute() {
         const kept = this._sorted(this.order.filter((pk) => this._matches(pk)));
         this.matchCount = kept.length;
-        if (this.page > this.totalPages()) this.page = this.totalPages();
-        const start = (this.page - 1) * this.perPage;
-        const pagep = kept.slice(start, start + this.perPage);
+        let pagep;
+        if (this.infiniteScroll) {
+          pagep = kept.slice(0, this.limit);
+        } else {
+          if (this.page > this.totalPages()) this.page = this.totalPages();
+          const start = (this.page - 1) * this.perPage;
+          pagep = kept.slice(start, start + this.perPage);
+        }
         this._visible = new Set(pagep);
         // reorder DOM to the sorted page order
         const body = this.$refs.body;
@@ -231,8 +301,7 @@
         return this._visible.has(String(pk));
       },
       totalPages() {
-        const n = this.order.filter((pk) => this._matches(pk)).length;
-        return Math.max(1, Math.ceil(n / this.perPage));
+        return Math.max(1, Math.ceil(this.matchCount / this.perPage));
       },
       sortBy(index) {
         if (this.sortIndex === index) this.sortDir *= -1;
@@ -302,4 +371,92 @@
   document.body.addEventListener("dcc:toast", (e) => toast(e.detail));
   // dcc:refresh is handled by htmx: the table shell carries a hidden element
   // with hx-trigger="dcc:refresh from:body" that re-fetches its content.
+
+  // -- clickable rows -------------------------------------------------------
+  // A row carries data-dcc-href (navigate) or data-dcc-action (htmx GET, e.g.
+  // opening a modal). Delegated + guarded so buttons/inputs inside the row keep
+  // working and text selection never triggers a navigation. Survives htmx swaps.
+  var ROW_INTERACTIVE = "a,button,input,select,textarea,label,.dcc-menu,[data-dcc-bulk]";
+  function rowTarget(el) {
+    return el.closest("[data-dcc-href],[data-dcc-action]");
+  }
+  document.addEventListener("click", function (e) {
+    var row = rowTarget(e.target);
+    if (!row || e.defaultPrevented) return;
+    if (e.target.closest(ROW_INTERACTIVE)) return;
+    if (window.getSelection && String(window.getSelection()).length) return;
+    var href = row.getAttribute("data-dcc-href");
+    if (href) {
+      if (e.metaKey || e.ctrlKey) window.open(href, "_blank");
+      else window.location.assign(href);
+      return;
+    }
+    var url = row.getAttribute("data-dcc-action");
+    if (url && window.htmx) {
+      window.htmx.ajax("GET", url, {
+        target: row.getAttribute("data-dcc-action-target") || "body",
+        swap: row.getAttribute("data-dcc-action-swap") || "innerHTML",
+      });
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var row = rowTarget(e.target);
+    if (row && e.target === row) {
+      e.preventDefault();
+      row.click();
+    }
+  });
+
+  // -- hover preview card --------------------------------------------------
+  // A row with a <template class="dcc-row-preview"> shows its content in a
+  // floating card after a short hover.
+  var previewCard = null;
+  var previewTimer = null;
+  function hidePreview() {
+    if (previewTimer) {
+      clearTimeout(previewTimer);
+      previewTimer = null;
+    }
+    if (previewCard) {
+      previewCard.remove();
+      previewCard = null;
+    }
+  }
+  function showPreview(row) {
+    var tpl = row.querySelector("template.dcc-row-preview");
+    if (!tpl) return;
+    hidePreview();
+    previewCard = document.createElement("div");
+    previewCard.className = "dcc-row-preview-card";
+    previewCard.appendChild(tpl.content.cloneNode(true));
+    document.body.appendChild(previewCard);
+    var r = row.getBoundingClientRect();
+    var c = previewCard.getBoundingClientRect();
+    var top = window.scrollY + r.bottom + 6;
+    if (r.bottom + c.height + 16 > window.innerHeight && r.top - c.height - 6 > 0) {
+      top = window.scrollY + r.top - c.height - 6;
+    }
+    var left = Math.min(
+      window.scrollX + r.left,
+      window.scrollX + window.innerWidth - c.width - 12
+    );
+    previewCard.style.top = top + "px";
+    previewCard.style.left = Math.max(8, left) + "px";
+  }
+  document.addEventListener("mouseover", function (e) {
+    var row = e.target.closest("[data-dcc-row]");
+    if (!row || !row.querySelector("template.dcc-row-preview")) return;
+    if (previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(function () {
+      showPreview(row);
+    }, 350);
+  });
+  document.addEventListener("mouseout", function (e) {
+    var row = e.target.closest("[data-dcc-row]");
+    if (!row) return;
+    if (!e.relatedTarget || !row.contains(e.relatedTarget)) hidePreview();
+  });
+  document.addEventListener("scroll", hidePreview, true);
+  document.body.addEventListener("dcc:refresh", hidePreview);
 })();

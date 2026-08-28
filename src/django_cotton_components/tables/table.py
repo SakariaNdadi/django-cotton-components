@@ -55,6 +55,25 @@ class Table:
         self._bulk_actions = list(actions)
         return self
 
+    def record_url(self, value: str | Any) -> Self:
+        """Clicking anywhere on a row (bar its buttons/inputs) navigates to
+        ``value(record)`` — a full page."""
+        self._config["record_url"] = value
+        return self
+
+    def record_action(self, action: Action) -> Self:
+        """Clicking a row fires this Action — typically ``.modal(...)`` for a
+        detail dialog, or ``.to_url(...)`` to navigate. Registered like a row
+        action but never shown as a column button."""
+        self._config["record_action"] = action
+        return self
+
+    def record_preview(self, value: Any) -> Self:
+        """Show a hover card with extra record info. ``value(record)`` returns
+        HTML (use ``format_html``)."""
+        self._config["record_preview"] = value
+        return self
+
     def id(self, value: str) -> Self:
         self._config["id"] = value
         return self
@@ -99,7 +118,25 @@ class Table:
         self._config["empty_message"] = text
         return self
 
+    def presentation(self, value: str) -> Self:
+        """``"grid"`` (default) renders a table; ``"feed"`` renders a borderless
+        list — for compact dashboard cards."""
+        self._config["presentation"] = value
+        return self
+
+    def pagination_position(self, value: str) -> Self:
+        """``"left"`` | ``"center"`` | ``"right"`` (default)."""
+        self._config["pagination_position"] = value
+        return self
+
+    def infinite_scroll(self) -> Self:
+        """Append rows on scroll instead of showing a pager."""
+        self._config["infinite_scroll"] = True
+        return self
+
     def _page_strategy(self) -> str:
+        if self._config.get("infinite_scroll"):
+            return "more"
         return self._config.get("page_strategy", "more")
 
     # -- introspection ------------------------------------------
@@ -118,9 +155,14 @@ class Table:
 
     # -- ActionOwner protocol ------------------------------------
 
+    @property
+    def _all_actions(self) -> list[Action]:
+        extra = [self._config["record_action"]] if "record_action" in self._config else []
+        return [*self._row_actions, *self._bulk_actions, *extra]
+
     def get_actions(self) -> dict[str, Any]:
         out = {}
-        for action in [*self._row_actions, *self._bulk_actions]:
+        for action in self._all_actions:
             action.bind_owner(self.key)
             out[action.name] = action
         return out
@@ -130,7 +172,7 @@ class Table:
         return query.apply_all(self._queryset, state, self._columns, self._filters)
 
     def _register(self) -> None:
-        if self._row_actions or self._bulk_actions:
+        if self._all_actions:
             from ..actions.registry import registry
 
             self.get_actions()  # binds owner key onto each action
@@ -186,17 +228,62 @@ class Table:
             payload.append(row)
         return payload
 
+    def _row_attrs(self, record: Any, request: HttpRequest | None) -> str:
+        from django.forms.utils import flatatt
+
+        from ..core.evaluate import evaluate
+
+        data: dict[str, str] = {}
+        url_fn = self._config.get("record_url")
+        if url_fn is not None:
+            resolved = evaluate(url_fn, RenderContext(request=request, record=record))
+            if resolved:
+                data["data-dcc-href"] = str(resolved)
+        action = self._config.get("record_action")
+        if action is not None and not data:
+            data.update(action.row_click_attrs(record=record, request=request))
+        return flatatt(data) if data else ""
+
+    def _row_preview(self, record: Any, request: HttpRequest | None) -> str:
+        from ..core.evaluate import evaluate
+
+        fn = self._config.get("record_preview")
+        if fn is None:
+            return ""
+        html = evaluate(fn, RenderContext(request=request, record=record))
+        return str(html) if html else ""
+
     def _rendered_rows(self, records: list[Any], ctx: RenderContext) -> list[dict[str, Any]]:
         request = ctx.request
+        inline_actions = [a for a in self._row_actions if not a.is_collapsed]
+        collapsed_actions = [a for a in self._row_actions if a.is_collapsed]
         rows = []
         for record in records:
-            triggers = [a.render_trigger(record=record, request=request) for a in self._row_actions]
+            triggers = [
+                t for a in inline_actions if (t := a.render_trigger(record=record, request=request))
+            ]
+            if collapsed_actions:
+                items = [
+                    t
+                    for a in collapsed_actions
+                    if (t := a.render_trigger(record=record, request=request))
+                ]
+                if items:
+                    from ..ui import Menu
+
+                    triggers.append(
+                        Menu.make()
+                        .items(items)
+                        .render(RenderContext(request=request, record=record))
+                    )
             rows.append(
                 {
                     "pk": getattr(record, "pk", ""),
                     "record": record,
                     "cells": [c.render_cell(record, ctx) for c in self._columns],
                     "action_triggers": triggers,
+                    "row_attrs": SafeString(self._row_attrs(record, request)),
+                    "preview_html": SafeString(self._row_preview(record, request)),
                 }
             )
         return rows
@@ -242,6 +329,26 @@ class Table:
         ctx = RenderContext(request=request)
         qs = query.apply_all(self._queryset, state, self._columns, self._filters)
         has_bulk = bool(self._bulk_actions)
+        per_page = state.per_page or self.per_page_choices[0]
+        infinite_scroll = bool(self._config.get("infinite_scroll"))
+        # Only offer a "rows per page" picker when the developer explicitly passed
+        # >1 choice via .paginate([...]); otherwise the first choice is a fixed
+        # page size (10 by default).
+        explicit_choices = self._config.get("per_page_choices") or []
+        show_per_page = not infinite_scroll and len(explicit_choices) > 1
+
+        per_page_htmx = None
+        if show_per_page and mode == "server":
+            base = f"{self._base_path(request)}?_dcc_table={self.table_id}"
+            carried = state.to_params(per_page=None, page=None, after=None)
+            per_page_htmx = htmx_adapter.get(
+                f"{base}&{carried}" if carried else base,
+                target=self.content_target,
+                swap="outerHTML",
+                push_url=self._base_path(request),
+                trigger="change",
+            )
+
         common = {
             "table_id": self.table_id,
             "mode": mode,
@@ -252,6 +359,15 @@ class Table:
             "row_actions": self._row_actions,
             "has_bulk": has_bulk,
             "empty_message": self._config.get("empty_message", "No results."),
+            "presentation": self._config.get("presentation", "grid"),
+            "pagination_position": self._config.get("pagination_position", "right"),
+            "infinite_scroll": infinite_scroll,
+            "per_page": per_page,
+            "per_page_choices": self.per_page_choices,
+            "per_page_param": f"t_{self.table_id}_per_page",
+            "show_per_page": show_per_page,
+            "per_page_htmx": per_page_htmx,
+            "bulk_action_triggers": [a.render_trigger(request=request) for a in self._bulk_actions],
         }
 
         if mode == "client":
@@ -261,12 +377,11 @@ class Table:
                 "rows": self._rendered_rows(records, ctx),
                 "client_config": {
                     "rows": self._rows_payload(records, ctx),
-                    "perPage": state.per_page,
+                    "perPage": per_page,
+                    "infiniteScroll": infinite_scroll,
                 },
                 "config_id": f"{self.table_id}-config",
             }
-
-        per_page = state.per_page or self.per_page_choices[0]
 
         if self._page_strategy() == "pages":
             paginator = Paginator(qs, per_page)
@@ -365,7 +480,7 @@ class Table:
         # After an action mutates data the endpoint fires HX-Trigger dcc:refresh;
         # re-fetch this table's content fragment in place (works in both modes).
         refresh_htmx = None
-        if self._row_actions or self._bulk_actions:
+        if self._all_actions:
             path = self._base_path(request)
             marker = f"_dcc_table={self.table_id}"
             refresh_htmx = htmx_adapter.get(
@@ -395,8 +510,7 @@ class Table:
             "filter_htmx": filter_htmx,
             "refresh_htmx": refresh_htmx,
             "owner_key_slug": self.key,
-            "bulk_action_triggers": [a.render_trigger(request=request) for a in self._bulk_actions],
-            "has_actions": bool(self._row_actions or self._bulk_actions),
+            "has_actions": bool(self._all_actions),
             "has_bulk": bool(self._bulk_actions),
             "content_html": self.render_content(request),
         }

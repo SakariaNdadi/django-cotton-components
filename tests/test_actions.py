@@ -149,3 +149,60 @@ def test_action_with_schema_renders_modal_on_get(data):
     assert resp.status_code == 200
     assert b"dcc-modal__dialog" in resp.content
     assert b'name="title"' in resp.content
+
+
+def test_modal_schema_action_saves_via_standalone_form(data):
+    """A strict .modal(schema) action must bind only its declared fields, not
+    the whole ModelForm (whose slug/author would fail validation)."""
+    from django_cotton_components.schemas import Schema, TextInput
+    from tests.testapp.forms import ArticleForm
+
+    _, arts = data
+    schema = Schema.make().form(ArticleForm).strict().schema([TextInput.make("title")])
+    saved = {}
+    action = (
+        Action.make("edit_title")
+        .modal(schema)
+        .action(lambda record, data: saved.update(pk=record.pk, title=data["title"]))
+    )
+    _table(Article.objects.all(), actions=[action]).render(RequestFactory().get("/"))
+
+    req = RequestFactory().post(
+        f"/dcc/a/table-art/edit_title/?record={arts[0].pk}", {"title": "renamed"}
+    )
+    req.user = AnonymousUser()
+    resp = ActionView.as_view()(req, owner_key="table-art", action_name="edit_title")
+
+    assert saved == {"pk": arts[0].pk, "title": "renamed"}
+    # empty 200 clears the modal mount; HX-Trigger still refreshes the table
+    assert resp.status_code == 200
+    assert resp.content == b""
+    assert "dcc:refresh" in resp["HX-Trigger"]
+
+
+def test_inline_action_keeps_204(data):
+    _, arts = data
+    hit = {}
+    action = Action.make("bump").action(lambda record: hit.setdefault("pk", record.pk))
+    _table(Article.objects.all(), actions=[action]).render(RequestFactory().get("/"))
+
+    req = RequestFactory().post(f"/dcc/a/table-art/bump/?record={arts[0].pk}")
+    req.user = AnonymousUser()
+    resp = ActionView.as_view()(req, owner_key="table-art", action_name="bump")
+
+    assert hit == {"pk": arts[0].pk}
+    assert resp.status_code == 204
+
+
+def test_collapsed_actions_render_in_a_menu(data):
+    _, _arts = data
+    table = _table(
+        Article.objects.all(),
+        actions=[
+            Action.make("edit").label("Edit"),
+            Action.make("archive").label("Archive").collapsed(),
+        ],
+    )
+    html = str(table.render(RequestFactory().get("/")))
+    assert html.count('class="dcc-menu"') == Article.objects.count()
+    assert "Edit" in html and "Archive" in html

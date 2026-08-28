@@ -12,7 +12,7 @@
     </select>
     <button type="button" class="dcc-select__trigger" x-on:click="toggle()" x-bind:aria-expanded="open" aria-haspopup="listbox"><span x-text="triggerLabel() || '{{ placeholder|default:"Select…" }}'"></span><span aria-hidden="true">▾</span></button>
     <ul class="dcc-select__list" x-show="open" x-cloak role="listbox" x-on:click.outside="close()">
-      <li class="dcc-select__searchrow" x-show="searchable"><input type="text" class="dcc-select__search" placeholder="Search…" x-model="query" x-ref="search" aria-label="Filter options"></li>
+      {% if searchable %}<li class="dcc-select__searchrow" x-show="searchable" x-cloak><input type="text" class="dcc-select__search" placeholder="Search…" x-model="query" x-ref="search" aria-label="Filter options"></li>{% endif %}
       <template x-for="opt in filtered()" x-bind:key="opt.value"><li class="dcc-select__option" role="option" x-bind:aria-selected="isSelected(opt.value)" x-on:click="choose(opt.value)" x-text="opt.label"></li></template>
     </ul>
   </div>

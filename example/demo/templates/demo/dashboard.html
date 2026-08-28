@@ -69,39 +69,12 @@
         Recent articles
         <c-dcc.button variant="secondary" href="{% url 'demo:article-list' %}" label="Open table" />
       </div>
-      <ul class="demo-feed">
-        {% for article in recent %}
-        <li>
-          {% if article.author.avatar %}<img class="demo-avatar" src="{{ article.author.avatar.url }}" alt="">{% else %}<span class="demo-avatar"></span>{% endif %}
-          <span>
-            <span class="demo-feed__title">{{ article.title }}</span><br>
-            <span class="demo-feed__meta">{{ article.author.name }} · {{ article.created_at|timesince }} ago</span>
-          </span>
-          <span class="demo-feed__spacer">
-            <span class="dcc-badge is-{{ article.status }}">{{ article.get_status_display }}</span>
-          </span>
-        </li>
-        {% empty %}
-        <li><span class="demo-feed__meta">No articles yet — run <code>manage.py seed</code>.</span></li>
-        {% endfor %}
-      </ul>
+      <div class="demo-card__body">{{ recent_table }}</div>
     </div>
 
     <div class="demo-card">
       <div class="demo-card__head">Needs review</div>
-      <ul class="demo-feed">
-        {% for comment in needs_review %}
-        <li>
-          <span class="demo-avatar" aria-hidden="true"></span>
-          <span>
-            <span class="demo-feed__title">{{ comment.author_name }}</span><br>
-            <span class="demo-feed__meta">on “{{ comment.article.title|truncatechars:40 }}”</span>
-          </span>
-        </li>
-        {% empty %}
-        <li><span class="demo-feed__meta">Inbox zero. Nice.</span></li>
-        {% endfor %}
-      </ul>
+      <div class="demo-card__body">{{ needs_review_table }}</div>
     </div>
   </div>
 {% endblock %}

@@ -1,0 +1,20 @@
+{% load dcc_tags %}
+<ul class="dcc-feed"{% if mode == "client" %} x-ref="body"{% endif %}>
+  {% for row in rows %}
+  <li class="dcc-feed__item{% if row.row_attrs %} dcc-table__row--clickable{% endif %}" data-dcc-row{{ row.row_attrs }}{% if row.row_attrs %} tabindex="0" role="link"{% endif %}{% if mode == "client" %} data-dcc-pk="{{ row.pk }}" x-show="isVisible('{{ row.pk }}')" x-cloak{% endif %}>
+    {% if row.preview_html %}<template class="dcc-row-preview">{{ row.preview_html }}</template>{% endif %}
+    <div class="dcc-feed__main">
+      <span class="dcc-feed__title">{{ row.cells.0 }}</span>
+      {% if row.cells|length == 2 %}
+      <span class="dcc-feed__meta">{{ row.cells.1 }}</span>
+      {% elif row.cells|length > 2 %}
+      <span class="dcc-feed__meta">{% for cell in row.cells|slice:"1:-1" %}{{ cell }} {% endfor %}</span>
+      {% endif %}
+    </div>
+    {% if row.cells|length > 2 %}<span class="dcc-feed__trailing">{{ row.cells|last }}</span>{% endif %}
+    {% if row.action_triggers %}<span class="dcc-feed__actions">{% for trigger in row.action_triggers %}{{ trigger }}{% endfor %}</span>{% endif %}
+  </li>
+  {% empty %}
+  <li class="dcc-feed__empty">{{ empty_message }}</li>
+  {% endfor %}
+</ul>

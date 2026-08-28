@@ -240,3 +240,125 @@ def test_client_rows_json_is_valid(articles, settings, soup):
     assert data["perPage"]
     assert len(data["rows"]) == 6
     assert set(data["rows"][0]) == {"_pk", "0", "1", "2", "3"}
+
+
+def test_grid_height_follows_row_count(articles, settings):
+    """A short result set collapses the grid; no filler rows, no min-height."""
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2, "TABLE_PER_PAGE_CHOICES": [10]}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(_table(articles).page_numbers().render_content(req))
+    assert "dcc-table__row--filler" not in frag
+    assert "--dcc-table-min-rows" not in frag
+    assert frag.count("data-dcc-row") == 6  # exactly the rows that exist
+
+
+def test_pagination_position_class(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2, "TABLE_PER_PAGE_CHOICES": [10]}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(_table(articles).page_numbers().pagination_position("center").render_content(req))
+    assert "dcc-table__pagination--center" in frag
+
+
+def test_feed_presentation_renders_list_not_grid(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(_table(articles).presentation("feed").render(RequestFactory().get("/")))
+    assert 'class="dcc-feed"' in html
+    assert "dcc-table__grid" not in html
+
+
+def test_infinite_scroll_client_has_sentinel_no_pager(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(_table(articles).infinite_scroll().render(RequestFactory().get("/")))
+    assert "data-dcc-sentinel" in html
+    assert "dcc-table__pagination" not in html
+
+
+def test_infinite_scroll_server_uses_cursor_strategy(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2, "TABLE_PER_PAGE_CHOICES": [2]}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(_table(articles).infinite_scroll().render_content(req))
+    assert "Page 1 of" not in frag  # no COUNT / numbered pager
+    assert 'hx-trigger="revealed"' in frag  # append-on-scroll load-more
+
+
+def test_bulk_toolbar_lives_inside_content(articles, settings):
+    from django_cotton_components.actions import BulkAction
+
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    table = _table(articles).bulk_actions([BulkAction.make("archive").action(lambda records: None)])
+    html = str(table.render(RequestFactory().get("/")))
+    content_at = html.index('id="article-content"')
+    assert html.index("dcc-table__bulk") > content_at
+
+
+def test_per_page_selector_client(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(_table(articles).paginate([10, 25, 50]).render(RequestFactory().get("/")))
+    assert 'x-model.number="perPage"' in html
+    assert html.count("<option") >= 3
+
+
+def test_per_page_selector_server_round_trips(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(_table(articles).paginate([10, 25, 50]).page_numbers().render_content(req))
+    assert 'name="t_article_per_page"' in frag
+    assert 'hx-trigger="change"' in frag
+
+
+def test_single_per_page_choice_hides_selector(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(_table(articles).paginate([25]).render(RequestFactory().get("/")))
+    assert "dcc-table__perpage" not in html
+
+
+def test_infinite_scroll_hides_per_page_selector(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(
+        _table(articles).paginate([10, 25]).infinite_scroll().render(RequestFactory().get("/"))
+    )
+    assert "dcc-table__perpage" not in html
+
+
+def test_no_paginate_call_hides_per_page_selector(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}  # default choices [10,25,50,100]
+    html = str(_table(articles).render(RequestFactory().get("/")))
+    assert "dcc-table__perpage" not in html
+
+
+def test_record_url_makes_rows_clickable(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(
+        _table(articles)
+        .record_url(lambda record: f"/things/{record.pk}/")
+        .render(RequestFactory().get("/"))
+    )
+    assert 'data-dcc-href="/things/' in html
+    assert html.count("dcc-table__row--clickable") == articles.count()
+    assert 'role="link"' in html
+
+
+def test_record_preview_renders_hover_template(articles, settings):
+    from django.utils.html import format_html
+
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    html = str(
+        _table(articles)
+        .record_preview(lambda record: format_html("<b>{}</b>", record.title))
+        .render(RequestFactory().get("/"))
+    )
+    assert '<template class="dcc-row-preview"><b>Piece 0</b></template>' in html
+
+
+def test_record_action_registers_and_marks_rows(articles, settings):
+    from django_cotton_components.actions import Action, registry
+
+    registry.clear()
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
+    view = Action.make("peek").modal(lambda record: "<p>hi</p>")
+    table = _table(articles).id("things").record_action(view)
+    html = str(table.render(RequestFactory().get("/")))
+    assert "data-dcc-action=" in html
+    assert 'id="dcc-modal-table-things"' in html  # modal mount rendered
+    assert registry.resolve("table-things", "peek") is not None
+    registry.clear()

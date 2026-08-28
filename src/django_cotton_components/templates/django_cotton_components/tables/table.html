@@ -2,19 +2,6 @@
   {% if refresh_htmx %}<span hidden {{ refresh_htmx }}></span>{% endif %}
   {% if has_actions %}<div id="dcc-modal-{{ owner_key_slug }}" class="dcc-modal-mount"></div>{% endif %}
 
-  {% if bulk_action_triggers %}
-  <div class="dcc-table__bulk" x-show="selectedCount > 0" x-cloak>
-    <span class="dcc-table__bulkcount" x-text="selectAll ? 'All matching rows' : `${selectedCount} selected`"></span>
-    <label class="dcc-check dcc-table__selectall" x-show="allSelected">
-      <input type="checkbox" class="dcc-check__box" x-model="selectAll">
-      <span class="dcc-check__label">Select every matching row</span>
-    </label>
-    <input type="hidden" name="select_all" x-bind:value="selectAll ? '1' : ''">
-    {% for trigger in bulk_action_triggers %}{{ trigger }}{% endfor %}
-    <c-dcc.button variant="ghost" label="Clear" x-on:click="clearSelection()" />
-  </div>
-  {% endif %}
-
   {% if searchable or filters %}
   <div class="dcc-table__toolbar">
     {% if searchable %}
@@ -43,7 +30,5 @@
   </div>
   {% endif %}
 
-  <div id="{{ table_id }}-content">
-    {{ content_html }}
-  </div>
+  {{ content_html }}
 </div>

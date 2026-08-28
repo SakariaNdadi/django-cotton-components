@@ -15,7 +15,7 @@ from django_cotton_components.wizards import WizardStep, WizardView
 from .forms import ArticleForm
 from .models import Article, Author, Comment
 from .schemas import article_schema
-from .tables import article_table
+from .tables import article_table, needs_review_table, recent_articles_table
 
 
 class DashboardView(TemplateView):
@@ -32,10 +32,8 @@ class DashboardView(TemplateView):
             "new_30d": Article.objects.filter(created_at__gte=since).count(),
             "pending_comments": Comment.objects.filter(approved=False).count(),
         }
-        ctx["recent"] = Article.objects.select_related("author").order_by("-created_at")[:6]
-        ctx["needs_review"] = (
-            Comment.objects.filter(approved=False).select_related("article").order_by("-id")[:5]
-        )
+        ctx["recent_table"] = recent_articles_table(self.request).render(self.request)
+        ctx["needs_review_table"] = needs_review_table(self.request).render(self.request)
         ctx["featured"] = Article.objects.filter(featured=True).count()
         return ctx
 

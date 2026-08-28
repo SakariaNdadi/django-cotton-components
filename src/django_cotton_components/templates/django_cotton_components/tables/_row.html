@@ -1,4 +1,4 @@
-<tr class="dcc-table__row" data-dcc-row{% if mode == "client" %} data-dcc-pk="{{ row.pk }}" x-show="isVisible('{{ row.pk }}')"{% endif %}>
+<tr class="dcc-table__row{% if row.row_attrs %} dcc-table__row--clickable{% endif %}" data-dcc-row{{ row.row_attrs }}{% if row.row_attrs %} tabindex="0" role="link"{% endif %}{% if mode == "client" %} data-dcc-pk="{{ row.pk }}" x-show="isVisible('{{ row.pk }}')"{% endif %}>
   {% if has_bulk %}
   <td class="dcc-table__td dcc-table__select">
     <input type="checkbox" class="dcc-check__box" name="records" value="{{ row.pk }}"
@@ -7,8 +7,9 @@
   {% endif %}
   {% for cell in row.cells %}<td class="dcc-table__td">{{ cell }}</td>{% endfor %}
   {% if row_actions %}
-  <td class="dcc-table__td dcc-table__actions">
-    {% for trigger in row.action_triggers %}{{ trigger }}{% endfor %}
+  <td class="dcc-table__td dcc-table__actionscell">
+    <div class="dcc-table__actions">{% for trigger in row.action_triggers %}{{ trigger }}{% endfor %}</div>
   </td>
   {% endif %}
+  {% if row.preview_html %}<template class="dcc-row-preview">{{ row.preview_html }}</template>{% endif %}
 </tr>

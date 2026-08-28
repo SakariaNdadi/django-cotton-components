@@ -121,11 +121,22 @@ class Action:
         self._config["link"] = value
         return self
 
+    @setter
+    def collapsed(self, value: bool = True) -> Self:
+        """Fold this row action into the table's trailing "⋯" menu instead of
+        showing it as an inline button."""
+        self._config["collapsed"] = value
+        return self
+
     # -- introspection -------------------------------------------
 
     @property
     def header(self) -> str:
         return self._config.get("label", self.name.replace("_", " ").title())
+
+    @property
+    def is_collapsed(self) -> bool:
+        return bool(self._config.get("collapsed"))
 
     @property
     def needs_modal(self) -> bool:
@@ -171,6 +182,13 @@ class Action:
             return f"{base}?record={record.pk}"
         return base
 
+    def _bulk_url(self, request: HttpRequest | None) -> str:
+        """Bulk action URL carrying the table's current filter/search querystring,
+        so the endpoint re-scopes ``select_all`` to the same rows the user sees."""
+        base = self.url()
+        params = request.GET.urlencode() if request is not None else ""
+        return f"{base}?{params}" if params else base
+
     # -- rendering --------------------------------------------
 
     @property
@@ -204,29 +222,42 @@ class Action:
             return button.render(ctx)
 
         target = f"#dcc-modal-{self._owner_key}"
-        # A bulk trigger has no record; it pulls the checked row boxes, the
-        # select-all flag and the live filter/search values from the surrounding
-        # table at request time.
-        include = (
-            "closest .dcc-table [data-dcc-bulk]:checked, "
-            "closest .dcc-table [name='select_all'], "
-            "closest .dcc-table .dcc-table__filters select, "
-            "closest .dcc-table .dcc-table__searchform input"
-            if self.is_bulk
-            else None
-        )
+        action_url = self._bulk_url(request) if self.is_bulk else self.url(record)
+        # A bulk trigger has no record; the selected pks and the select-all flag
+        # ride along as hidden inputs in the bulk bar (`.dcc-table__bulk`), which
+        # htmx resolves via `closest`. Filters/search are baked into `action_url`.
+        include = "closest .dcc-table__bulk" if self.is_bulk else None
         if self.needs_modal:
-            attrs = htmx_adapter.get(
-                self.url(record), target=target, swap="innerHTML", include=include
-            )
+            attrs = htmx_adapter.get(action_url, target=target, swap="innerHTML", include=include)
         elif request is not None and not self.is_bulk:
             attrs = htmx_adapter.post(
-                self.url(record), request=request, target="closest tr", swap="outerHTML"
+                action_url, request=request, target="closest tr", swap="outerHTML"
             )
         else:
-            attrs = htmx_adapter.get(self.url(record), target=target, include=include)
+            attrs = htmx_adapter.get(action_url, target=target, include=include)
         button.attributes(attrs)
         return button.render(ctx)
+
+    def row_click_attrs(self, *, record: Any, request: HttpRequest | None = None) -> dict[str, str]:
+        """``data-*`` attributes for a table row whose whole surface triggers this
+        action. Read by dcc.js's delegated row-click handler (kept off ``hx-*`` so
+        a button *inside* the row still fires independently). Supports ``.to_url``
+        (navigate) and modal actions; anything else navigates to nowhere."""
+        from ..core.context import RenderContext
+
+        if request is not None and not self.is_visible(request, record):
+            return {}
+        ctx = RenderContext(request=request, record=record)
+        link = self._config.get("link")
+        if link is not None:
+            return {"data-dcc-href": str(evaluate(link, ctx))}
+        if self.needs_modal:
+            return {
+                "data-dcc-action": self.url(record),
+                "data-dcc-action-target": f"#dcc-modal-{self._owner_key}",
+                "data-dcc-action-swap": "innerHTML",
+            }
+        return {}
 
     def render_modal(
         self, *, request: HttpRequest, records: Any, form_html: SafeString | str = ""

@@ -54,7 +54,9 @@ class ActionView(View):
         schema = action._config.get("schema")
         if schema is not None:
             instance = records[0] if records and not action.is_bulk else None
-            form_html = schema.render(request=request, form=schema.build_form(instance=instance))
+            form_html = schema.render(
+                request=request, form=schema.build_standalone_form(instance=instance)
+            )
         else:
             content = action._config.get("modal_content")
             if callable(content):
@@ -79,7 +81,9 @@ class ActionView(View):
         schema = action._config.get("schema")
         if schema is not None:
             instance = records[0] if records and not action.is_bulk else None
-            form = schema.build_form(data=request.POST, files=request.FILES, instance=instance)
+            form = schema.build_standalone_form(
+                data=request.POST, files=request.FILES, instance=instance
+            )
             if not form.is_valid():
                 return HttpResponse(
                     action.render_modal(
@@ -92,7 +96,10 @@ class ActionView(View):
 
         action.run(request, records, data)
 
-        resp = HttpResponse(status=204)
+        # A modal action must clear its mount so the dialog closes; htmx will not
+        # swap on 204, so hand back an empty 200 for those. Inline actions keep
+        # 204 (their row must not be blanked) and rely on dcc:refresh to repaint.
+        resp = HttpResponse("") if action.needs_modal else HttpResponse(status=204)
         return htmx.response.trigger(
             resp,
             {"dcc:toast": action.success_message(), "dcc:refresh": True},

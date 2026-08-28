@@ -43,6 +43,7 @@ def _recent_articles_table(request):
             ]
         )
         .client_side()
+        .presentation("feed")
     )
 
 
