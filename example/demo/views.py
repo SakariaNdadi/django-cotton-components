@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView, UpdateView
 
+from django_cotton_components.infolists import Infolist, TextEntry
 from django_cotton_components.mixins import SchemaFormMixin
 from django_cotton_components.schemas import Schema, TextInput
 from django_cotton_components.tables.views import TableMixin
@@ -71,6 +72,14 @@ class ArticleUpdateView(SchemaFormMixin, UpdateView):
 class ArticleWizard(WizardView):
     steps_config = [
         WizardStep(
+            "intro",
+            "<p>This wizard publishes an article in a few short steps. Each step is "
+            "its own DCC schema; nothing is written until you finish the review "
+            "step.</p>",
+            title="Start",
+            heading="Publish an article",
+        ),
+        WizardStep(
             "content",
             Schema.make()
             .form(ArticleForm)
@@ -83,8 +92,26 @@ class ArticleWizard(WizardView):
             Schema.make().form(ArticleForm).strict().schema([TextInput.make("status")]),
             title="Publish",
         ),
+        WizardStep(
+            "review",
+            Infolist.make().schema(
+                [TextEntry.make("title"), TextEntry.make("slug"), TextEntry.make("status")]
+            ),
+            title="Review",
+            heading="Confirm and publish",
+            description="These values are written when you click Finish.",
+            record=lambda view: view.get_all_cleaned_data(),
+        ),
     ]
     template_name = "demo/wizard.html"
+    wizard_attrs = {
+        "style": (
+            "--dcc-wizard-bg:var(--dcc-surface);"
+            "--dcc-wizard-pad:1.5rem;"
+            "--dcc-wizard-accent:#6366f1;"
+            "--dcc-wizard-accent-fg:#ffffff"
+        )
+    }
 
     def done(self, form_list, **kwargs):
         data = {}

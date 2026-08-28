@@ -1,13 +1,22 @@
-<div class="dcc-wizard" id="{{ wizard_id }}">
+<div class="dcc-wizard {{ wizard_class }}" id="{{ wizard_id }}"{{ wizard_attrs_html }}>
+  {% if show_step_nav %}
   <ol class="dcc-wizard__steps">
-    {% for name, title in step_titles %}
-    <li class="dcc-wizard__step{% if name == current_step %} is-current{% endif %}">{{ title }}</li>
+    {% for step in steps %}
+    <li class="dcc-wizard__step{% if step.is_current %} is-current{% endif %}{% if step.is_done %} is-done{% endif %}">
+      {% if step.can_goto %}
+      <button type="submit" form="{{ wizard_id }}-form" name="wizard_goto_step" value="{{ step.name }}"
+        formnovalidate class="dcc-wizard__step-link">{{ step.title }}</button>
+      {% else %}{{ step.title }}{% endif %}
+    </li>
     {% endfor %}
   </ol>
-  <form method="post" enctype="multipart/form-data" class="dcc-form" {{ wizard_htmx }}>
+  {% endif %}
+  {% if step_heading %}<h2 class="dcc-wizard__heading">{{ step_heading }}</h2>{% endif %}
+  {% if step_description %}<p class="dcc-wizard__desc">{{ step_description }}</p>{% endif %}
+  <form id="{{ wizard_id }}-form" method="post" enctype="multipart/form-data" class="dcc-form" {{ wizard_htmx }}>
     {% csrf_token %}
     {{ wizard.management_form }}
-    {{ schema_html }}
+    {{ step_html }}
     <div class="dcc-wizard__nav">
       {% if wizard.steps.prev %}
       <c-dcc.button type="submit" variant="secondary" label="Back"

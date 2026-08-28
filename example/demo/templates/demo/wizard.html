@@ -6,32 +6,16 @@
   <div class="demo-page-head">
     <div>
       <h1>Publish wizard</h1>
-      <p>Multi-step form on <code>django-formtools</code>. Each step is its own DCC
-        schema; validation is Django's per step; state lives in the session.</p>
+      <p>Multi-step form on <code>django-formtools</code>. Steps mix DCC schemas
+        with read-only detail steps (intro, review); validation is Django's per
+        step; state lives in the session. The chrome is themed via
+        <code>wizard_attrs</code>.</p>
     </div>
   </div>
 
   <div class="demo-card demo-formwrap">
     <div class="demo-card__body">
-      <div class="dcc-wizard" id="{{ wizard_id }}">
-        <ol class="dcc-wizard__steps">
-          {% for name, title in step_titles %}
-          <li class="dcc-wizard__step{% if name == current_step %} is-current{% endif %}">{{ title }}</li>
-          {% endfor %}
-        </ol>
-        <form method="post" enctype="multipart/form-data" class="dcc-form" {{ wizard_htmx }}>
-          {% csrf_token %}
-          {{ wizard.management_form }}
-          {{ schema_html }}
-          <div class="dcc-wizard__nav">
-            {% if wizard.steps.prev %}
-            <c-dcc.button type="submit" variant="secondary" label="Back"
-              name="wizard_goto_step" value="{{ wizard.steps.prev }}" formnovalidate />
-            {% endif %}
-            <c-dcc.button type="submit" variant="primary">{% if wizard.steps.current == wizard.steps.last %}Finish &amp; publish{% else %}Continue{% endif %}</c-dcc.button>
-          </div>
-        </form>
-      </div>
+      {% include "django_cotton_components/wizards/wizard.html" %}
     </div>
   </div>
 {% endblock %}

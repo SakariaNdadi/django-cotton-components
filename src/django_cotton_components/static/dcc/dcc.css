@@ -375,8 +375,20 @@
 .dcc-action { padding: 0.25rem 0.625rem; font-size: 0.8125rem; }
 
 /* ---- wizard -------------------------------------------- */
-.dcc-wizard { display: flex; flex-direction: column; gap: 1.5rem; }
-.dcc-wizard__steps { display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+.dcc-wizard {
+  --dcc-wizard-bg: transparent;
+  --dcc-wizard-accent: var(--dcc-primary);
+  --dcc-wizard-accent-fg: var(--dcc-primary-fg);
+  --dcc-wizard-pad: 0;
+  --dcc-wizard-radius: var(--dcc-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--dcc-wizard-bg);
+  padding: var(--dcc-wizard-pad);
+  border-radius: var(--dcc-wizard-radius);
+}
+.dcc-wizard__steps { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
 .dcc-wizard__step {
   padding: 0.375rem 0.75rem;
   border-radius: var(--dcc-radius);
@@ -384,7 +396,12 @@
   color: var(--dcc-muted);
   font-size: 0.8125rem;
 }
-.dcc-wizard__step.is-current { background: var(--dcc-primary); color: var(--dcc-primary-fg); }
+.dcc-wizard__step.is-current { background: var(--dcc-wizard-accent); color: var(--dcc-wizard-accent-fg); }
+.dcc-wizard__step.is-done { opacity: 0.7; }
+.dcc-wizard__step-link { all: unset; cursor: pointer; }
+.dcc-wizard__step-link:focus-visible { outline: 2px solid var(--dcc-focus); }
+.dcc-wizard__heading { margin: 0; font-size: 1.25rem; }
+.dcc-wizard__desc { margin: 0 0 0.5rem; color: var(--dcc-muted); }
 .dcc-wizard__nav { display: flex; gap: 0.5rem; justify-content: flex-end; }
 
 /* ---- panels ------------------------------------------- */
