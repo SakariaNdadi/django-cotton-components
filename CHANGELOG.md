@@ -9,6 +9,25 @@ All notable changes to this project are documented here. Format loosely follows
 Complete rebuild. The package moves from a set of hand-authored cotton templates
 to a Python component layer (Filament-inspired) that drives `django.forms`.
 
+### Changed
+
+- **`Resource.permission_prefix` semantics.** It now supplies only the *prefix*
+  of the permission string (the app label, and optionally the model name when it
+  contains a dot); the action (`view` / `add` / `change` / `delete`) is always
+  appended. Previously a non-empty `permission_prefix` replaced the whole
+  permission and dropped the action, so every action collapsed to one
+  permission. A resource relying on the old behaviour must move to a custom
+  `can()` override.
+
+### Security
+
+- A stored spec column/entry named after a model method Django flags
+  `alters_data` (`delete`, `save`, …) no longer invokes it on every row render —
+  the value resolves to empty. Dotted display paths also refuse private
+  (`_`-prefixed) segments. New shared helper `core.paths.traverse`.
+- `validate_spec` now rejects a stored spec above 64 KB or nested deeper than 8
+  levels.
+
 ### Fixed
 
 - Client-mode tables: row selection and the bulk-action toolbar are now live
@@ -26,6 +45,9 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Added
 
+- `htmx.boost()` and `htmx.oob()` attribute-bag helpers.
+- `{% dcc_assets %}` loads the Alpine `focus` plugin (opt out with `focus=False`)
+  so modal / drawer `x-trap` focus containment works.
 - Tables — `Table.record_url(fn)` (whole-row click → full-page nav),
   `.record_action(Action)` (row click → modal / navigate), `.record_preview(fn)`
   (hover card); `Action.collapsed()` folds a row action into a "⋯" menu;

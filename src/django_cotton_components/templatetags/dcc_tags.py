@@ -16,15 +16,19 @@ if TYPE_CHECKING:
 register = template.Library()
 
 _ALPINE_SRC = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+_ALPINE_FOCUS_SRC = "https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"
 
 
 @register.simple_tag
-def dcc_assets(*, alpine: bool = True, htmx: bool = True, icons: bool = True) -> SafeString:
+def dcc_assets(
+    *, alpine: bool = True, htmx: bool = True, icons: bool = True, focus: bool = True
+) -> SafeString:
     """Emit the component stylesheet plus the htmx, Alpine.js and icon assets.
 
     Pass ``alpine=False`` / ``htmx=False`` / ``icons=False`` if the host page
     already loads them. Tables, actions and wizards drive their mutations through
-    htmx, so it is on by default.
+    htmx, so it is on by default. ``focus=False`` skips the Alpine focus plugin
+    that ``x-trap`` (modal / drawer focus containment) depends on.
     """
     from ..htmx import HTMX_SRC
     from ..icons import icon_assets
@@ -40,6 +44,9 @@ def dcc_assets(*, alpine: bool = True, htmx: bool = True, icons: bool = True) ->
     # listener before Alpine starts and scans the DOM.
     parts.append(f'<script defer src="{static("dcc/dcc.js")}"></script>')
     if alpine:
+        # Plugins must load before Alpine core; `defer` preserves order.
+        if focus:
+            parts.append(f'<script defer src="{_ALPINE_FOCUS_SRC}"></script>')
         parts.append(f'<script defer src="{_ALPINE_SRC}"></script>')
     return mark_safe("\n".join(parts))  # noqa: S308  -- fixed strings + static() URL
 

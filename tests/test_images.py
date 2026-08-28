@@ -57,6 +57,23 @@ def test_svg_rejected_without_allow_svg():
     validate_image(_upload(svg, name="a.svg"), ImageSpec(allow_svg=True))
 
 
+def test_allowed_svg_still_size_limited():
+    svg = b'<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>' + b" " * 200
+    with pytest.raises(ImageValidationError, match="larger than"):
+        validate_image(_upload(svg, name="a.svg"), ImageSpec(allow_svg=True, max_size=50))
+
+
+def test_aspect_tolerance_is_configurable():
+    from django_cotton_components.schemas import FileUpload
+
+    lenient = ImageSpec.from_field_config(
+        FileUpload.make("cover").aspect_ratio("1:1").aspect_tolerance(0.5).image_spec()
+    )
+    # 100x120 -> ratio 0.83, within 0.5 of 1.0
+    w, h = validate_image(_upload(_png(100, 120)), lenient)
+    assert (w, h) == (100, 120)
+
+
 def test_decompression_bomb_rejected(settings):
     settings.DCC = {"IMAGE_MAX_PIXELS": 1000}
     with pytest.raises(ImageValidationError, match="pixel limit"):

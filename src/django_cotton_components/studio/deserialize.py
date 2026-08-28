@@ -9,16 +9,43 @@ callback) is not expressible in a spec: it stays in code and is attached by a
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from django.core.exceptions import FieldDoesNotExist, ValidationError
 
 _SCALAR = (str, int, float, bool, type(None))
 
+#: hard ceilings applied to a stored spec before it is walked — a spec is
+#: user-editable data, so an unbounded document must not reach the builders.
+_MAX_SPEC_BYTES = 64 * 1024
+_MAX_SPEC_DEPTH = 8
+
 # setters that expect a callable / predicate at runtime — never spec-expressible
 _UNSAFE_KEYS = frozenset(
     {"state", "state_fn", "action", "callback", "authorize", "visible", "hidden"}
 )
+
+
+def _check_size_and_depth(spec: Any) -> None:
+    try:
+        encoded = json.dumps(spec)
+    except (TypeError, ValueError):
+        raise ValidationError("spec is not JSON-serialisable") from None
+    if len(encoded.encode("utf-8")) > _MAX_SPEC_BYTES:
+        raise ValidationError(f"spec exceeds the {_MAX_SPEC_BYTES // 1024} KB ceiling")
+
+    def _depth(node: Any, level: int) -> None:
+        if level > _MAX_SPEC_DEPTH:
+            raise ValidationError(f"spec nesting exceeds {_MAX_SPEC_DEPTH} levels")
+        if isinstance(node, dict):
+            for item in node.values():
+                _depth(item, level + 1)
+        elif isinstance(node, list):
+            for item in node:
+                _depth(item, level + 1)
+
+    _depth(spec, 0)
 
 
 def _check_jsonable(value: Any, where: str) -> None:
@@ -215,6 +242,7 @@ def validate_spec(spec: dict[str, Any]) -> None:
     from ..infolists import ENTRY_TYPES
     from ..tables import COLUMN_TYPES, FILTER_TYPES
 
+    _check_size_and_depth(spec)
     for i, node in enumerate((spec.get("table") or {}).get("columns", [])):
         _instantiate(COLUMN_TYPES, node, f"table.columns[{i}]")
     for i, node in enumerate((spec.get("table") or {}).get("filters", [])):

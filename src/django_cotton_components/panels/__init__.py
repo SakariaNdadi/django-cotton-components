@@ -1,5 +1,5 @@
 from ..core.type_registry import TypeRegistry
-from .pages import DashboardPage
+from .pages import DashboardPage, PanelPage
 from .panel import Panel
 from .resource import Resource
 from .widgets import BarListWidget, ChartWidget, StatWidget, TableWidget, Widget
@@ -14,6 +14,7 @@ __all__ = [
     "ChartWidget",
     "DashboardPage",
     "Panel",
+    "PanelPage",
     "Resource",
     "StatWidget",
     "TableWidget",

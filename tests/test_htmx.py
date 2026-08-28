@@ -64,6 +64,19 @@ def test_values_serialised():
     assert 'hx-vals="{&quot;page&quot;: 2}"' in rendered or "hx-vals" in rendered
 
 
+def test_boost_builds_attrs():
+    rendered = str(htmx.boost(target="#main", select="#main").render())
+    assert 'hx-boost="true"' in rendered
+    assert 'hx-target="#main"' in rendered
+    assert 'hx-select="#main"' in rendered
+    assert 'hx-boost="false"' in str(htmx.boost(enabled=False).render())
+
+
+def test_oob_builds_attrs():
+    assert 'hx-swap-oob="true"' in str(htmx.oob().render())
+    assert 'hx-swap-oob="innerHTML:#dcc-nav"' in str(htmx.oob("innerHTML:#dcc-nav").render())
+
+
 def test_get_extras_render():
     bag = htmx.get(
         "/x/", sync="closest form:abort", select="#rows", include="[data-x]:checked"

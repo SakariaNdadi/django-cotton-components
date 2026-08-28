@@ -51,6 +51,7 @@ class ImageSpec:
             min_dimensions=config.get("min_dimensions"),
             max_dimensions=config.get("max_dimensions"),
             aspect_ratio=parse_ratio(config["aspect_ratio"]) if "aspect_ratio" in config else None,
+            aspect_tolerance=config.get("aspect_tolerance", 0.02),
             resize=config.get("resize") or {},
             convert=config.get("convert") or {},
             strip_exif=config.get("strip_exif", True),

@@ -15,6 +15,7 @@ from django.utils.timesince import timesince
 from ..core.component import UNSET, Component, setter
 from ..core.context import RenderContext
 from ..core.evaluate import evaluate
+from ..core.paths import traverse
 
 
 class Entry(Component):
@@ -43,14 +44,7 @@ class Entry(Component):
         state_fn = self._config.get("state_fn")
         if state_fn is not None:
             return evaluate(state_fn, ctx.child(record=ctx.record))
-        value: Any = ctx.record
-        for part in (self._name or "").split("."):
-            if value is None:
-                return None
-            value = getattr(value, part, None)
-            if callable(value):
-                value = value()
-        return value
+        return traverse(ctx.record, self._name or "")
 
     def display(self, ctx: RenderContext) -> Any:
         value = self.raw_value(ctx)

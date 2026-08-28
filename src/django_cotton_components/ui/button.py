@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import Any, Self
 
 from ..core.attributes import AttributeBag
@@ -31,7 +32,14 @@ class Button(Component):
 
     @setter
     def variant(self, value: str) -> Self:
-        return self._set("variant", value if value in _VARIANTS else "secondary")
+        if value not in _VARIANTS:
+            warnings.warn(
+                f"Unknown button variant {value!r}; falling back to 'secondary'. "
+                f"Valid variants: {sorted(_VARIANTS)}.",
+                stacklevel=2,
+            )
+            value = "secondary"
+        return self._set("variant", value)
 
     @setter
     def size(self, value: str) -> Self:

@@ -7,10 +7,10 @@ from django_cotton_components.panels import (
     ChartWidget,
     DashboardPage,
     Panel,
+    PanelPage,
     Resource,
     StatWidget,
 )
-from django_cotton_components.panels.pages import _PanelPage
 from django_cotton_components.schemas import Schema, Section, TextInput
 from tests.testapp.forms import ArticleForm
 from tests.testapp.models import Article, Author
@@ -43,7 +43,7 @@ class Dash(DashboardPage):
         ]
 
 
-class Reports(_PanelPage):
+class Reports(PanelPage):
     template_name = "django_cotton_components/panels/dashboard.html"
     slug = "reports"
     nav_label = "Reports"
@@ -71,6 +71,14 @@ def staff(django_user_model):
 @pytest.fixture
 def author():
     return Author.objects.create(name="Ada")
+
+
+def test_panelpage_public_export_and_legacy_alias():
+    from django_cotton_components.panels import PanelPage as Exported
+    from django_cotton_components.panels.pages import PanelPage, _PanelPage
+
+    assert Exported is PanelPage
+    assert _PanelPage is PanelPage
 
 
 def test_anonymous_is_denied(client, urlconf):

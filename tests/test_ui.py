@@ -31,6 +31,12 @@ def test_button_merges_htmx_bag_into_attrs():
     assert "dcc-btn" in out  # styling classes still present
 
 
+def test_button_unknown_variant_warns_and_falls_back():
+    with pytest.warns(UserWarning, match="Unknown button variant"):
+        out = str(Button.make(label="Go").variant("prmary").render(CTX))
+    assert "dcc-btn--secondary" in out
+
+
 def test_button_escapes_label():
     out = str(Button.make(label="<script>").render(CTX))
     assert "<script>" not in out and "&lt;script&gt;" in out

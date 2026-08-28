@@ -14,11 +14,11 @@ from django_cotton_components.panels import (
     ChartWidget,
     DashboardPage,
     Panel,
+    PanelPage,
     Resource,
     StatWidget,
     TableWidget,
 )
-from django_cotton_components.panels.pages import _PanelPage
 from django_cotton_components.tables import (
     BadgeColumn,
     BooleanColumn,
@@ -91,7 +91,7 @@ class DemoDashboard(DashboardPage):
         ]
 
 
-class ReportsPage(_PanelPage):
+class ReportsPage(PanelPage):
     """A custom (non-resource) panel page — demonstrates Panel.pages()."""
 
     template_name = "demo/panel_reports.html"

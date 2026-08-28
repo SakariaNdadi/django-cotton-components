@@ -39,6 +39,11 @@ class FileUpload(Field):
         return self._set("aspect_ratio", value)
 
     @setter
+    def aspect_tolerance(self, value: float) -> Self:
+        """Allowed deviation from ``aspect_ratio``, as a fraction (default 0.02 = ±2%)."""
+        return self._set("aspect_tolerance", value)
+
+    @setter
     def resize(self, *, max_width: int | None = None, max_height: int | None = None) -> Self:
         return self._set("resize", {"max_width": max_width, "max_height": max_height})
 
@@ -61,6 +66,7 @@ class FileUpload(Field):
             "min_dimensions",
             "max_dimensions",
             "aspect_ratio",
+            "aspect_tolerance",
             "resize",
             "convert",
             "strip_exif",

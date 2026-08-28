@@ -10,4 +10,4 @@ class SchemaError(DCCError):
 
 
 class ThumbnailBackendError(DCCError):
-    """The configured thumbnail backend could not be loaded or produced no output."""
+    """The dotted path in ``DCC["THUMBNAIL_BACKEND"]`` could not be imported."""

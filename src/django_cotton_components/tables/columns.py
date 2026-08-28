@@ -19,6 +19,7 @@ from django.utils.timesince import timesince
 
 from ..core.component import UNSET, setter
 from ..core.evaluate import evaluate
+from ..core.paths import traverse
 
 if TYPE_CHECKING:
     from ..core.context import RenderContext
@@ -116,14 +117,7 @@ class Column:
         state_fn = self._config.get("state_fn")
         if state_fn is not None:
             return evaluate(state_fn, ctx.child(record=record))
-        value: Any = record
-        for part in self.name.split("."):
-            if value is None:
-                return None
-            value = getattr(value, part, None)
-            if callable(value):
-                value = value()
-        return value
+        return traverse(record, self.name)
 
     def render_cell(self, record: Any, ctx: RenderContext) -> SafeString:
         value = self.get_value(record, ctx)

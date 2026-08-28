@@ -46,10 +46,18 @@ class Resource:
 
     @classmethod
     def perm(cls, action: str) -> str:
-        prefix = cls.permission_prefix or (
-            f"{cls.model._meta.app_label}.{action}_{cls.model._meta.model_name}"
-        )
-        return prefix if "." in prefix else f"{cls.model._meta.app_label}.{prefix}"
+        """Django permission string for ``action`` on this resource's model.
+
+        Defaults to ``<app_label>.<action>_<model_name>``. ``permission_prefix``
+        overrides the model-name part (and, when it contains a dot, the app
+        label too); the action is always injected, so ``view`` / ``add`` /
+        ``change`` / ``delete`` stay distinct permissions.
+        """
+        default_app = cls.model._meta.app_label
+        if cls.permission_prefix:
+            app_label, _, name = cls.permission_prefix.rpartition(".")
+            return f"{app_label or default_app}.{action}_{name}"
+        return f"{default_app}.{action}_{cls.model._meta.model_name}"
 
     # -- data ---------------------------------------------------
 

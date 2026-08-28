@@ -175,6 +175,35 @@ def delete(
     )
 
 
+def boost(
+    *, enabled: bool = True, target: str | None = None, select: str | None = None
+) -> AttributeBag:
+    """``hx-boost`` an element for progressive-enhancement navigation.
+
+    Studio pages boost their shell so a save or a nav click swaps a fragment
+    instead of reloading the document.
+    """
+    bag = AttributeBag()
+    bag.set("hx-boost", "true" if enabled else "false")
+    if target:
+        bag.set("hx-target", target)
+    if select:
+        bag.set("hx-select", select)
+    return bag
+
+
+def oob(value: str | bool = True) -> AttributeBag:
+    """Mark a response fragment for an out-of-band swap (``hx-swap-oob``).
+
+    Used when one response updates a second region — e.g. a studio save that
+    also refreshes the live navigation. ``value`` is ``True`` or an explicit
+    swap spec such as ``"innerHTML:#dcc-nav"``.
+    """
+    bag = AttributeBag()
+    bag.set("hx-swap-oob", "true" if value is True else value)
+    return bag
+
+
 def is_htmx(request: HttpRequest) -> bool:
     return request.headers.get("HX-Request") == "true"
 

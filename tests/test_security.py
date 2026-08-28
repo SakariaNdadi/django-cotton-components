@@ -57,6 +57,81 @@ def test_no_js_full_post_round_trip():
     form.save()
 
 
+def test_traverse_refuses_alters_data_callables():
+    from django_cotton_components.core.paths import traverse
+
+    class Rec:
+        calls: list[int] = []
+
+        def delete(self):
+            Rec.calls.append(1)
+            return "gone"
+
+        delete.alters_data = True  # type: ignore[attr-defined]
+
+    assert traverse(Rec(), "delete") is None
+    assert Rec.calls == []
+
+
+def test_traverse_refuses_private_segments():
+    from django_cotton_components.core.paths import traverse
+
+    class Rec:
+        _secret = "leaked"
+
+    assert traverse(Rec(), "_secret") is None
+    assert traverse(Rec(), "__class__") is None
+
+
+def test_spec_column_named_delete_renders_empty_and_keeps_the_row(article):
+    from django_cotton_components.studio.deserialize import build_table_from_spec
+    from tests.testapp.models import Article
+
+    spec = {"columns": [{"type": "TextColumn", "name": "delete"}]}
+    table = build_table_from_spec(Article.objects.all(), spec)
+    html = str(table.render(None))
+    assert "gone" not in html
+    assert Article.objects.filter(pk=article.pk).exists()
+
+
+def test_validate_spec_rejects_oversized_and_over_deep_specs():
+    import pytest as _pytest
+    from django.core.exceptions import ValidationError
+
+    from django_cotton_components.studio.deserialize import validate_spec
+
+    huge = {"table": {"columns": [{"type": "TextColumn", "name": "x" * 2000}] * 40}}
+    with _pytest.raises(ValidationError):
+        validate_spec(huge)
+
+    deep: dict = {"table": {}}
+    node = deep["table"]
+    for _ in range(12):
+        node["child"] = {}
+        node = node["child"]
+    with _pytest.raises(ValidationError):
+        validate_spec(deep)
+
+
+def test_permission_prefix_keeps_actions_distinct():
+    from django_cotton_components.panels.resource import Resource
+    from tests.testapp.models import Article
+
+    class R(Resource):
+        model = Article
+        permission_prefix = "blog.article"
+
+    assert R.perm("view") == "blog.view_article"
+    assert R.perm("delete") == "blog.delete_article"
+    assert R.perm("add") == "blog.add_article"
+
+    class R2(Resource):
+        model = Article
+        permission_prefix = "widget"
+
+    assert R2.perm("view") == "testapp.view_widget"
+
+
 def test_apostrophe_does_not_break_json_script(soup):
     Author.objects.create(name="D'Arcy O'Brien")
     schema = Schema.make().form(ArticleForm).schema([Select.make("author")])

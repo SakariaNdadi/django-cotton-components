@@ -38,17 +38,19 @@ def validate_image(file: File[Any], spec: ImageSpec) -> tuple[int, int]:
     head = file.read(1024)
     file.seek(0)
 
+    if spec.max_size is not None and file.size > spec.max_size:
+        raise ImageValidationError(f"File is larger than {spec.max_size} bytes.")
+
     if any(marker in head.lower() for marker in _SVG_MARKERS):
         if not spec.allow_svg:
             raise ImageValidationError(
                 "SVG uploads are rejected by default (script-injection risk). "
-                "Enable .allow_svg() to accept them; they are sanitised and served "
-                "as attachments."
+                "Enable .allow_svg() to accept them. SVGs are stored as-is — this "
+                "library does not sanitise them, so serve them as downloads, never "
+                "inline from a trusted origin."
             )
+        # Pillow cannot decode SVG; the size check above is the only guard applied.
         return (0, 0)
-
-    if spec.max_size is not None and file.size > spec.max_size:
-        raise ImageValidationError(f"File is larger than {spec.max_size} bytes.")
 
     Image = _load_pillow()
     limit = dcc_settings.IMAGE_MAX_PIXELS

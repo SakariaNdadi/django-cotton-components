@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from .resource import Resource
 
 
-class _PanelPage(TemplateView):
+class PanelPage(TemplateView):
     """A page mounted on a panel that is not tied to a resource (dashboards,
     custom pages). Subclass, set ``slug`` / ``nav_label`` / ``nav_icon``, and
     override ``get_context_data`` or the page's own hooks."""
@@ -41,7 +41,11 @@ class _PanelPage(TemplateView):
         return ctx
 
 
-class DashboardPage(_PanelPage):
+#: Deprecated pre-1.0 alias. Use :class:`PanelPage`.
+_PanelPage = PanelPage
+
+
+class DashboardPage(PanelPage):
     """A grid of :class:`~.widgets.Widget`. Override :meth:`widgets`."""
 
     template_name = "django_cotton_components/panels/dashboard.html"
