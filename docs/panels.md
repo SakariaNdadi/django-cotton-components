@@ -118,10 +118,12 @@ The list/create/edit/view templates fill `{% block content %}`; context gives yo
 `panel`, `resource_label`, `nav` (a list of `{label, url, icon, group}`), and —
 per page — `table_html`, `schema_html`, or `infolist_html`.
 
+A dashboard page is a grid of widgets — see [widgets.md](widgets.md) for
+`StatWidget`, `ChartWidget` (Chart.js), `BarListWidget`, `TableWidget`, custom
+widgets, and stored `PanelDashboard` rows.
+
 ## Not built yet
 
-- **Widgets & a dashboard page** — stat/chart/table widgets on a panel index route.
-- **Custom pages** — `Panel.pages([...])` for arbitrary pages in the panel nav.
 - **Relation managers** — inline CRUD of related records on an edit page.
 - **Global search** across resources.
 

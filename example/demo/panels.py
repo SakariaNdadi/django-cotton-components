@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
 from django_cotton_components.infolists import (
@@ -9,6 +10,7 @@ from django_cotton_components.infolists import (
     TextEntry,
 )
 from django_cotton_components.panels import (
+    BarListWidget,
     ChartWidget,
     DashboardPage,
     Panel,
@@ -29,6 +31,16 @@ from django_cotton_components.tables import (
 
 from .models import Article, Author, Comment
 from .schemas import article_schema
+
+
+def _articles_over_time(request):
+    rows = (
+        Article.objects.annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(n=Count("id"))
+        .order_by("month")
+    )
+    return [(row["month"].strftime("%b %Y") if row["month"] else "—", row["n"]) for row in rows]
 
 
 def _recent_articles_table(request):
@@ -63,9 +75,16 @@ class DemoDashboard(DashboardPage):
             StatWidget.make("Live", by_status.get("live", 0)).icon("tower-broadcast"),
             StatWidget.make("Featured", Article.objects.filter(featured=True).count()).icon("star"),
             StatWidget.make(
-                "Comments to review", Comment.objects.filter(approved=False).count()
-            ).icon("comments"),
-            ChartWidget.make("Articles by status").data(
+                "Comments to review",
+                lambda request: Comment.objects.filter(approved=False).count(),
+            )
+            .icon("comments")
+            .poll(30),
+            ChartWidget.make("Articles over time")
+            .kind("area")
+            .data(_articles_over_time)
+            .columns(2),
+            BarListWidget.make("Articles by status").data(
                 [(s.title(), by_status.get(s, 0)) for s in ("live", "draft", "archived")]
             ),
             TableWidget.make("Recent articles", _recent_articles_table),

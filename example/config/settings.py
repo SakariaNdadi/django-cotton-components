@@ -72,15 +72,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # django-cotton-components
 DCC = {
     "TABLE_CLIENT_SIDE_MAX_ROWS": 200,
+    # Models a stored studio dashboard's ChartWidget.query({...}) may aggregate.
+    "STUDIO_MODELS": ["demo.Article", "demo.Comment"],
 }
 
-# Content-Security-Policy: Alpine needs 'unsafe-eval'. Everything else stays tight.
+# Content-Security-Policy: Alpine needs 'unsafe-eval'. htmx, Alpine, Chart.js and
+# the icon font all load from the jsdelivr CDN. Everything else stays tight.
 # (Django 6 native CSP; harmless dict on 5.2 where it is simply unused.)
+_CDN = "https://cdn.jsdelivr.net"
 SECURE_CSP = {
     "DIRECTIVES": {
         "default-src": ["'self'"],
-        "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-        "style-src": ["'self'", "'unsafe-inline'"],
+        "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'", _CDN],
+        "style-src": ["'self'", "'unsafe-inline'", _CDN],
         "img-src": ["'self'", "data:"],
     }
 }

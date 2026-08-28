@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Dashboard{% endblock %} · django-cotton-components</title>
+  {% block head_extra %}{% endblock %}
   {% dcc_assets %}
   <link rel="stylesheet" href="{% static 'demo/demo.css' %}">
 </head>

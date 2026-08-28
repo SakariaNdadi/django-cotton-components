@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 from django.core.exceptions import ValidationError
 
@@ -7,8 +9,9 @@ from django_cotton_components.panels import Panel
 from django_cotton_components.studio.deserialize import (
     build_schema_from_spec,
     build_table_from_spec,
+    build_widgets_from_spec,
 )
-from django_cotton_components.studio.models import DashboardSpec
+from django_cotton_components.studio.models import DashboardSpec, PanelDashboard
 from tests.testapp.models import Article, Author
 
 pytestmark = pytest.mark.django_db
@@ -170,6 +173,115 @@ def test_dynamic_resource_serves_list_and_create(client, urlconf, spec, django_u
     )
     assert r.status_code == 302
     assert Article.objects.count() == n0 + 1
+
+
+def _chart_payload(widget):
+    html = str(widget.render(None))
+    blob = html.split('type="application/json">', 1)[1].split("</script>", 1)[0]
+    return json.loads(blob)
+
+
+def test_widgets_spec_round_trips():
+    widgets = build_widgets_from_spec(
+        [
+            {"type": "StatWidget", "name": "Total", "config": {"value": 5}},
+            {
+                "type": "ChartWidget",
+                "name": "Split",
+                "config": {"kind": "bar", "data": [["a", 1], ["b", 2]]},
+            },
+        ]
+    )
+    assert len(widgets) == 2
+    assert "5" in str(widgets[0].render(None))
+    assert _chart_payload(widgets[1])["data"]["datasets"][0]["data"] == [1, 2]
+
+
+def test_widgets_spec_unknown_type_rejected():
+    with pytest.raises(ValidationError):
+        build_widgets_from_spec([{"type": "EvilWidget"}])
+
+
+def test_widgets_spec_callable_setter_rejected():
+    with pytest.raises(ValidationError):
+        build_widgets_from_spec(
+            [{"type": "StatWidget", "name": "x", "config": {"visible": "os.system"}}]
+        )
+
+
+def test_paneldashboard_rejects_non_allowlisted_query(settings):
+    settings.DCC = {"STUDIO_MODELS": []}
+    with pytest.raises(ValidationError):
+        PanelDashboard.objects.create(
+            slug="m",
+            widgets=[
+                {
+                    "type": "ChartWidget",
+                    "name": "c",
+                    "config": {"query": {"model": "testapp.Article", "group_by": "status"}},
+                }
+            ],
+        )
+
+
+def test_paneldashboard_query_chart_renders_aggregation(settings, author):
+    settings.DCC = {"STUDIO_MODELS": ["testapp.Article"]}
+    Article.objects.create(title="a", slug="a", status="live", author=author)
+    Article.objects.create(title="b", slug="b", status="live", author=author)
+    Article.objects.create(title="c", slug="c", status="draft", author=author)
+    dashboard = PanelDashboard.objects.create(
+        slug="metrics",
+        label="Metrics",
+        widgets=[
+            {
+                "type": "ChartWidget",
+                "name": "By status",
+                "config": {
+                    "kind": "bar",
+                    "query": {
+                        "model": "testapp.Article",
+                        "group_by": "status",
+                        "aggregate": "count",
+                    },
+                },
+            }
+        ],
+    )
+    widget = build_widgets_from_spec(dashboard.widgets)[0]
+    payload = _chart_payload(widget)
+    assert payload["data"]["labels"] == ["draft", "live"]
+    assert payload["data"]["datasets"][0]["data"] == [1, 2]
+
+
+def test_dynamic_dashboard_route_serves_widgets(
+    client, urlconf, settings, author, django_user_model
+):
+    settings.DCC = {"STUDIO_MODELS": ["testapp.Article"]}
+    Article.objects.create(title="a", slug="a", status="live", author=author)
+    PanelDashboard.objects.create(
+        slug="metrics",
+        label="Metrics",
+        widgets=[
+            {
+                "type": "StatWidget",
+                "name": "Total",
+                "config": {"query": {"model": "testapp.Article", "aggregate": "count"}},
+            }
+        ],
+    )
+    user = django_user_model.objects.create_superuser("root", "r@x.com", "x")
+    client.force_login(user)
+    resp = client.get("/s/dash/metrics/")
+    assert resp.status_code == 200
+    assert b"Metrics" in resp.content
+    assert b"dcc-widget--stat" in resp.content
+
+
+def test_paneldashboard_in_navigation(rf, urlconf, django_user_model):
+    PanelDashboard.objects.create(slug="metrics", label="Metrics", widgets=[])
+    req = rf.get("/")
+    req.user = django_user_model.objects.create_superuser("n2", "n2@x.com", "x")
+    assert "Metrics" in [item["label"] for item in panel.navigation(req)]
 
 
 def test_dynamic_resource_in_navigation(rf, urlconf, spec, django_user_model):

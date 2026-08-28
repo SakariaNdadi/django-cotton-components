@@ -141,6 +141,28 @@ def test_dashboard_page_renders_widgets(client, urlconf, staff):
     assert b"Overview" in resp.content
 
 
+def test_widget_fragment_endpoint_returns_content_only(client, urlconf, staff):
+    client.force_login(staff)
+    resp = client.get("/app/?_dcc_widget=w1", HTTP_HX_REQUEST="true")
+    assert resp.status_code == 200
+    body = resp.content.decode()
+    assert "dccChart(" in body
+    assert "<html" not in body and "dcc-widget--chart" not in body
+
+
+def test_widget_fragment_unknown_id_is_404(client, urlconf, staff):
+    client.force_login(staff)
+    resp = client.get("/app/?_dcc_widget=nope", HTTP_HX_REQUEST="true")
+    assert resp.status_code == 404
+
+
+def test_dashboard_marks_auto_refresh_widgets(client, urlconf, staff):
+    client.force_login(staff)
+    body = client.get("/app/").content.decode()
+    assert "_dcc_widget=w0" in body  # StatWidget auto-refreshes
+    assert "dcc:refresh from:body" in body
+
+
 def test_custom_page_routed_and_in_nav(client, rf, urlconf, staff):
     client.force_login(staff)
     assert client.get("/app/reports/").status_code == 200

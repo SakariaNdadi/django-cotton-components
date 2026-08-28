@@ -3,11 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, HttpResponseBase
+from django.http import Http404, HttpResponse, HttpResponseBase
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 
+from .. import htmx
 from ..tables.views import TableMixin
 
 if TYPE_CHECKING:
@@ -51,10 +52,34 @@ class DashboardPage(_PanelPage):
     def widgets(self, request: HttpRequest) -> list[Any]:
         return []
 
+    def _widget_instances(self, request: HttpRequest) -> list[Any]:
+        if not hasattr(self, "_widget_cache"):
+            widgets = self.widgets(request)
+            for index, widget in enumerate(widgets):
+                if not widget._config.get("id"):
+                    widget._auto_id = f"w{index}"
+            self._widget_cache = widgets
+        return self._widget_cache
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        widget_id = request.GET.get("_dcc_widget")
+        if htmx.is_htmx(request) and widget_id:
+            for widget in self._widget_instances(request):
+                if widget.get_id() == widget_id:
+                    return HttpResponse(widget.render_content(request))
+            raise Http404("No such widget")
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["page_title"] = self.page_title
-        ctx["widgets"] = [w.render(self.request) for w in self.widgets(self.request)]
+        widgets = self._widget_instances(self.request)
+        ctx["widgets"] = [w.render(self.request) for w in widgets]
+        assets: dict[str, Any] = {}
+        for widget in widgets:
+            for asset in widget.get_assets():
+                assets[asset.url] = asset
+        ctx["widget_assets"] = list(assets.values())
         return ctx
 
 

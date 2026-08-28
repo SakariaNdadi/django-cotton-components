@@ -292,6 +292,9 @@
 .dcc-widget__icon { color: var(--dcc-muted); }
 .dcc-widget__value { font-size: 1.75rem; font-weight: 650; margin-top: 0.25rem; }
 .dcc-widget__desc { font-size: 0.8125rem; color: var(--dcc-muted); margin-top: 0.25rem; }
+.dcc-widget__content { display: block; }
+.dcc-chart-canvas { position: relative; height: 240px; margin-top: 0.75rem; }
+.dcc-chart-canvas > canvas { position: absolute; inset: 0; }
 .dcc-chart { display: grid; gap: 0.4rem; margin-top: 0.75rem; }
 .dcc-chart__row { display: grid; grid-template-columns: 5rem 1fr 2.5rem; align-items: center; gap: 0.5rem; font-size: 0.8125rem; }
 .dcc-chart__track { background: var(--dcc-surface); border-radius: 999px; height: 0.6rem; overflow: hidden; }

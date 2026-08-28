@@ -109,6 +109,21 @@ class Panel:
                         ),
                     }
                 )
+
+            from ..studio.models import PanelDashboard
+
+            for dashboard in PanelDashboard.objects.filter(is_enabled=True):
+                items.append(
+                    {
+                        "label": dashboard.label or dashboard.slug.title(),
+                        "icon": dashboard.nav_icon,
+                        "group": dashboard.nav_group,
+                        "url": reverse(
+                            f"{self.namespace}:studio-dashboard",
+                            kwargs={"dash_slug": dashboard.slug},
+                        ),
+                    }
+                )
         return items
 
     def _bind(self, base: type[Any], resource: type[Resource], suffix: str) -> Any:
@@ -151,6 +166,11 @@ class Panel:
             return view_cls.as_view()  # type: ignore[attr-defined]
 
         return [
+            path(
+                "dash/<slug:dash_slug>/",
+                make(spages.DynamicDashboardPage, "Dashboard"),
+                name="studio-dashboard",
+            ),
             path("d/<slug:spec_slug>/", make(spages.DynamicList, "List"), name="studio-list"),
             path(
                 "d/<slug:spec_slug>/new/",

@@ -179,6 +179,49 @@ class Command(BaseCommand):
             },
         )
 
+    def _seed_panel_dashboard(self):
+        """A widget dashboard defined entirely from stored JSON."""
+        from django_cotton_components.studio.models import PanelDashboard
+
+        PanelDashboard.objects.update_or_create(
+            slug="metrics",
+            defaults={
+                "label": "Metrics",
+                "nav_icon": "chart-line",
+                "nav_group": "Studio (no-code)",
+                "widgets": [
+                    {
+                        "type": "StatWidget",
+                        "name": "Articles",
+                        "config": {
+                            "icon": "newspaper",
+                            "query": {"model": "demo.Article", "aggregate": "count"},
+                        },
+                    },
+                    {
+                        "type": "StatWidget",
+                        "name": "Comments",
+                        "config": {
+                            "icon": "comments",
+                            "query": {"model": "demo.Comment", "aggregate": "count"},
+                        },
+                    },
+                    {
+                        "type": "ChartWidget",
+                        "name": "Articles by status",
+                        "config": {
+                            "kind": "doughnut",
+                            "query": {
+                                "model": "demo.Article",
+                                "group_by": "status",
+                                "aggregate": "count",
+                            },
+                        },
+                    },
+                ],
+            },
+        )
+
     def handle(self, *args, **opts):
         rng = random.Random(42)
 
@@ -239,6 +282,7 @@ class Command(BaseCommand):
             made += 1
 
         self._seed_dashboard_spec()
+        self._seed_panel_dashboard()
 
         if opts["big"]:
             bulk = [

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import FieldDoesNotExist, ValidationError
 
 _SCALAR = (str, int, float, bool, type(None))
 
@@ -115,6 +115,95 @@ def build_infolist_from_spec(model: type, spec: dict[str, Any]) -> Any:
         return Infolist.make().model(model)
     built = [_instantiate(ENTRY_TYPES, node, f"entries[{i}]") for i, node in enumerate(entries)]
     return Infolist.make().schema(built)
+
+
+def build_widgets_from_spec(nodes: list[dict[str, Any]]) -> list[Any]:
+    from ..panels import WIDGET_TYPES
+
+    return [_instantiate(WIDGET_TYPES, node, f"widgets[{i}]") for i, node in enumerate(nodes or [])]
+
+
+def validate_widgets_spec(nodes: Any) -> None:
+    """Raise ``ValidationError`` if any widget node is malformed. Called from
+    ``PanelDashboard.clean``."""
+    if not isinstance(nodes, list):
+        raise ValidationError("widgets: expected a list of widget nodes")
+    from ..panels import WIDGET_TYPES
+
+    for i, node in enumerate(nodes):
+        _instantiate(WIDGET_TYPES, node, f"widgets[{i}]")
+        query = (node.get("config") or {}).get("query") if isinstance(node, dict) else None
+        if query is not None:
+            _check_query_shape(query, f"widgets[{i}].query")
+
+
+# -- constrained aggregation for widget .query({...}) -----------------
+
+_AGGREGATES = frozenset({"count", "sum", "avg", "min", "max"})
+
+
+def _model_from_label(label: str, where: str) -> Any:
+    from django.apps import apps
+
+    from ..conf import dcc_settings
+
+    if label not in set(dcc_settings.STUDIO_MODELS):
+        raise ValidationError(f"{where}: model {label!r} is not listed in DCC['STUDIO_MODELS']")
+    try:
+        return apps.get_model(label)
+    except (ValueError, LookupError) as exc:
+        raise ValidationError(f"{where}: cannot resolve model {label!r}: {exc}") from None
+
+
+def _require_field(model: Any, name: str, where: str) -> None:
+    try:
+        model._meta.get_field(name)
+    except FieldDoesNotExist:
+        raise ValidationError(f"{where}: {model.__name__} has no field {name!r}") from None
+
+
+def _check_query_shape(spec: Any, where: str = "query") -> Any:
+    if not isinstance(spec, dict):
+        raise ValidationError(f"{where}: expected an object")
+    model = _model_from_label(str(spec.get("model", "")), where)
+    aggregate = spec.get("aggregate", "count")
+    if aggregate not in _AGGREGATES:
+        raise ValidationError(f"{where}: aggregate must be one of {sorted(_AGGREGATES)}")
+    if aggregate != "count":
+        field = spec.get("aggregate_field")
+        if not field:
+            raise ValidationError(f"{where}: {aggregate} needs 'aggregate_field'")
+        _require_field(model, str(field), where)
+    return model
+
+
+def resolve_series_query(spec: dict[str, Any]) -> list[tuple[Any, Any]]:
+    """``{model, group_by, aggregate, aggregate_field?, limit?}`` -> ``[(label, value)]``."""
+    from django.db.models import Avg, Count, Max, Min, Sum
+
+    model = _check_query_shape(spec)
+    group_by = str(spec.get("group_by", ""))
+    _require_field(model, group_by, "query")
+    aggregate = spec.get("aggregate", "count")
+    funcs = {"count": Count, "sum": Sum, "avg": Avg, "min": Min, "max": Max}
+    expr = Count("pk") if aggregate == "count" else funcs[aggregate](str(spec["aggregate_field"]))
+    limit = int(spec.get("limit", 50))
+    rows = model._default_manager.values(group_by).annotate(_value=expr).order_by(group_by)[:limit]
+    return [(row[group_by], row["_value"]) for row in rows]
+
+
+def resolve_stat_query(spec: dict[str, Any]) -> Any:
+    """Like :func:`resolve_series_query` but no ``group_by`` — a single scalar."""
+    from django.db.models import Avg, Max, Min, Sum
+
+    model = _check_query_shape(spec)
+    aggregate = spec.get("aggregate", "count")
+    if aggregate == "count":
+        return model._default_manager.count()
+    funcs = {"sum": Sum, "avg": Avg, "min": Min, "max": Max}
+    field = str(spec["aggregate_field"])
+    result = model._default_manager.aggregate(_value=funcs[aggregate](field))
+    return result["_value"]
 
 
 def validate_spec(spec: dict[str, Any]) -> None:

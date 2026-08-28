@@ -4,6 +4,31 @@
  * No network calls: the select filters options already in the page.
  */
 (function () {
+  // Widget renderer registry. A charting library registers a function that
+  // draws into a mount node given the widget's JSON payload. Defined before
+  // alpine:init so a third-party <script> can call it at any time:
+  //   window.dccWidgets.register("apexcharts", (node, payload) => { ... })
+  window.dccWidgets = window.dccWidgets || {
+    renderers: {},
+    register: function (name, fn) {
+      this.renderers[name] = fn;
+    },
+  };
+
+  // Chart.js is the built-in renderer. It may `defer` in after Alpine, so
+  // register lazily on first use rather than at alpine:init.
+  function ensureChartjsRenderer() {
+    if (!window.dccWidgets.renderers.chartjs && window.Chart) {
+      window.dccWidgets.register("chartjs", function (canvas, payload) {
+        return new window.Chart(canvas, {
+          type: payload.type,
+          data: payload.data,
+          options: payload.options,
+        });
+      });
+    }
+  }
+
   function register() {
     if (!window.Alpine) return;
 
@@ -333,6 +358,54 @@
     function cssEscape(value) {
       return String(value).replace(/["\\]/g, "\\$&");
     }
+
+    // Dashboard chart widget. Reads a json_script payload (#<id>-data) and hands
+    // it to the registered renderer for payload.library, drawing into
+    // <canvas x-ref="canvas">. htmx swaps the whole #<id>-content fragment on
+    // refresh/poll, so init() re-runs on fresh nodes; destroy() tears the
+    // instance down so Chart.js does not leak the canvas.
+    window.Alpine.data("dccChart", (elId) => ({
+      _instance: null,
+      init() {
+        this._draw();
+      },
+      destroy() {
+        if (this._instance && typeof this._instance.destroy === "function") {
+          this._instance.destroy();
+        }
+        this._instance = null;
+      },
+      _payload() {
+        try {
+          const el = document.getElementById(elId);
+          return el ? JSON.parse(el.textContent) : null;
+        } catch (e) {
+          return null;
+        }
+      },
+      _draw(attempt) {
+        attempt = attempt || 0;
+        const payload = this._payload();
+        const canvas = this.$refs.canvas;
+        if (!payload || !canvas) return;
+        ensureChartjsRenderer();
+        const renderer = window.dccWidgets.renderers[payload.library];
+        if (!renderer) {
+          // Chart.js may still be loading (defer, after Alpine). Retry briefly.
+          if (payload.library === "chartjs" && attempt < 50) {
+            setTimeout(() => this._draw(attempt + 1), 100);
+          }
+          return;
+        }
+        // A stale Chart.js instance may still own this canvas after a swap.
+        if (window.Chart && typeof window.Chart.getChart === "function") {
+          const prior = window.Chart.getChart(canvas);
+          if (prior) prior.destroy();
+        }
+        this.destroy();
+        this._instance = renderer(canvas, payload) || null;
+      },
+    }));
 
     window.Alpine.data("dccUpload", () => ({
       preview: "",

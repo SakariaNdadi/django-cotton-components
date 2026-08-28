@@ -1,12 +1,5 @@
-<div class="dcc-widget dcc-widget--chart" style="--dcc-widget-span: {{ span }}">
-  <div class="dcc-widget__label">{{ label }}</div>
-  <div class="dcc-chart">
-    {% for bar in bars %}
-    <div class="dcc-chart__row">
-      <span class="dcc-chart__key">{{ bar.label }}</span>
-      <span class="dcc-chart__track"><span class="dcc-chart__fill" style="width: {{ bar.pct }}%"></span></span>
-      <span class="dcc-chart__num">{{ bar.value }}</span>
-    </div>
-    {% endfor %}
-  </div>
+<div class="dcc-widget__label">{{ label }}</div>
+<div class="dcc-chart-canvas" x-data="dccChart('{{ payload_id }}')">
+  {{ payload|json_script:payload_id }}
+  <canvas x-ref="canvas"></canvas>
 </div>

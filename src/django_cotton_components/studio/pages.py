@@ -6,7 +6,8 @@ from django.http import Http404, HttpResponseBase
 
 from ..panels import pages as panel_pages
 from ..panels.pages import _ResourcePage
-from .models import DashboardSpec
+from .deserialize import build_widgets_from_spec
+from .models import DashboardSpec, PanelDashboard
 from .resource import DynamicResource
 
 if TYPE_CHECKING:
@@ -52,3 +53,18 @@ class DynamicEdit(_ResolveSpec, panel_pages.EditRecord):
 
 class DynamicDelete(_ResolveSpec, panel_pages.DeleteRecord):
     pass
+
+
+class DynamicDashboardPage(panel_pages.DashboardPage):
+    """Serve a stored :class:`PanelDashboard` row as a widget dashboard."""
+
+    def dispatch(self, request: Any, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        try:
+            self._spec = PanelDashboard.objects.get(slug=kwargs.get("dash_slug"), is_enabled=True)
+        except PanelDashboard.DoesNotExist:
+            raise Http404("No such dashboard") from None
+        self.page_title = self._spec.label or self._spec.slug.title()
+        return super().dispatch(request, *args, **kwargs)
+
+    def widgets(self, request: Any) -> list[Any]:
+        return build_widgets_from_spec(self._spec.widgets)
