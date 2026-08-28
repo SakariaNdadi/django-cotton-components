@@ -122,6 +122,63 @@ class Command(BaseCommand):
         )
         parser.add_argument("--no-images", action="store_true", help="skip avatar/cover generation")
 
+    def _seed_dashboard_spec(self):
+        """A resource defined entirely from stored JSON — no Python subclass."""
+        from django_cotton_components.studio.models import DashboardSpec
+
+        DashboardSpec.objects.update_or_create(
+            slug="comments",
+            defaults={
+                "label": "Comments",
+                "model": "demo.Comment",
+                "nav_icon": "comments",
+                "nav_group": "Studio (no-code)",
+                "table": {
+                    "columns": [
+                        {
+                            "type": "TextColumn",
+                            "name": "author_name",
+                            "config": {"label": "By", "sortable": True},
+                        },
+                        {
+                            "type": "TextColumn",
+                            "name": "article.title",
+                            "config": {"label": "Article", "limit": 40},
+                        },
+                        {"type": "TextColumn", "name": "body", "config": {"limit": 80}},
+                        {
+                            "type": "BooleanColumn",
+                            "name": "approved",
+                            "config": {"labels": ["✓", "—"]},
+                        },
+                    ],
+                    "filters": [{"type": "TernaryFilter", "name": "approved"}],
+                    "default_sort": "author_name",
+                },
+                "schema": {
+                    "fields": ["article", "author_name", "body", "approved"],
+                    "layout": [
+                        {"type": "Select", "name": "article"},
+                        {"type": "TextInput", "name": "author_name", "config": {"required": True}},
+                        {"type": "Textarea", "name": "body"},
+                        {"type": "Toggle", "name": "approved"},
+                    ],
+                },
+                "infolist": {
+                    "entries": [
+                        {"type": "TextEntry", "name": "author_name", "config": {"label": "Author"}},
+                        {
+                            "type": "TextEntry",
+                            "name": "article.title",
+                            "config": {"label": "Article"},
+                        },
+                        {"type": "TextEntry", "name": "body"},
+                        {"type": "BooleanEntry", "name": "approved"},
+                    ]
+                },
+            },
+        )
+
     def handle(self, *args, **opts):
         rng = random.Random(42)
 
@@ -141,8 +198,8 @@ class Command(BaseCommand):
 
         authors = []
         for name, email in AUTHORS:
-            author, created = Author.objects.get_or_create(name=name, defaults={"email": email})
-            if created and not opts["no_images"]:
+            author, _ = Author.objects.get_or_create(name=name, defaults={"email": email})
+            if not author.avatar and not opts["no_images"]:
                 author.avatar.save(f"{slugify(name)}.png", _avatar(name), save=True)
             authors.append(author)
 
@@ -180,6 +237,8 @@ class Command(BaseCommand):
                     approved=rng.random() < 0.7,
                 )
             made += 1
+
+        self._seed_dashboard_spec()
 
         if opts["big"]:
             bulk = [

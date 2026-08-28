@@ -19,7 +19,7 @@
         {% for label, urlname, icon, match in items %}
           <a class="demo-nav {% if demo_current in match %}is-active{% endif %}"
              href="{% url urlname %}">
-            <span class="demo-nav__icon" aria-hidden="true">{{ icon|slice:':1'|upper }}</span>
+            <span class="demo-nav__icon" aria-hidden="true">{% dcc_icon icon %}</span>
             {{ label }}
           </a>
         {% endfor %}

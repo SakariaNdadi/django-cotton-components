@@ -170,6 +170,67 @@ def test_date_column_since():
     assert "ago" in out
 
 
+def test_stream_mode_never_counts(articles, settings):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    with CaptureQueriesContext(connection) as cap:
+        str(_table(articles).render_content(req))
+    joined = " ".join(q["sql"].lower() for q in cap.captured_queries)
+    assert "count(" not in joined
+
+
+def test_stream_mode_appends_via_cursor(articles, settings):
+    # 6 rows, per_page 2 -> first fragment has 2 rows + a "load more" sentinel
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2}
+    table = _table(articles).paginate([2]).default_sort("title")
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(table.render_content(req))
+    assert frag.count("data-dcc-row") == 2
+    assert "dcc-table__more" in frag and "hx-get" in frag
+
+    # follow the cursor
+    import re
+
+    token = re.search(r"t_article_after=([^&\"]+)", frag).group(1)
+    req2 = RequestFactory().get(
+        "/x/", {"_dcc_table": "article", "_dcc_rows": "1", "t_article_after": token}
+    )
+    rows = str(table.render_content(req2))
+    assert "<table" not in rows
+    assert rows.count("data-dcc-row") == 2
+
+
+def test_cursor_encode_decode_roundtrip_and_bad_token():
+    from django_cotton_components.tables import cursor
+
+    tok = cursor.encode("2024-01-01", 7)
+    assert cursor.decode(tok) == ("2024-01-01", 7)
+    assert cursor.decode(None) is None
+    assert cursor.decode("!!!not base64!!!") is None
+
+
+def test_cursor_paginate_descending(articles):
+    from django_cotton_components.tables import cursor
+
+    first, token = cursor.paginate(
+        articles, sort_field="title", descending=True, after=None, per_page=2
+    )
+    assert [a.title for a in first] == ["Piece 5", "Piece 4"]
+    assert token is not None
+    nxt, _ = cursor.paginate(articles, sort_field="title", descending=True, after=token, per_page=2)
+    assert [a.title for a in nxt] == ["Piece 3", "Piece 2"]
+
+
+def test_page_numbers_strategy_still_counts(articles, settings):
+    settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 2}
+    req = RequestFactory().get("/x/", {"_dcc_table": "article"})
+    frag = str(_table(articles).page_numbers().render_content(req))
+    assert "Page 1 of" in frag
+
+
 def test_client_rows_json_is_valid(articles, settings, soup):
     settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
     html = str(_table(articles).render(RequestFactory().get("/")))

@@ -1,0 +1,4 @@
+<label class="dcc-check">
+  <input type="checkbox"{% if input_name %} name="{{ input_name }}"{% endif %}{% if value %} value="{{ value }}"{% endif %}{% if checked %} checked{% endif %} {{ attrs }}>
+  {% if label %}<span class="dcc-check__label">{{ label }}</span>{% endif %}
+</label>

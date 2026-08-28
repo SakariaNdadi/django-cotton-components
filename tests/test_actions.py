@@ -106,6 +106,34 @@ def test_bulk_action_rescopes_to_filtered_queryset(data):
     assert seen["n"] == 1  # only the one live article, not all four
 
 
+def test_bulk_select_all_matching_uses_the_filtered_queryset(data):
+    _, arts = data
+    Article.objects.filter(pk=arts[0].pk).update(status="live")
+    Article.objects.filter(pk=arts[1].pk).update(status="live")
+    seen = {}
+
+    def run(records):
+        # records is the queryset itself (unmaterialised) when select_all
+        seen["type"] = type(records).__name__
+        seen["n"] = records.count() if hasattr(records, "count") else len(records)
+
+    bulk = BulkAction.make("archive").action(run)
+    table = (
+        Table.make(Article.objects.all())
+        .columns([TextColumn.make("title")])
+        .id("art")
+        .filters([SelectFilter.make("status").options(Article.Status.choices)])
+        .bulk_actions([bulk])
+    )
+    table.render(RequestFactory().get("/", {"t_art_f_status": "live"}))
+
+    req = RequestFactory().post("/x/?t_art_f_status=live&select_all=1", {"select_all": "1"})
+    req.user = AnonymousUser()
+    resp = ActionView.as_view()(req, owner_key="table-art", action_name="archive")
+    assert resp.status_code == 204
+    assert seen["n"] == 2  # both live rows, never a pk list
+
+
 def test_action_with_schema_renders_modal_on_get(data):
     from django_cotton_components.schemas import Schema, TextInput
     from tests.testapp.forms import ArticleForm

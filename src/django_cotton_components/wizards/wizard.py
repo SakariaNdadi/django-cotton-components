@@ -79,12 +79,29 @@ class WizardView(SessionWizardView):  # type: ignore[misc]
     def _step(self, name: str) -> WizardStep:
         return next(s for s in self.steps_config if s.name == name)
 
+    @property
+    def wizard_id(self) -> str:
+        return f"dcc-wizard-{type(self).__name__.lower()}"
+
     def get_context_data(self, form: BaseForm, **kwargs: Any) -> dict[str, Any]:
+        from .. import htmx
+
         context = super().get_context_data(form=form, **kwargs)
         step = self._step(self.steps.current)
         context["schema_html"] = step.schema.render(request=self.request, form=form)
         context["step_titles"] = [(s.name, s.title or s.name.title()) for s in self.steps_config]
         context["current_step"] = self.steps.current
+        context["wizard_id"] = self.wizard_id
+        # Each step submits over htmx and swaps only the wizard node back in
+        # (hx-select pulls it out of the full page the view still renders, so
+        # the no-JS path is unchanged).
+        context["wizard_htmx"] = htmx.post(
+            self.request.path,
+            request=self.request,
+            target=f"#{self.wizard_id}",
+            select=f"#{self.wizard_id}",
+            swap="outerHTML",
+        )
         return context
 
     def render_done(self, form: BaseForm, **kwargs: Any) -> HttpResponse:

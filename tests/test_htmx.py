@@ -62,3 +62,13 @@ def test_is_htmx():
 def test_values_serialised():
     rendered = str(htmx.get("/x/", values={"page": 2}).render())
     assert 'hx-vals="{&quot;page&quot;: 2}"' in rendered or "hx-vals" in rendered
+
+
+def test_get_extras_render():
+    bag = htmx.get(
+        "/x/", sync="closest form:abort", select="#rows", include="[data-x]:checked"
+    ).render()
+    rendered = str(bag)
+    assert "hx-sync" in rendered
+    assert 'hx-select="#rows"' in rendered
+    assert "hx-include" in rendered

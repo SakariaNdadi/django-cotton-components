@@ -1,5 +1,5 @@
 <form method="{{ method|default:'post' }}"{% if enctype %} enctype="{{ enctype }}"{% endif %}{% if action %} action="{{ action }}"{% endif %}{% if form_id %} id="{{ form_id }}"{% endif %}>
   {% csrf_token %}
   {{ schema_html }}
-  {% if show_actions %}<div class="dcc-grid" style="--dcc-cols: 1"><button type="submit" class="dcc-btn dcc-btn--primary">{{ submit_label|default:'Save' }}</button></div>{% endif %}
+  {% if show_actions %}<div class="dcc-grid" style="--dcc-cols: 1"><c-dcc.button type="submit" variant="primary" label="{{ submit_label|default:'Save' }}" /></div>{% endif %}
 </form>

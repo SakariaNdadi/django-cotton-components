@@ -5,7 +5,7 @@
     {% csrf_token %}
     {{ schema_html }}
     <div class="dcc-panel__actions">
-      <button type="submit" class="dcc-btn dcc-btn--primary">Save</button>
+      <c-dcc.button type="submit" variant="primary" label="Save" />
     </div>
   </form>
 {% endblock %}

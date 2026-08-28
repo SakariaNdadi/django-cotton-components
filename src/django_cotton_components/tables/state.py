@@ -23,6 +23,7 @@ class TableState:
     search: str = ""
     page: int = 1
     per_page: int | None = None
+    after: str | None = None
     filters: dict[str, str] = field(default_factory=dict)
 
     @classmethod
@@ -53,6 +54,7 @@ class TableState:
             search=query.get(prefix + "search", "").strip(),
             page=page,
             per_page=per_page,
+            after=query.get(prefix + "after") or None,
             filters=filters,
         )
 
@@ -70,6 +72,8 @@ class TableState:
             params[p + "page"] = str(self.page)
         if self.per_page:
             params[p + "per_page"] = str(self.per_page)
+        if self.after:
+            params[p + "after"] = self.after
         for name, fvalue in self.filters.items():
             params[p + "f_" + name] = fvalue
         for key, override in overrides.items():
@@ -83,7 +87,7 @@ class TableState:
     def toggled_sort(self, column_name: str) -> str:
         """Params string for clicking a column header."""
         if self.sort == column_name and not self.descending:
-            return self.to_params(sort=f"-{column_name}", page=None)
+            return self.to_params(sort=f"-{column_name}", page=None, after=None)
         if self.sort == column_name and self.descending:
-            return self.to_params(sort=None, page=None)
-        return self.to_params(sort=column_name, page=None)
+            return self.to_params(sort=None, page=None, after=None)
+        return self.to_params(sort=column_name, page=None, after=None)

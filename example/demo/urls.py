@@ -10,6 +10,7 @@ urlpatterns = [
     path("articles/new/", views.ArticleCreateView.as_view(), name="article-create"),
     path("articles/<int:pk>/edit/", views.ArticleUpdateView.as_view(), name="article-edit"),
     path("wizard/", views.ArticleWizard.as_view(), name="wizard"),
+    path("components/", views.ComponentsView.as_view(), name="components"),
     path("login/", views.DemoLogin.as_view(), name="login"),
     path("logout/", views.DemoLogout.as_view(), name="logout"),
 ]

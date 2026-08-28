@@ -26,6 +26,33 @@ def test_no_literal_hx_attributes_in_templates():
     assert not offenders, offenders
 
 
+def test_no_hand_rolled_buttons_outside_primitives():
+    """Buttons come from the `ui` layer (or a cotton wrapper of it), not ad-hoc
+    ``<button class="dcc-btn">`` per template. A handful of component-internal
+    Alpine controls carry their own class and are exempt."""
+    exempt = {
+        "templates/cotton/dcc/button.html",
+        "templates/cotton/dcc/modal.html",
+        "templates/django_cotton_components/ui/button.html",
+        "templates/django_cotton_components/ui/menu.html",
+        "templates/django_cotton_components/ui/modal.html",
+        # component-internal controls with their own class (not dcc-btn)
+        "templates/django_cotton_components/controls/select.html",
+        "templates/django_cotton_components/controls/password.html",
+        "templates/django_cotton_components/layout/tabs.html",
+        # client-side sort header toggle — bare button, no dcc-btn
+        "templates/django_cotton_components/tables/_content.html",
+    }
+    offenders = []
+    for path in _template_files():
+        rel = str(path.relative_to(ROOT))
+        if rel in exempt:
+            continue
+        if 'class="dcc-btn' in path.read_text():
+            offenders.append(rel)
+    assert not offenders, offenders
+
+
 def test_no_django_interpolation_inside_alpine_data():
     """No {{ }} inside x-data='{ ... }' — that is the JS-injection footgun."""
     offenders = []
@@ -46,6 +73,7 @@ def test_mark_safe_only_at_reviewed_sites():
         "schemas/schema.py",
         "schemas/layout.py",
         "tables/columns.py",  # .allow_html() — documented opt-in, escaping is default
+        "icons/fontawesome.py",  # fixed markup + a setting-controlled asset URL
     }
     offenders = []
     for path in ROOT.rglob("*.py"):

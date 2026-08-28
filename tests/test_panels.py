@@ -3,7 +3,14 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Permission
 
-from django_cotton_components.panels import Panel, Resource
+from django_cotton_components.panels import (
+    ChartWidget,
+    DashboardPage,
+    Panel,
+    Resource,
+    StatWidget,
+)
+from django_cotton_components.panels.pages import _PanelPage
 from django_cotton_components.schemas import Schema, Section, TextInput
 from tests.testapp.forms import ArticleForm
 from tests.testapp.models import Article, Author
@@ -26,7 +33,23 @@ class ArticleResource(Resource):
         )
 
 
-panel = Panel("admin").path("app").resources([ArticleResource])
+class Dash(DashboardPage):
+    page_title = "Overview"
+
+    def widgets(self, request):
+        return [
+            StatWidget.make("Articles", Article.objects.count()).icon("newspaper"),
+            ChartWidget.make("By status").data([("Live", 3), ("Draft", 1)]),
+        ]
+
+
+class Reports(_PanelPage):
+    template_name = "django_cotton_components/panels/dashboard.html"
+    slug = "reports"
+    nav_label = "Reports"
+
+
+panel = Panel("admin").path("app").pages([Dash, Reports]).resources([ArticleResource])
 panel.auth(lambda r: r.user.is_authenticated)
 
 urlpatterns = [panel.mount()]
@@ -95,12 +118,44 @@ def test_view_page_infolist(client, urlconf, staff, author):
     assert b"dcc-infolist" in resp.content
 
 
+def test_delete_requires_permission_then_deletes(client, urlconf, staff, author, django_user_model):
+    art = Article.objects.create(title="Doomed", slug="doomed", status="draft", author=author)
+    client.force_login(staff)  # has view/add/change but NOT delete
+    assert client.get(f"/app/article/{art.pk}/delete/").status_code == 403
+
+    staff.user_permissions.add(Permission.objects.get(codename="delete_article"))
+    staff = django_user_model.objects.get(pk=staff.pk)  # drop the perm cache
+    client.force_login(staff)
+    assert client.get(f"/app/article/{art.pk}/delete/").status_code == 200
+    resp = client.post(f"/app/article/{art.pk}/delete/")
+    assert resp.status_code == 302
+    assert not Article.objects.filter(pk=art.pk).exists()
+
+
+def test_dashboard_page_renders_widgets(client, urlconf, staff):
+    client.force_login(staff)
+    resp = client.get("/app/")
+    assert resp.status_code == 200
+    assert b"dcc-widget--stat" in resp.content
+    assert b"dcc-widget--chart" in resp.content
+    assert b"Overview" in resp.content
+
+
+def test_custom_page_routed_and_in_nav(client, rf, urlconf, staff):
+    client.force_login(staff)
+    assert client.get("/app/reports/").status_code == 200
+    request = rf.get("/")
+    request.user = staff
+    labels = [i["label"] for i in panel.navigation(request)]
+    assert "Reports" in labels and "Dashboard" in labels
+
+
 def test_navigation_lists_permitted_resources(rf, urlconf, staff):
     request = rf.get("/")
     request.user = staff
     nav = panel.navigation(request)
-    assert nav[0]["label"] == "Articles"
-    assert nav[0]["url"].endswith("/article/")
+    articles = next(i for i in nav if i["label"] == "Articles")
+    assert articles["url"].endswith("/article/")
 
 
 def test_superuser_bypasses_permissions(client, urlconf, author, django_user_model):

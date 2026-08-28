@@ -13,24 +13,22 @@
 
   <div class="demo-card demo-formwrap">
     <div class="demo-card__body">
-      <div class="dcc-wizard">
+      <div class="dcc-wizard" id="{{ wizard_id }}">
         <ol class="dcc-wizard__steps">
           {% for name, title in step_titles %}
           <li class="dcc-wizard__step{% if name == current_step %} is-current{% endif %}">{{ title }}</li>
           {% endfor %}
         </ol>
-        <form method="post" enctype="multipart/form-data" class="dcc-form">
+        <form method="post" enctype="multipart/form-data" class="dcc-form" {{ wizard_htmx }}>
           {% csrf_token %}
           {{ wizard.management_form }}
           {{ schema_html }}
           <div class="dcc-wizard__nav">
             {% if wizard.steps.prev %}
-            <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}"
-              class="dcc-btn dcc-btn--secondary" formnovalidate>Back</button>
+            <c-dcc.button type="submit" variant="secondary" label="Back"
+              name="wizard_goto_step" value="{{ wizard.steps.prev }}" formnovalidate />
             {% endif %}
-            <button type="submit" class="dcc-btn dcc-btn--primary">
-              {% if wizard.steps.current == wizard.steps.last %}Finish &amp; publish{% else %}Continue{% endif %}
-            </button>
+            <c-dcc.button type="submit" variant="primary">{% if wizard.steps.current == wizard.steps.last %}Finish &amp; publish{% else %}Continue{% endif %}</c-dcc.button>
           </div>
         </form>
       </div>

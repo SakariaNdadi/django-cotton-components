@@ -1,0 +1,13 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header"><h1>Reports</h1></header>
+  <p>A custom page mounted with <code>Panel.pages([...])</code> — not tied to a resource.</p>
+  <table class="dcc-table__grid">
+    <thead><tr><th class="dcc-table__th">Author</th><th class="dcc-table__th">Articles</th></tr></thead>
+    <tbody>
+      {% for row in by_author %}
+      <tr class="dcc-table__row"><td class="dcc-table__td">{{ row.name }}</td><td class="dcc-table__td">{{ row.n }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

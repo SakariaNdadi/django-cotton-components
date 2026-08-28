@@ -19,18 +19,37 @@ _ALPINE_SRC = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
 
 
 @register.simple_tag
-def dcc_assets(*, alpine: bool = True) -> SafeString:
-    """Emit the component stylesheet and (optionally) the Alpine.js script tag.
+def dcc_assets(*, alpine: bool = True, htmx: bool = True, icons: bool = True) -> SafeString:
+    """Emit the component stylesheet plus the htmx, Alpine.js and icon assets.
 
-    Pass ``alpine=False`` if the host page already loads Alpine.
+    Pass ``alpine=False`` / ``htmx=False`` / ``icons=False`` if the host page
+    already loads them. Tables, actions and wizards drive their mutations through
+    htmx, so it is on by default.
     """
+    from ..htmx import HTMX_SRC
+    from ..icons import icon_assets
+
     parts = [f'<link rel="stylesheet" href="{static("dcc/dcc.css")}">']
+    if icons:
+        icon_html = str(icon_assets())
+        if icon_html:
+            parts.append(icon_html)
+    if htmx:
+        parts.append(f'<script src="{HTMX_SRC}" defer></script>')
     # dcc.js MUST load before Alpine so it can register its `alpine:init`
     # listener before Alpine starts and scans the DOM.
     parts.append(f'<script defer src="{static("dcc/dcc.js")}"></script>')
     if alpine:
         parts.append(f'<script defer src="{_ALPINE_SRC}"></script>')
     return mark_safe("\n".join(parts))  # noqa: S308  -- fixed strings + static() URL
+
+
+@register.simple_tag
+def dcc_icon(name: str, css_class: str = "") -> SafeString:
+    """Render a named icon through the active icon set."""
+    from django_cotton_components.icons import render_icon
+
+    return render_icon(name, css_class=css_class)
 
 
 @register.simple_tag(takes_context=True)

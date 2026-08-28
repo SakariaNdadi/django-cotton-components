@@ -1,0 +1,11 @@
+<form {{ post_attrs }}>
+  {% csrf_token %}
+  {% if description %}<p class="dcc-field__help">{{ description }}</p>{% endif %}
+  {% if select_all %}<input type="hidden" name="select_all" value="1">{% endif %}
+  {% for pk in record_ids %}<input type="hidden" name="records" value="{{ pk }}">{% endfor %}
+  {{ form_html }}
+  <div class="dcc-modal__actions">
+    {{ cancel_button }}
+    {{ confirm_button }}
+  </div>
+</form>

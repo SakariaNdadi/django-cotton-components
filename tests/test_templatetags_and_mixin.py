@@ -26,11 +26,17 @@ def test_dcc_assets_emits_css_and_js():
     assert "dcc/dcc.css" in out
     assert "dcc/dcc.js" in out
     assert "alpinejs" in out
+    assert "htmx" in out
 
 
 def test_dcc_assets_can_skip_alpine():
     out = Template("{% load dcc_tags %}{% dcc_assets alpine=False %}").render(Context())
     assert "alpinejs" not in out
+
+
+def test_dcc_assets_can_skip_htmx():
+    out = Template("{% load dcc_tags %}{% dcc_assets htmx=False %}").render(Context())
+    assert "htmx" not in out
 
 
 def test_dcc_form_tag_renders_form_with_csrf(rf):

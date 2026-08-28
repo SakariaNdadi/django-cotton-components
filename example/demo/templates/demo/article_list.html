@@ -2,7 +2,7 @@
 {% block title %}Articles{% endblock %}
 {% block crumbs %} / Articles{% endblock %}
 {% block topbar_actions %}
-  <a class="dcc-btn dcc-btn--primary" href="{% url 'demo:article-create' %}">New article</a>
+  <c-dcc.button variant="primary" href="{% url 'demo:article-create' %}" label="New article" icon="plus" />
 {% endblock %}
 
 {% block content %}

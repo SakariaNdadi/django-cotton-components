@@ -22,9 +22,17 @@ class ActionView(View):
             raise Http404("Unknown action")
         return found
 
-    def _targets(self, request: HttpRequest, owner: Any, action: Any) -> list[Any]:
+    def _targets(self, request: HttpRequest, owner: Any, action: Any) -> Any:
         scope = owner.get_action_queryset(request)
         if action.is_bulk:
+            select_all = (
+                request.POST.get("select_all") == "1" or request.GET.get("select_all") == "1"
+            )
+            if select_all:
+                # "every row matching the current filter" — the owner already
+                # scoped `scope` to those filters. Hand back the queryset itself
+                # (unmaterialised) so a callback can `.update()` it in one query.
+                return scope
             ids = request.POST.getlist("records") or request.GET.getlist("records")
             if not ids:
                 return []
@@ -45,7 +53,18 @@ class ActionView(View):
         form_html: Any = ""
         schema = action._config.get("schema")
         if schema is not None:
-            form_html = schema.render(request=request, form=schema.build_form())
+            instance = records[0] if records and not action.is_bulk else None
+            form_html = schema.render(request=request, form=schema.build_form(instance=instance))
+        else:
+            content = action._config.get("modal_content")
+            if callable(content):
+                from ..core.context import RenderContext
+                from ..core.evaluate import evaluate
+
+                form_html = evaluate(
+                    content,
+                    RenderContext(request=request, record=records[0] if records else None),
+                )
         return HttpResponse(
             action.render_modal(request=request, records=records, form_html=form_html)
         )
@@ -59,7 +78,8 @@ class ActionView(View):
         data: dict[str, Any] = {}
         schema = action._config.get("schema")
         if schema is not None:
-            form = schema.build_form(data=request.POST)
+            instance = records[0] if records and not action.is_bulk else None
+            form = schema.build_form(data=request.POST, files=request.FILES, instance=instance)
             if not form.is_valid():
                 return HttpResponse(
                     action.render_modal(

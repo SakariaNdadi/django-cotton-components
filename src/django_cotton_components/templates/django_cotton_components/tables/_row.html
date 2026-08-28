@@ -1,0 +1,14 @@
+<tr class="dcc-table__row" data-dcc-row{% if mode == "client" %} data-dcc-pk="{{ row.pk }}" x-show="isVisible('{{ row.pk }}')"{% endif %}>
+  {% if has_bulk %}
+  <td class="dcc-table__td dcc-table__select">
+    <input type="checkbox" class="dcc-check__box" name="records" value="{{ row.pk }}"
+      data-dcc-bulk x-model="selected" aria-label="Select row">
+  </td>
+  {% endif %}
+  {% for cell in row.cells %}<td class="dcc-table__td">{{ cell }}</td>{% endfor %}
+  {% if row_actions %}
+  <td class="dcc-table__td dcc-table__actions">
+    {% for trigger in row.action_triggers %}{{ trigger }}{% endfor %}
+  </td>
+  {% endif %}
+</tr>

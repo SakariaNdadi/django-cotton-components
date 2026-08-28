@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from django_cotton_components.actions import Action, BulkAction
 from django_cotton_components.tables import (
@@ -21,7 +22,7 @@ def _author_cell(record):
     avatar = (
         format_html('<img class="demo-avatar" src="{}" alt="">', author.avatar.url)
         if author.avatar
-        else '<span class="demo-avatar"></span>'
+        else mark_safe('<span class="demo-avatar"></span>')
     )
     return format_html('<span class="demo-authorcell">{}{}</span>', avatar, author.name)
 
@@ -63,10 +64,19 @@ def article_table(request):
             [
                 Action.make("edit")
                 .label("Edit")
+                .icon("pen")
                 .variant("secondary")
                 .to_url(lambda record: reverse("demo:article-edit", args=[record.pk])),
+                Action.make("quick_edit")
+                .label("Quick edit")
+                .icon("pen-to-square")
+                .variant("secondary")
+                .modal(_quick_edit_schema())
+                .action(_save_quick_edit)
+                .success_notification("Article updated"),
                 Action.make("feature")
                 .label("Toggle ★")
+                .icon("star")
                 .variant("secondary")
                 .action(_toggle_featured)
                 .success_notification("Updated featured flag"),
@@ -76,12 +86,14 @@ def article_table(request):
             [
                 BulkAction.make("publish")
                 .label("Mark live")
+                .icon("rocket")
                 .requires_confirmation()
                 .modal_heading("Publish the selected articles?")
                 .action(lambda records: _bulk_status(records, "live"))
                 .success_notification("Articles published"),
                 BulkAction.make("archive")
                 .label("Archive")
+                .icon("box-archive")
                 .requires_confirmation()
                 .modal_heading("Archive the selected articles?")
                 .action(lambda records: _bulk_status(records, "archived"))
@@ -94,10 +106,36 @@ def article_table(request):
     )
 
 
+def _quick_edit_schema():
+    from django_cotton_components.schemas import Schema, Select, TextInput
+
+    from .forms import ArticleForm
+
+    return (
+        Schema.make()
+        .form(ArticleForm)
+        .strict()
+        .schema([TextInput.make("title").required(), Select.make("status")])
+    )
+
+
+def _save_quick_edit(record, data):
+    record.title = data["title"]
+    record.status = data["status"]
+    record.save(update_fields=["title", "status"])
+
+
 def _toggle_featured(record):
     record.featured = not record.featured
     record.save(update_fields=["featured"])
 
 
 def _bulk_status(records, status):
-    Article.objects.filter(pk__in=[r.pk for r in records]).update(status=status)
+    from django.db.models import QuerySet
+
+    qs = (
+        records
+        if isinstance(records, QuerySet)
+        else Article.objects.filter(pk__in=[r.pk for r in records])
+    )
+    qs.update(status=status)

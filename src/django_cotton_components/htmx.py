@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from django.http import HttpRequest
 
 HTMX_VERSION = 2
+HTMX_SRC = "https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
 
 Swap = Literal[
     "innerHTML", "outerHTML", "beforebegin", "afterbegin", "beforeend", "afterend", "delete", "none"
@@ -39,12 +40,15 @@ def _build(
     sync: str | None,
     headers: dict[str, str] | None,
     values: dict[str, Any] | None,
+    include: str | None = None,
 ) -> AttributeBag:
     bag = AttributeBag()
     bag.set(f"hx-{verb}", url)
     if target:
         bag.set("hx-target", target)
     bag.set("hx-swap", swap)
+    if include:
+        bag.set("hx-include", include)
     if trigger:
         bag.set("hx-trigger", trigger)
     if indicator:
@@ -75,6 +79,7 @@ def get(
     select: str | None = None,
     sync: str | None = None,
     values: dict[str, Any] | None = None,
+    include: str | None = None,
 ) -> AttributeBag:
     return _build(
         "get",
@@ -88,6 +93,7 @@ def get(
         sync=sync,
         headers=None,
         values=values,
+        include=include,
     )
 
 
@@ -102,6 +108,7 @@ def _mutate(
     indicator: str | None,
     confirm: str | None,
     values: dict[str, Any] | None,
+    select: str | None = None,
 ) -> AttributeBag:
     bag = _build(
         verb,
@@ -111,7 +118,7 @@ def _mutate(
         trigger=trigger,
         indicator=indicator,
         push_url=False,
-        select=None,
+        select=select,
         sync=None,
         headers={"X-CSRFToken": get_token(request)},
         values=values,
@@ -131,6 +138,7 @@ def post(
     indicator: str | None = None,
     confirm: str | None = None,
     values: dict[str, Any] | None = None,
+    select: str | None = None,
 ) -> AttributeBag:
     return _mutate(
         "post",
@@ -142,6 +150,7 @@ def post(
         indicator=indicator,
         confirm=confirm,
         values=values,
+        select=select,
     )
 
 

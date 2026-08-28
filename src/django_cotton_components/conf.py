@@ -26,6 +26,10 @@ DEFAULTS: dict[str, Any] = {
     "THUMBNAIL_BACKEND": None,
     # Prefix for htmx-driven internal endpoints (schemas, actions).
     "URL_PREFIX": "dcc/",
+    # Dotted path to the active icon set.
+    "ICON_SET": "django_cotton_components.icons.FontAwesome",
+    # Icon stylesheet URL. None => the set self-hosts / emits nothing.
+    "ICON_ASSET_URL": "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css",
 }
 
 
@@ -42,6 +46,9 @@ dcc_settings = _Settings()
 
 @receiver(setting_changed)
 def _reset_on_change(*, setting: str, **kwargs: Any) -> None:
-    # _Settings reads live each access, so nothing to cache-bust; hook kept so
-    # tests overriding DCC via ``override_settings`` are self-documenting.
-    return
+    # _Settings reads live each access, but the icon registry memoises the
+    # resolved set, so drop that cache when DCC changes under override_settings.
+    if setting == "DCC":
+        from .icons.registry import _reset_cache
+
+        _reset_cache()

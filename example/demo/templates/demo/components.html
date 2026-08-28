@@ -1,0 +1,82 @@
+{% extends "demo/base.html" %}
+{% load dcc_tags %}
+{% block title %}Components{% endblock %}
+{% block crumbs %} / Components{% endblock %}
+
+{% block content %}
+  <div class="demo-page-head">
+    <div>
+      <h1>Component gallery</h1>
+      <p>The primitives every other builder composes. All rendered server-side;
+        htmx / Alpine only where a control needs it.</p>
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card__head">Buttons</div>
+    <div class="demo-card__body demo-row">
+      <c-dcc.button variant="primary" label="Primary" />
+      <c-dcc.button variant="secondary" label="Secondary" />
+      <c-dcc.button variant="danger" label="Danger" icon="trash" />
+      <c-dcc.button variant="ghost" label="Ghost" />
+      <c-dcc.button variant="link" label="Link" />
+      <c-dcc.button variant="secondary" label="With icon" icon="rocket" />
+      <c-dcc.button variant="secondary" label="Disabled" disabled />
+      <c-dcc.button variant="secondary" size="sm" label="Small" />
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card__head">Badges</div>
+    <div class="demo-card__body demo-row">
+      <c-dcc.badge label="Default" />
+      <c-dcc.badge label="Success" variant="success" />
+      <c-dcc.badge label="Danger" variant="danger" />
+      <c-dcc.badge label="Muted" variant="muted" />
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card__head">Icons (Font Awesome)</div>
+    <div class="demo-card__body demo-row">
+      {% dcc_icon "house" %} {% dcc_icon "gear" %} {% dcc_icon "star" %}
+      {% dcc_icon "trash" %} {% dcc_icon "rocket" %} {% dcc_icon "comments" %}
+      {% dcc_icon "brands:github" %}
+    </div>
+  </div>
+
+  <div class="demo-card" x-data="{ open: false }">
+    <div class="demo-card__head">Modal &amp; menu</div>
+    <div class="demo-card__body demo-row">
+      <c-dcc.button variant="secondary" label="Open modal" x-on:click="open = true" />
+      <template x-if="open">
+        <div class="dcc-modal__overlay" x-on:click.self="open = false"
+          x-on:keydown.escape.window="open = false" role="dialog" aria-modal="true">
+          <div class="dcc-modal__dialog">
+            <div class="dcc-modal__header">
+              <h3 class="dcc-heading">A modal</h3>
+              <button type="button" class="dcc-btn dcc-btn--ghost dcc-btn--icon" x-on:click="open = false" aria-label="Close">✕</button>
+            </div>
+            <div class="dcc-modal__body">Modals are teleported to <code>&lt;body&gt;</code> with a focus trap.</div>
+          </div>
+        </div>
+      </template>
+
+      <div class="dcc-menu" x-data="{ mopen: false }">
+        <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="mopen = !mopen">Menu ▾</button>
+        <div class="dcc-menu__list dcc-menu__list--end" x-show="mopen" x-cloak x-on:click.outside="mopen = false">
+          <c-dcc.button variant="ghost" label="Edit" icon="pen" />
+          <c-dcc.button variant="ghost" label="Duplicate" icon="copy" />
+          <c-dcc.button variant="ghost" label="Delete" icon="trash" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-card__head">Form controls</div>
+    <div class="demo-card__body">
+      {{ controls_html }}
+    </div>
+  </div>
+{% endblock %}

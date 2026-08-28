@@ -2,7 +2,7 @@
 {% block content %}
   <header class="dcc-panel__header">
     <h1>{{ resource_label }}</h1>
-    {% if can_create %}<a class="dcc-btn dcc-btn--primary" href="{{ create_url }}">New</a>{% endif %}
+    {% if can_create %}<c-dcc.button variant="primary" href="{{ create_url }}" label="New" icon="plus" />{% endif %}
   </header>
   {{ table_html }}
 {% endblock %}

@@ -1,0 +1,17 @@
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.mypy_cache/
+.nox/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+htmlcov/
+coverage.xml
+.coverage
+graphify-out/
+example/db.sqlite3
+example/media/

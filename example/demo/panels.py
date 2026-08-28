@@ -1,18 +1,112 @@
-from django_cotton_components.panels import Panel, Resource
-from django_cotton_components.tables import BadgeColumn, BooleanColumn, DateColumn, TextColumn
-from django_cotton_components.tables.table import Table
+from django.db.models import Count
+from django.utils import timezone
 
-from .models import Article, Author
+from django_cotton_components.infolists import (
+    BadgeEntry,
+    BooleanEntry,
+    DateEntry,
+    Infolist,
+    TextEntry,
+)
+from django_cotton_components.panels import (
+    ChartWidget,
+    DashboardPage,
+    Panel,
+    Resource,
+    StatWidget,
+    TableWidget,
+)
+from django_cotton_components.panels.pages import _PanelPage
+from django_cotton_components.tables import (
+    BadgeColumn,
+    BooleanColumn,
+    DateColumn,
+    SelectFilter,
+    Table,
+    TernaryFilter,
+    TextColumn,
+)
+
+from .models import Article, Author, Comment
 from .schemas import article_schema
+
+
+def _recent_articles_table(request):
+    return (
+        Table.make(Article.objects.select_related("author").order_by("-created_at")[:5])
+        .id("dash-recent")
+        .columns(
+            [
+                TextColumn.make("title").limit(50),
+                TextColumn.make("author.name").label("Author"),
+                BadgeColumn.make("status"),
+            ]
+        )
+        .client_side()
+    )
+
+
+class DemoDashboard(DashboardPage):
+    page_title = "Overview"
+    nav_label = "Dashboard"
+    nav_icon = "gauge-high"
+
+    def widgets(self, request):
+        now = timezone.now()
+        since = now - timezone.timedelta(days=30)
+        by_status = dict(Article.objects.values_list("status").annotate(n=Count("id")))
+        return [
+            StatWidget.make("Articles", Article.objects.count())
+            .icon("newspaper")
+            .description(f"+{Article.objects.filter(created_at__gte=since).count()} in 30 days"),
+            StatWidget.make("Live", by_status.get("live", 0)).icon("tower-broadcast"),
+            StatWidget.make("Featured", Article.objects.filter(featured=True).count()).icon("star"),
+            StatWidget.make(
+                "Comments to review", Comment.objects.filter(approved=False).count()
+            ).icon("comments"),
+            ChartWidget.make("Articles by status").data(
+                [(s.title(), by_status.get(s, 0)) for s in ("live", "draft", "archived")]
+            ),
+            TableWidget.make("Recent articles", _recent_articles_table),
+        ]
+
+
+class ReportsPage(_PanelPage):
+    """A custom (non-resource) panel page — demonstrates Panel.pages()."""
+
+    template_name = "demo/panel_reports.html"
+    slug = "reports"
+    nav_label = "Reports"
+    nav_icon = "chart-column"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["by_author"] = (
+            Author.objects.annotate(n=Count("articles")).order_by("-n").values("name", "n")[:8]
+        )
+        return ctx
 
 
 class ArticleResource(Resource):
     model = Article
-    navigation_icon = "grid"
+    navigation_icon = "newspaper"
 
     @classmethod
     def build_schema(cls, *, request):
         return article_schema()
+
+    @classmethod
+    def build_infolist(cls, *, request):
+        return Infolist.make().schema(
+            [
+                TextEntry.make("title"),
+                TextEntry.make("author.name").label("Author"),
+                BadgeEntry.make("status").colors({"live": "success", "archived": "muted"}),
+                BooleanEntry.make("featured"),
+                DateEntry.make("created_at").since(),
+                TextEntry.make("body").placeholder("(no body)"),
+            ]
+        )
 
     @classmethod
     def build_table(cls, *, request):
@@ -30,6 +124,13 @@ class ArticleResource(Resource):
                     DateColumn.make("created_at").since().sortable(),
                 ]
             )
+            .filters(
+                [
+                    SelectFilter.make("status").options(Article.Status.choices),
+                    TernaryFilter.make("featured"),
+                ]
+            )
+            .searchable()
             .default_sort("-created_at")
         )
 
@@ -49,12 +150,15 @@ class AuthorResource(Resource):
                     TextColumn.make("email").searchable(),
                 ]
             )
+            .searchable()
         )
 
 
 admin_panel = (
     Panel("admin")
     .path("panel")
+    .pages([DemoDashboard, ReportsPage])
     .resources([ArticleResource, AuthorResource])
+    .dynamic()  # also serve DashboardSpec rows at /panel/d/<slug>/
     .auth(lambda r: r.user.is_authenticated)
 )

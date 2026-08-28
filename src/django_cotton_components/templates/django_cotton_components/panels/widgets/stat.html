@@ -1,0 +1,8 @@
+<div class="dcc-widget dcc-widget--stat" style="--dcc-widget-span: {{ span }}">
+  <div class="dcc-widget__head">
+    <span class="dcc-widget__label">{{ label }}</span>
+    {% if icon_html %}<span class="dcc-widget__icon">{{ icon_html }}</span>{% endif %}
+  </div>
+  <div class="dcc-widget__value">{{ value }}</div>
+  {% if description %}<div class="dcc-widget__desc">{{ description }}</div>{% endif %}
+</div>

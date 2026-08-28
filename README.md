@@ -11,16 +11,24 @@ wired to real `django.forms` validation.
 
 | Area | State |
 |---|---|
+| UI primitives (`Button`, `Badge`, `Icon`, `Checkbox`, `Modal`, `Menu`) + icon-set registry | ✅ |
 | Form schemas (`Schema`, `Section`, `Grid`, `Fieldset`, `Tabs`, fields) | ✅ |
 | django.forms bridge (decorate a `Form`/`ModelForm`, real validation) | ✅ |
+| Reactive searchable `Select` / `MultiSelect`; conditional visibility (zero requests) | ✅ |
 | Image upload + Pillow validation + processing + thumbnails | ✅ |
-| `htmx.py` adapter, request-budget-aware rendering | ✅ |
-| Conditional visibility compiled to Alpine (zero requests) | ✅ |
-| Tables — automatic client-side / server-side by row count | ✅ |
-| Actions (row / bulk / modal), key-addressed, authorize twice | ✅ |
-| Wizard (`dcc[wizard]`, django-formtools) | ✅ |
-| Panels / Resources (list · create · edit · view), admin-independent | ✅ |
-| Infolists, dashboard widgets, global search, relation managers | 🔜 |
+| `htmx.py` adapter — every `hx-*` from one file | ✅ |
+| Tables — auto client/server by row count; **keyset streaming** over millions (no `COUNT`) | ✅ |
+| Actions (row / bulk / modal / page), key-addressed, authorize twice; select-all-matching bulk | ✅ |
+| Wizard (`dcc[wizard]`, django-formtools) — **htmx step swapping** | ✅ |
+| Panels / Resources (list · create · edit · view · **delete**), admin-independent | ✅ |
+| Infolists; dashboard **widgets** + `DashboardPage`; custom pages | ✅ |
+| No-code resources from stored JSON (`django_cotton_components.studio`) | ✅ |
+| Global search, relation managers, a visual dashboard builder | 🔜 |
+
+## Docs
+
+[Tables](docs/tables.md) · [Panels & Resources](docs/panels.md) ·
+[Infolists](docs/infolists.md) · [No-code resources](docs/no-code.md)
 
 ## Install
 
@@ -36,8 +44,10 @@ INSTALLED_APPS = [
 ]
 ```
 
-Add `{% dcc_assets %}` to your base template `<head>` (emits the stylesheet, the
-small Alpine helpers, and — unless you pass `alpine=False` — Alpine itself).
+Add `{% dcc_assets %}` to your base template `<head>` — it emits the stylesheet,
+the small Alpine helpers, htmx, Alpine and the icon-set stylesheet. Pass
+`htmx=False` / `alpine=False` / `icons=False` for anything the host page already
+loads. For the no-code seam, also add `"django_cotton_components.studio"`.
 
 ## Quick start
 

@@ -17,10 +17,8 @@
         {% csrf_token %}
         {{ schema_html }}
         <div class="demo-form-foot">
-          <a class="dcc-btn dcc-btn--secondary" href="{% url 'demo:article-list' %}">Cancel</a>
-          <button type="submit" class="dcc-btn dcc-btn--primary">
-            {% if is_edit %}Save changes{% else %}Create article{% endif %}
-          </button>
+          <c-dcc.button variant="secondary" href="{% url 'demo:article-list' %}" label="Cancel" />
+          <c-dcc.button type="submit" variant="primary">{% if is_edit %}Save changes{% else %}Create article{% endif %}</c-dcc.button>
         </div>
       </form>
     </div>

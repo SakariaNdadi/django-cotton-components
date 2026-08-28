@@ -1,12 +1,17 @@
 {% load dcc_tags %}
 <div id="{{ table_id }}-content"
   {% if mode == "client" %}x-data="dccTable('{{ config_id }}')"
-  x-on:dcc-table-search.window="search = $event.detail"
-  x-on:dcc-table-filter.window="setFilter($event.detail.name, $event.detail.value)"{% endif %}>
+  x-on:dcc-table-search.window="search = $event.detail"{% endif %}>
   {% if mode == "client" %}{{ client_config|json_script:config_id }}{% endif %}
   <table class="dcc-table__grid">
     <thead>
       <tr>
+        {% if has_bulk %}
+        <th scope="col" class="dcc-table__th dcc-table__select">
+          <input type="checkbox" class="dcc-check__box" aria-label="Select all rows"
+            x-on:change="toggleAll($event.target.checked)" x-bind:checked="allSelected">
+        </th>
+        {% endif %}
         {% for head in headers %}
         <th scope="col" class="dcc-table__th{% if head.sorted %} is-sorted-{{ head.sorted }}{% endif %}">
           {% if head.sortable and mode == "server" %}
@@ -20,18 +25,15 @@
       </tr>
     </thead>
     <tbody {% if mode == "client" %}x-ref="body"{% endif %}>
-      {% for row in rows %}
-      <tr class="dcc-table__row" data-dcc-row{% if mode == "client" %} data-dcc-pk="{{ row.pk }}" x-show="isVisible('{{ row.pk }}')"{% endif %}>
-        {% for cell in row.cells %}<td class="dcc-table__td">{{ cell }}</td>{% endfor %}
-        {% if row_actions %}
-        <td class="dcc-table__td dcc-table__actions">
-          {% for trigger in row.action_triggers %}{{ trigger }}{% endfor %}
-        </td>
-        {% endif %}
-      </tr>
+      {% for row in rows %}{% include "django_cotton_components/tables/_row.html" %}
       {% empty %}
       <tr><td class="dcc-table__td" colspan="{{ column_count }}">{{ empty_message }}</td></tr>
       {% endfor %}
+      {% if load_more_htmx %}
+      <tr class="dcc-table__more" {{ load_more_htmx }}>
+        <td class="dcc-table__td" colspan="{{ column_count }}"><span class="dcc-table__moretext">{{ load_more_label|default:"Loading…" }}</span></td>
+      </tr>
+      {% endif %}
       {% if mode == "client" %}
       <tr data-dcc-empty x-show="matchCount === 0" x-cloak>
         <td class="dcc-table__td" colspan="{{ column_count }}">{{ empty_message }}</td>
@@ -42,9 +44,9 @@
 
   {% if mode == "client" %}
   <nav class="dcc-table__pagination" x-show="totalPages() > 1" x-cloak>
-    <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="prevPage()" x-bind:disabled="page === 1">Previous</button>
+    <c-dcc.button variant="secondary" label="Previous" x-on:click="prevPage()" x-bind:disabled="page === 1" />
     <span x-text="`Page ${page} of ${totalPages()} · ${matchCount} rows`"></span>
-    <button type="button" class="dcc-btn dcc-btn--secondary" x-on:click="nextPage()" x-bind:disabled="page >= totalPages()">Next</button>
+    <c-dcc.button variant="secondary" label="Next" x-on:click="nextPage()" x-bind:disabled="page >= totalPages()" />
   </nav>
   {% elif pagination %}
   <nav class="dcc-table__pagination">

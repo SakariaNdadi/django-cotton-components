@@ -17,6 +17,47 @@ if TYPE_CHECKING:
     from .resource import Resource
 
 
+class _PanelPage(TemplateView):
+    """A page mounted on a panel that is not tied to a resource (dashboards,
+    custom pages). Subclass, set ``slug`` / ``nav_label`` / ``nav_icon``, and
+    override ``get_context_data`` or the page's own hooks."""
+
+    panel: Panel
+    slug: str = ""
+    nav_label: str = ""
+    nav_icon: str = ""
+    nav_group: str = ""
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        self.panel.check_access(request)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        ctx["panel"] = self.panel
+        ctx["nav"] = self.panel.navigation(self.request)
+        ctx["resource_label"] = self.nav_label or self.slug.title() or "Dashboard"
+        return ctx
+
+
+class DashboardPage(_PanelPage):
+    """A grid of :class:`~.widgets.Widget`. Override :meth:`widgets`."""
+
+    template_name = "django_cotton_components/panels/dashboard.html"
+    page_title = "Dashboard"
+    nav_label = "Dashboard"
+    nav_icon = "gauge-high"
+
+    def widgets(self, request: HttpRequest) -> list[Any]:
+        return []
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        ctx["page_title"] = self.page_title
+        ctx["widgets"] = [w.render(self.request) for w in self.widgets(self.request)]
+        return ctx
+
+
 class _ResourcePage(TemplateView):
     panel: Panel
     resource: type[Resource]
@@ -104,8 +145,26 @@ class ViewRecord(_ResourcePage):
         ctx = super().get_context_data(**kwargs)
         obj = self._object(self.request, self.kwargs)
         ctx["object"] = obj
-        ctx["fields"] = [
-            (f.verbose_name.title(), getattr(obj, f.name)) for f in self.resource.model._meta.fields
-        ]
+        ctx["infolist_html"] = self.resource.build_infolist(request=self.request).render(
+            request=self.request, record=obj
+        )
         ctx["edit_url"] = self._url("edit", pk=obj.pk)
+        ctx["delete_url"] = self._url("delete", pk=obj.pk)
+        ctx["can_delete"] = self.resource.can(self.request, "delete", obj)
         return ctx
+
+
+class DeleteRecord(_ResourcePage):
+    template_name = "django_cotton_components/panels/delete.html"
+    action = "delete"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        ctx["object"] = self._object(self.request, self.kwargs)
+        ctx["cancel_url"] = self._url("view", pk=self.kwargs["pk"])
+        return ctx
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        obj = self._object(request, kwargs)
+        obj.delete()
+        return redirect(self._url("list"))

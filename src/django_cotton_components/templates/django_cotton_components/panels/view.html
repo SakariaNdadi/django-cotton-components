@@ -2,11 +2,10 @@
 {% block content %}
   <header class="dcc-panel__header">
     <h1>{{ object }}</h1>
-    <a class="dcc-btn dcc-btn--secondary" href="{{ edit_url }}">Edit</a>
+    <div class="dcc-panel__actions">
+      <c-dcc.button variant="secondary" href="{{ edit_url }}" label="Edit" icon="pen" />
+      {% if can_delete %}<c-dcc.button variant="danger" href="{{ delete_url }}" label="Delete" icon="trash" />{% endif %}
+    </div>
   </header>
-  <dl class="dcc-infolist">
-    {% for label, value in fields %}
-    <div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
-    {% endfor %}
-  </dl>
+  {{ infolist_html }}
 {% endblock %}

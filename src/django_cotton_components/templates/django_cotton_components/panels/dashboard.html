@@ -1,0 +1,7 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header"><h1>{{ page_title }}</h1></header>
+  <div class="dcc-widgets">
+    {% for widget in widgets %}{{ widget }}{% endfor %}
+  </div>
+{% endblock %}

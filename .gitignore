@@ -39,3 +39,4 @@ example/.env
 
 # Node (Tailwind CLI for CSS build)
 node_modules/
+graphify-out/

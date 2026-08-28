@@ -1,0 +1,10 @@
+<div x-data="{ open: false }" x-on:keydown.escape="open = false"
+  {{ attrs }}>
+  <button type="button" class="dcc-btn dcc-btn--ghost dcc-btn--icon dcc-menu__trigger"
+    x-on:click="open = !open" x-bind:aria-expanded="open" aria-haspopup="menu"
+    {% if label %}aria-label="{{ label }}"{% endif %}>{{ icon_html }}</button>
+  <div class="dcc-menu__list dcc-menu__list--{{ align }}" x-show="open" x-cloak
+    x-transition x-on:click.outside="open = false" role="menu">
+    {% for item in items %}{{ item }}{% endfor %}
+  </div>
+</div>

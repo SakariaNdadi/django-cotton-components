@@ -1,0 +1,17 @@
+<div class="dcc-modal__overlay" x-data="{ open: true }" x-show="open" x-cloak
+  x-transition.opacity
+  x-on:keydown.escape.window="open = false"
+  x-on:click.self="open = false"
+  x-on:dcc-modal-close.window="open = false"
+  role="dialog" aria-modal="true"{% if heading %} aria-label="{{ heading }}"{% endif %}>
+  <div class="dcc-modal__dialog{% if size %} dcc-modal__dialog--{{ size }}{% endif %}"
+    x-trap.inert.noscroll="open" x-transition>
+    {% if heading %}
+    <div class="dcc-modal__header">
+      <h3 class="dcc-heading">{{ heading }}</h3>
+      <button type="button" class="dcc-btn dcc-btn--ghost dcc-btn--icon" x-on:click="open = false" aria-label="Close">✕</button>
+    </div>
+    {% endif %}
+    <div class="dcc-modal__body">{{ body_html|safe }}</div>
+  </div>
+</div>

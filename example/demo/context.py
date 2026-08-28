@@ -13,21 +13,25 @@ def shell(request):
         (
             "Overview",
             [
-                ("Dashboard", "demo:index", "home", {"index"}),
+                ("Dashboard", "demo:index", "gauge-high", {"index"}),
             ],
         ),
         (
             "Content",
             [
-                ("Articles", "demo:article-list", "table", {"article-list", "article-edit"}),
+                ("Articles", "demo:article-list", "table-list", {"article-list", "article-edit"}),
                 ("New article", "demo:article-create", "plus", {"article-create"}),
-                ("Publish wizard", "demo:wizard", "steps", {"wizard"}),
+                ("Publish wizard", "demo:wizard", "list-check", {"wizard"}),
+                ("Component gallery", "demo:components", "shapes", {"components"}),
             ],
         ),
         (
             "Admin panel",
             [
-                ("Articles resource", "dcc-panel-admin:article-list", "grid", set()),
+                ("Panel dashboard", "dcc-panel-admin:index", "gauge-high", set()),
+                ("Articles resource", "dcc-panel-admin:article-list", "table-cells", set()),
+                ("Authors resource", "dcc-panel-admin:author-list", "user", set()),
+                ("Reports (custom page)", "dcc-panel-admin:page-reports", "chart-column", set()),
                 ("Django admin", "admin:index", "lock", set()),
             ],
         ),

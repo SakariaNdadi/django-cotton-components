@@ -1,15 +1,18 @@
 {% extends "demo/base.html" %}
+{% load dcc_tags %}
 {% block title %}Dashboard{% endblock %}
 {% block topbar_actions %}
-  <a class="dcc-btn dcc-btn--secondary" href="{% url 'demo:wizard' %}">Publish wizard</a>
-  <a class="dcc-btn dcc-btn--primary" href="{% url 'demo:article-create' %}">New article</a>
+  <c-dcc.button variant="secondary" href="{% url 'demo:wizard' %}" label="Publish wizard" icon="list-check" />
+  <c-dcc.button variant="primary" href="{% url 'demo:article-create' %}" label="New article" icon="plus" />
 {% endblock %}
 
 {% block content %}
   <div class="demo-page-head">
     <div>
       <h1>Dashboard</h1>
-      <p>A working demo of the schema, table, action, wizard and panel builders.</p>
+      <p>Every builder in one app — schema forms, an auto client/server data table,
+        row &amp; bulk actions, a htmx wizard, panels with widgets, and a no-code
+        resource built from stored JSON.</p>
     </div>
   </div>
 
@@ -36,11 +39,35 @@
     </div>
   </div>
 
+  <div class="demo-card">
+    <div class="demo-card__head">Try every feature</div>
+    <ul class="demo-featurelist">
+      <li><a href="{% url 'demo:article-list' %}"><strong>Articles table</strong></a> —
+        filter by Status / Featured, search, sort, tick rows for bulk actions
+        (with “select every matching row”), row actions as a page, an inline toggle,
+        and a modal quick-edit. Seed <code>--big 60000</code> to see it switch to
+        streamed server-side scrolling (no COUNT, keyset cursor).</li>
+      <li><a href="{% url 'demo:article-create' %}"><strong>Schema form</strong></a> —
+        sections, searchable selects, a field that appears only when Status = Live,
+        and a Pillow-validated image upload. Works with JavaScript disabled.</li>
+      <li><a href="{% url 'demo:wizard' %}"><strong>Publish wizard</strong></a> —
+        steps advance over htmx (no full-page reload); per-step Django validation.</li>
+      <li><a href="{% url 'demo:components' %}"><strong>Component gallery</strong></a> —
+        every primitive: buttons, badges, icons, modal, menu, and all form controls.</li>
+      <li><a href="/panel/"><strong>Panel dashboard</strong></a> — stat / chart / table
+        widgets, a custom Reports page, and Article / Author resources with
+        list · create · edit · view · delete + a declared infolist.</li>
+      <li><a href="/panel/d/comments/"><strong>Comments (no-code)</strong></a> — a full
+        resource defined entirely by a stored <code>DashboardSpec</code> JSON row,
+        no Python subclass.</li>
+    </ul>
+  </div>
+
   <div class="demo-grid-2">
     <div class="demo-card">
       <div class="demo-card__head">
         Recent articles
-        <a class="dcc-btn dcc-btn--secondary" href="{% url 'demo:article-list' %}">Open table</a>
+        <c-dcc.button variant="secondary" href="{% url 'demo:article-list' %}" label="Open table" />
       </div>
       <ul class="demo-feed">
         {% for article in recent %}

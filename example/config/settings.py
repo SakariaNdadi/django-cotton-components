@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_cotton",
     "django_cotton_components",
+    "django_cotton_components.studio",
     "demo",
 ]
 

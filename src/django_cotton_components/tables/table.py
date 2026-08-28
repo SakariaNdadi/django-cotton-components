@@ -10,7 +10,7 @@ from django.utils.safestring import SafeString
 from .. import htmx as htmx_adapter
 from ..conf import dcc_settings
 from ..core.context import RenderContext
-from . import query
+from . import cursor, query
 from .state import TableState
 
 if TYPE_CHECKING:
@@ -75,13 +75,32 @@ class Table:
         self._config["mode"] = "client"
         return self
 
-    def server_side(self) -> Self:
+    def server_side(self, *, strategy: str | None = None) -> Self:
         self._config["mode"] = "server"
+        if strategy is not None:
+            self._config["page_strategy"] = strategy
+        return self
+
+    def page_numbers(self) -> Self:
+        """Classic numbered pagination (one ``COUNT(*)`` per render)."""
+        self._config["page_strategy"] = "pages"
+        return self
+
+    def stream(self) -> Self:
+        """Keyset pagination + append-on-scroll — safe over millions of rows."""
+        self._config["page_strategy"] = "more"
+        return self
+
+    def load_more_button(self) -> Self:
+        self._config["load_more_trigger"] = "click"
         return self
 
     def empty_message(self, text: str) -> Self:
         self._config["empty_message"] = text
         return self
+
+    def _page_strategy(self) -> str:
+        return self._config.get("page_strategy", "more")
 
     # -- introspection ------------------------------------------
 
@@ -222,12 +241,16 @@ class Table:
     ) -> dict[str, Any]:
         ctx = RenderContext(request=request)
         qs = query.apply_all(self._queryset, state, self._columns, self._filters)
+        has_bulk = bool(self._bulk_actions)
         common = {
             "table_id": self.table_id,
             "mode": mode,
             "headers": self._headers(request, state, mode),
-            "column_count": len(self._columns) + (1 if self._row_actions else 0),
+            "column_count": len(self._columns)
+            + (1 if self._row_actions else 0)
+            + (1 if has_bulk else 0),
             "row_actions": self._row_actions,
+            "has_bulk": has_bulk,
             "empty_message": self._config.get("empty_message", "No results."),
         }
 
@@ -243,20 +266,68 @@ class Table:
                 "config_id": f"{self.table_id}-config",
             }
 
-        paginator = Paginator(qs, state.per_page or self.per_page_choices[0])
-        page = paginator.get_page(state.page)
+        per_page = state.per_page or self.per_page_choices[0]
+
+        if self._page_strategy() == "pages":
+            paginator = Paginator(qs, per_page)
+            page = paginator.get_page(state.page)
+            return {
+                **common,
+                "rows": self._rendered_rows(list(page.object_list), ctx),
+                "pagination": self._pagination(request, state, page),
+            }
+
+        # keyset / append-on-scroll — no COUNT, no OFFSET
+        sort_field, descending = self._effective_sort(state)
+        records, next_token = cursor.paginate(
+            qs,
+            sort_field=sort_field,
+            descending=descending,
+            after=state.after,
+            per_page=per_page,
+        )
         return {
             **common,
-            "rows": self._rendered_rows(list(page.object_list), ctx),
-            "pagination": self._pagination(request, state, page),
+            "rows": self._rendered_rows(records, ctx),
+            "load_more_htmx": self._load_more(request, state, next_token),
+            "load_more_label": "Load more"
+            if self._config.get("load_more_trigger") == "click"
+            else "",
         }
+
+    def _effective_sort(self, state: TableState) -> tuple[str, bool]:
+        sortable = {c.name: c for c in self._columns if c.is_sortable}
+        column = sortable.get(state.sort or "")
+        if column is not None:
+            return column.sort_field(), state.descending
+        return "pk", state.descending
+
+    def _load_more(
+        self, request: HttpRequest | None, state: TableState, next_token: str | None
+    ) -> Any:
+        if not next_token:
+            return None
+        nxt = TableState(**{**state.__dict__, "after": next_token})
+        path = self._base_path(request)
+        params = f"{nxt.to_params()}&_dcc_table={self.table_id}&_dcc_rows=1"
+        trigger = self._config.get("load_more_trigger", "revealed")
+        return htmx_adapter.get(
+            f"{path}?{params}",
+            target="this",
+            swap="outerHTML",
+            trigger=trigger,
+        )
 
     def render_content(self, request: HttpRequest | None = None) -> SafeString:
         self._register()
         state = self._default_state(request)
         mode = self._resolve_mode(request)
         data = self._content_context(request, state, mode)
-        return SafeString(render_to_string(self.content_template, data, request=request))
+        rows_only = request is not None and request.GET.get("_dcc_rows") == "1"
+        template = (
+            "django_cotton_components/tables/_rows.html" if rows_only else self.content_template
+        )
+        return SafeString(render_to_string(template, data, request=request))
 
     def render(self, request: HttpRequest | None = None) -> SafeString:
         self._register()
@@ -264,22 +335,27 @@ class Table:
         mode = self._resolve_mode(request)
         searchable = self._config.get("searchable", any(c.is_searchable for c in self._columns))
 
+        marked_path = f"{self._base_path(request)}?_dcc_table={self.table_id}"
+
+        # Server mode: search round-trips on keyup. Client mode keeps search
+        # local (the rows are already in the page).
         toolbar_htmx = None
-        if mode == "server" and (searchable or self._filters):
+        if mode == "server" and searchable:
             toolbar_htmx = htmx_adapter.get(
-                self._base_path(request),
+                marked_path,
                 target=self.content_target,
                 swap="outerHTML",
-                push_url=True,
-                trigger="submit, keyup delay:300ms from:input[type=search]",
+                push_url=self._base_path(request),
+                trigger="keyup changed delay:300ms, search",
             )
 
-        # Filters always round-trip (client-side value/display equality is
-        # unreliable, esp. for boolean columns). Search stays client-side.
+        # Filters always round-trip in both modes (client-side value/display
+        # equality is unreliable, esp. for boolean columns) and must carry the
+        # _dcc_table marker so the mixin returns the fragment, not the whole page.
         filter_htmx = None
-        if mode == "client" and self._filters:
+        if self._filters:
             filter_htmx = htmx_adapter.get(
-                f"{self._base_path(request)}?_dcc_table={self.table_id}",
+                marked_path,
                 target=self.content_target,
                 swap="outerHTML",
                 push_url=self._base_path(request),
@@ -321,6 +397,7 @@ class Table:
             "owner_key_slug": self.key,
             "bulk_action_triggers": [a.render_trigger(request=request) for a in self._bulk_actions],
             "has_actions": bool(self._row_actions or self._bulk_actions),
+            "has_bulk": bool(self._bulk_actions),
             "content_html": self.render_content(request),
         }
         return SafeString(render_to_string(self.shell_template, data, request=request))

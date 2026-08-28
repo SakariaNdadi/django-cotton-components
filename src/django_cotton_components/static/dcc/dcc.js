@@ -7,32 +7,73 @@
   function register() {
     if (!window.Alpine) return;
 
+    // Reactive mirror of a form's field values, so `.visible_when(...)` (compiled
+    // to x-show="$dccField('name') == ...") re-evaluates when a sibling changes.
+    function fieldValue(el) {
+      if (el.type === "checkbox") return el.checked;
+      if (el.multiple) return Array.from(el.selectedOptions).map((o) => o.value);
+      return el.value;
+    }
+    window.Alpine.data("dccForm", () => ({
+      values: {},
+      init() {
+        const seen = new Set();
+        this.$root.querySelectorAll("[name]").forEach((el) => {
+          if (seen.has(el.name)) return;
+          seen.add(el.name);
+          this.values[el.name] = fieldValue(el);
+        });
+        this.$root.addEventListener("input", (e) => {
+          if (e.target.name) this.values[e.target.name] = fieldValue(e.target);
+        });
+        this.$root.addEventListener("change", (e) => {
+          if (e.target.name) this.values[e.target.name] = fieldValue(e.target);
+        });
+      },
+    }));
+    window.Alpine.magic("dccField", (el) => (name) => {
+      const host = el.closest(".dcc-form");
+      if (!host) return undefined;
+      const data = window.Alpine.$data(host);
+      return data && data.values ? data.values[name] : undefined;
+    });
+
+    // Searchable/reactive select. Wraps a real <select x-ref="native"> (which
+    // still submits and works with JS off). `selected` is reactive state — the
+    // trigger label and option highlight read it, so picking an option updates
+    // the UI immediately; every change is mirrored onto the native <select>.
     window.Alpine.data("dccSelect", (elId) => ({
       open: false,
       query: "",
       options: [],
+      selected: [],
+      multiple: false,
+      searchable: false,
       init() {
         const blob = document.getElementById(elId);
         try {
-          this.options = blob ? JSON.parse(blob.textContent) : [];
+          this.options = (blob ? JSON.parse(blob.textContent) : []).map((o) =>
+            Array.isArray(o) ? { value: String(o[0]), label: String(o[1]) } : o
+          );
         } catch (e) {
           this.options = [];
         }
-        // options come as [[value, label], ...]
-        this.options = this.options.map((o) =>
-          Array.isArray(o) ? { value: String(o[0]), label: String(o[1]) } : o
-        );
-      },
-      get searchable() {
-        return this.$root.querySelector(".dcc-select__search") !== null;
+        const ds = this.$root.dataset || {};
+        this.multiple = ds.multiple === "1" || !!this.native.multiple;
+        this.searchable = ds.searchable === "1";
+        this.selected = Array.from(this.native.selectedOptions).map((o) => o.value);
+        // keep in sync if something else writes to the native select
+        this.native.addEventListener("change", () => {
+          this.selected = Array.from(this.native.selectedOptions).map((o) => o.value);
+        });
       },
       get native() {
         return this.$refs.native;
       },
       toggle() {
         this.open = !this.open;
-        if (this.open && this.$refs.search) {
-          this.$nextTick(() => this.$refs.search.focus());
+        if (this.open && this.searchable) {
+          this.$nextTick(() => this.$refs.search && this.$refs.search.focus());
         }
       },
       close() {
@@ -45,33 +86,73 @@
           ? this.options.filter((o) => o.label.toLowerCase().includes(q))
           : this.options;
       },
-      selectedValues() {
-        return Array.from(this.native.selectedOptions).map((o) => o.value);
-      },
       isSelected(value) {
-        return this.selectedValues().includes(String(value));
+        return this.selected.includes(String(value));
       },
       choose(value) {
-        const opt = Array.from(this.native.options).find(
-          (o) => o.value === String(value)
-        );
-        if (!opt) return;
-        if (this.native.multiple) {
-          opt.selected = !opt.selected;
+        const v = String(value);
+        if (this.multiple) {
+          this.selected = this.isSelected(v)
+            ? this.selected.filter((x) => x !== v)
+            : [...this.selected, v];
         } else {
-          this.native.value = String(value);
+          this.selected = [v];
           this.close();
         }
+        Array.from(this.native.options).forEach((o) => {
+          o.selected = this.selected.includes(o.value);
+        });
         this.native.dispatchEvent(new Event("change", { bubbles: true }));
       },
-      syncFromNative() {},
       triggerLabel() {
-        const picked = this.selectedValues();
-        if (!picked.length) return "";
+        if (!this.selected.length) return "";
         return this.options
-          .filter((o) => picked.includes(o.value))
+          .filter((o) => this.selected.includes(o.value))
           .map((o) => o.label)
           .join(", ");
+      },
+    }));
+
+    // Row selection for bulk actions. Shared by the client-side table engine
+    // and by dccBulk (server-side tables). `selected` is an array of pk strings
+    // bound to the row checkboxes via x-model; the bulk trigger reads the
+    // checked boxes straight from the DOM through hx-include.
+    function selectionState() {
+      return {
+        selected: [],
+        selectAll: false, // "every row matching the filter", not just this page
+        rowCount() {
+          return this.$root.querySelectorAll("[data-dcc-bulk]").length;
+        },
+        get selectedCount() {
+          return this.selected.length;
+        },
+        get allSelected() {
+          const n = this.rowCount();
+          return n > 0 && this.selected.length >= n;
+        },
+        toggleAll(checked) {
+          if (checked) {
+            this.selected = Array.from(
+              this.$root.querySelectorAll("[data-dcc-bulk]")
+            ).map((el) => el.value);
+          } else {
+            this.selected = [];
+            this.selectAll = false;
+          }
+        },
+        clearSelection() {
+          this.selected = [];
+          this.selectAll = false;
+        },
+      };
+    }
+
+    window.Alpine.data("dccBulk", () => ({
+      ...selectionState(),
+      init() {
+        // an action fires dcc:refresh after mutating; drop stale selection
+        this.$root.addEventListener("dcc:refresh", () => this.clearSelection());
       },
     }));
 
@@ -82,7 +163,6 @@
       meta: {},            // pk -> {"0": text, "1": text, ...}
       order: [],           // pk order as delivered by the server
       search: "",
-      filters: {},
       sortIndex: null,
       sortDir: 1,
       page: 1,
@@ -102,13 +182,7 @@
           /* keep empty */
         }
         this.$watch("search", () => this.recompute());
-        this.$watch("filters", () => this.recompute());
         this.recompute();
-      },
-      setFilter(name, value) {
-        if (value === "" || value == null) this.filters = omit(this.filters, name);
-        else this.filters = { ...this.filters, [name]: String(value) };
-        this.page = 1;
       },
       _matches(pk) {
         const row = this.meta[pk] || {};
@@ -119,14 +193,6 @@
             .map((k) => String(row[k]).toLowerCase())
             .join(" ");
           if (!hay.includes(q)) return false;
-        }
-        // filters match against any column whose text equals the value
-        for (const value of Object.values(this.filters)) {
-          const v = value.toLowerCase();
-          const hit = Object.keys(row).some(
-            (k) => k !== "_pk" && String(row[k]).toLowerCase() === v
-          );
-          if (!hit) return false;
         }
         return true;
       },
@@ -195,11 +261,6 @@
       },
     }));
 
-    function omit(obj, key) {
-      const copy = { ...obj };
-      delete copy[key];
-      return copy;
-    }
     function cssEscape(value) {
       return String(value).replace(/["\\]/g, "\\$&");
     }

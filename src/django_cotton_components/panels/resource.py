@@ -74,6 +74,12 @@ class Resource:
         return Schema.make().form(cls.get_form_class())
 
     @classmethod
+    def build_infolist(cls, *, request: HttpRequest) -> Any:
+        from ..infolists import Infolist
+
+        return Infolist.make().model(cls.model)
+
+    @classmethod
     def build_table(cls, *, request: HttpRequest) -> Table:
         from ..tables.columns import TextColumn
         from ..tables.table import Table

@@ -96,6 +96,48 @@ class ArticleWizard(WizardView):
         return redirect("demo:article-list")
 
 
+class ComponentsView(TemplateView):
+    template_name = "demo/components.html"
+
+    def get_context_data(self, **kwargs):
+        from django_cotton_components.schemas import (
+            MultiSelect,
+            Schema,
+            Section,
+            Select,
+            Textarea,
+            Toggle,
+        )
+
+        ctx = super().get_context_data(**kwargs)
+        fields = ["title", "slug", "body", "status", "author", "tags", "featured"]
+        schema = (
+            Schema.make()
+            .model(Article, fields=fields)
+            .schema(
+                [
+                    Section.make("Text").schema(
+                        [
+                            TextInput.make("title").help_text("A plain text input."),
+                            TextInput.make("slug").help_text("Lowercase, dashes."),
+                            Textarea.make("body"),
+                        ]
+                    ),
+                    Section.make("Choice").schema(
+                        [
+                            Select.make("status").searchable(),
+                            Select.make("author").searchable().help_text("Type to filter."),
+                            MultiSelect.make("tags").help_text("Multi-select combobox."),
+                        ]
+                    ),
+                    Section.make("Boolean").schema([Toggle.make("featured")]),
+                ]
+            )
+        )
+        ctx["controls_html"] = schema.render(request=self.request, form=schema.build_form())
+        return ctx
+
+
 class DemoLogin(auth_views.LoginView):
     template_name = "demo/login.html"
     redirect_authenticated_user = True

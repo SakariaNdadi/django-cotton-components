@@ -1,0 +1,1 @@
+{% if href %}<a href="{{ href }}" {{ attrs }}>{{ icon_html }}{% if label %}<span class="dcc-btn__label">{{ label }}</span>{% endif %}</a>{% else %}<button type="{{ type }}"{% if disabled %} disabled{% endif %} {{ attrs }}>{{ icon_html }}{% if label %}<span class="dcc-btn__label">{{ label }}</span>{% endif %}</button>{% endif %}

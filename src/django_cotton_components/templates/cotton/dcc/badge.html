@@ -1,2 +1,2 @@
-<c-vars label="" />
-<span class="dcc-badge {{ class }}" {{ attrs }}>{{ label }}{{ slot }}</span>
+<c-vars label="" variant="" />
+<span class="dcc-badge{% if variant %} dcc-badge--{{ variant }}{% endif %} {{ class }}" {{ attrs }}>{{ label }}{{ slot }}</span>

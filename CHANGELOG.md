@@ -10,6 +10,24 @@ Complete rebuild. The package moves from a set of hand-authored cotton templates
 to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Added
+- `django_cotton_components.ui` — canonical primitives (`Button`, `IconButton`,
+  `Badge`, `Icon`, `Checkbox`, `Modal`, `Menu`), one component + one leaf
+  template each; every subsystem composes them instead of hand-rolled markup.
+- `django_cotton_components.icons` — swappable icon-set registry
+  (`DCC["ICON_SET"]`), Font Awesome default; `{% dcc_icon %}`, `<c-dcc.icon>`.
+- `django_cotton_components.infolists` — read-only counterpart to a schema
+  (`Infolist`, `TextEntry` / `BadgeEntry` / `BooleanEntry` / `DateEntry`).
+- `django_cotton_components.panels` — dashboard **widgets** (`StatWidget`,
+  `ChartWidget`, `TableWidget`), `DashboardPage`, `Panel.pages([...])` for custom
+  pages, and a `delete` action + route on every resource.
+- `django_cotton_components.studio` (separate app) — build a `Resource` from a
+  stored `DashboardSpec` JSON row: type registries, `*_from_spec` deserializers
+  (no import paths, no callables), `DynamicResource`, `Panel.dynamic()`.
+- Tables: keyset (cursor) pagination — `.stream()` (default server mode), no
+  `COUNT(*)` / `OFFSET`, append-on-scroll fragments; `.page_numbers()` opts back
+  in. Bulk "select every matching row" hands the callback the filtered queryset.
+- `{% dcc_assets %}` now emits htmx and the icon stylesheet (`htmx=` / `icons=`
+  opt-outs); the wizard swaps steps over htmx.
 - `django_cotton_components.schemas` — fluent form builders (`Schema`, `Section`,
   `Grid`, `Tabs`, `Fieldset`, and field components) that decorate an existing
   Django `Form` / `ModelForm`. `Schema.to_form_class()` for standalone use.

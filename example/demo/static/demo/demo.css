@@ -140,6 +140,9 @@ body.dcc-body {
   box-shadow: var(--demo-shadow);
 }
 .demo-card__body { padding: 1.25rem 1.5rem; }
+.demo-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.demo-featurelist { margin: 0; padding: 1rem 1.5rem 1.25rem 2.5rem; display: grid; gap: 0.6rem; }
+.demo-featurelist li { line-height: 1.5; }
 .demo-card__head {
   display: flex;
   align-items: center;
