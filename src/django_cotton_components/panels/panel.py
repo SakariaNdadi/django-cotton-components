@@ -28,6 +28,9 @@ class Panel:
         self._pages: list[type[Any]] = []
         self._guards: list[Callable[[HttpRequest], bool]] = []
         self._dynamic = False
+        self._login_url: str | None = None
+        self.brand_label: str | None = None
+        self.brand_icon: str = ""
 
     def path(self, value: str) -> Self:
         self._path = value.strip("/")
@@ -53,6 +56,22 @@ class Panel:
         INSTALLED_APPS."""
         self._dynamic = value
         return self
+
+    def login_url(self, url: str) -> Self:
+        """Where a ``guards.LoginRequired`` redirect sends an anonymous visitor.
+        Defaults to ``settings.LOGIN_URL``."""
+        self._login_url = url
+        return self
+
+    def brand(self, label: str, icon: str = "") -> Self:
+        self.brand_label = label
+        self.brand_icon = icon
+        return self
+
+    def get_login_url(self) -> str:
+        from django.conf import settings
+
+        return str(self._login_url or getattr(settings, "LOGIN_URL", None) or "/accounts/login/")
 
     @property
     def namespace(self) -> str:

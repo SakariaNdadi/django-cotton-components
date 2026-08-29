@@ -407,6 +407,42 @@
       },
     }));
 
+    // Panel shell: mobile nav drawer + a persisted colour-theme toggle that
+    // writes data-theme onto <html> (dcc.css keys its dark palette off it).
+    window.Alpine.data("dccShell", () => ({
+      navOpen: false,
+      theme: "auto",
+      init() {
+        try {
+          this.theme = localStorage.getItem("dcc-theme") || "auto";
+        } catch (e) {
+          this.theme = "auto";
+        }
+        this.applyTheme();
+        this.$watch("navOpen", (open) => {
+          document.body.classList.toggle("dcc-no-scroll", open);
+        });
+      },
+      applyTheme() {
+        const root = document.documentElement;
+        if (this.theme === "auto") root.removeAttribute("data-theme");
+        else root.setAttribute("data-theme", this.theme);
+      },
+      cycleTheme() {
+        const order = ["auto", "light", "dark"];
+        this.theme = order[(order.indexOf(this.theme) + 1) % order.length];
+        try {
+          localStorage.setItem("dcc-theme", this.theme);
+        } catch (e) {
+          /* private mode: keep the in-memory value */
+        }
+        this.applyTheme();
+      },
+      themeLabel() {
+        return { auto: "◐", light: "☀", dark: "☾" }[this.theme] || "◐";
+      },
+    }));
+
     window.Alpine.data("dccUpload", () => ({
       preview: "",
       show(event) {

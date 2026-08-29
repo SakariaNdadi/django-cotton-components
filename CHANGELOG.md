@@ -11,6 +11,12 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Changed
 
+- **Panel guards can redirect to login.** A guard that raises
+  `panels.guards.LoginRequired` (rather than returning `False`) makes the panel
+  page 302 an anonymous visitor to `settings.LOGIN_URL` / `Panel.login_url(...)`
+  instead of returning 403. `Panel.check_access` still raises `PermissionDenied`
+  for a falsy guard. New guards: `login_required`, `staff_required`,
+  `permission_required(perm)`, `group_required(*names)`.
 - **`Resource.permission_prefix` semantics.** It now supplies only the *prefix*
   of the permission string (the app label, and optionally the model name when it
   contains a dot); the action (`view` / `add` / `change` / `delete`) is always
@@ -50,6 +56,22 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Added
 
+- **Studio access control.** `studio.models.AccessControlled` mixin — a row is
+  visible by an explicit grant (`is_public`, `groups`, `users`,
+  `required_permission`), never by a deny; `is_visible_to(user)` /
+  `visible_queryset(qs, user)`. `DashboardSpec` and `PanelDashboard` carry the
+  grant fields. New models `NavItem` (a two-level sidebar tree the studio
+  edits), `UserPreference`, `SpecRevision`; migration `0003_studio`. New
+  permission `dcc_studio.use_studio` gates the (upcoming) builder UI.
+- **`panels.nav.build_nav(panel, request)`** — one structured `NavNode` tree
+  merging code resources / pages, studio resources / dashboards, and `NavItem`
+  rows, access-filtered and with longest-prefix active-state. Rendered by the
+  rebuilt panel shell (grouped icon nav, brand, user block, mobile drawer,
+  persisted light/dark/auto theme toggle via the new `dccShell` Alpine
+  component).
+- `studio.home.resolve_home(request, panel)` — where a signed-in user lands:
+  explicit `UserPreference` → group-default dashboard → panel default → first
+  visible dashboard → first nav item → panel index.
 - **Studio metadata layer.** `core.describe` introspects any registered
   declarative type (`Column` / `Field` / `Entry` / `Widget`, none of which share
   a base) into `TypeInfo` / `SetterInfo` — control kind, default, choices, help,

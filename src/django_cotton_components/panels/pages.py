@@ -10,12 +10,25 @@ from django.views.generic import TemplateView
 
 from .. import htmx
 from ..tables.views import TableMixin
+from .guards import LoginRequired
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
     from .panel import Panel
     from .resource import Resource
+
+
+def _guarded(panel: Panel, request: HttpRequest) -> HttpResponseBase | None:
+    """Run the panel guards; return a login redirect if a guard raised
+    ``LoginRequired``, else ``None`` (``PermissionDenied`` propagates)."""
+    try:
+        panel.check_access(request)
+    except LoginRequired:
+        from django.contrib.auth.views import redirect_to_login
+
+        return redirect_to_login(request.get_full_path(), panel.get_login_url())
+    return None
 
 
 class PanelPage(TemplateView):
@@ -30,13 +43,18 @@ class PanelPage(TemplateView):
     nav_group: str = ""
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
-        self.panel.check_access(request)
+        redirect_response = _guarded(self.panel, request)
+        if redirect_response is not None:
+            return redirect_response
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        from .nav import build_nav
+
         ctx = super().get_context_data(**kwargs)
         ctx["panel"] = self.panel
         ctx["nav"] = self.panel.navigation(self.request)
+        ctx["nav_tree"] = build_nav(self.panel, self.request)
         ctx["resource_label"] = self.nav_label or self.slug.title() or "Dashboard"
         return ctx
 
@@ -93,7 +111,9 @@ class _ResourcePage(TemplateView):
     action = "view"
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
-        self.panel.check_access(request)
+        redirect_response = _guarded(self.panel, request)
+        if redirect_response is not None:
+            return redirect_response
         if not self.resource.can(request, self.action, self._object(request, kwargs)):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
@@ -107,10 +127,13 @@ class _ResourcePage(TemplateView):
         return reverse(f"{self.panel.namespace}:{self.resource.slug()}-{name}", kwargs=kwargs)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        from .nav import build_nav
+
         ctx = super().get_context_data(**kwargs)
         ctx["panel"] = self.panel
         ctx["resource_label"] = self.resource.label()
         ctx["nav"] = self.panel.navigation(self.request)
+        ctx["nav_tree"] = build_nav(self.panel, self.request)
         return ctx
 
 

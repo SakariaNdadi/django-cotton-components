@@ -1,0 +1,42 @@
+{% load dcc_tags %}
+{% url panel.namespace|add:':index' as brand_url %}
+<nav class="dcc-panel__nav" id="dcc-nav" aria-label="Panel">
+  {% if brand_url %}<a class="dcc-panel__brand" href="{{ brand_url }}">{% else %}<span class="dcc-panel__brand">{% endif %}
+    {% if panel.brand_icon %}{% dcc_icon panel.brand_icon %}{% endif %}
+    <strong>{{ panel.brand_label|default:panel.name|title }}</strong>
+  {% if brand_url %}</a>{% else %}</span>{% endif %}
+
+  <ul class="dcc-nav">
+    {% for node in nav_tree %}
+      {% if node.is_heading %}
+        <li class="dcc-nav__group">
+          <span class="dcc-nav__grouplabel">{{ node.label }}</span>
+          <ul class="dcc-nav__sublist">
+            {% for child in node.children %}
+              <li>
+                <a class="dcc-nav__link{% if child.active %} is-active{% endif %}"
+                   href="{{ child.url }}"{% if child.external %} target="_blank" rel="noopener"{% endif %}>
+                  {% if child.icon %}{% dcc_icon child.icon %}{% endif %}<span>{{ child.label }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% else %}
+        <li>
+          <a class="dcc-nav__link{% if node.active %} is-active{% endif %}"
+             href="{{ node.url }}"{% if node.external %} target="_blank" rel="noopener"{% endif %}>
+            {% if node.icon %}{% dcc_icon node.icon %}{% endif %}<span>{{ node.label }}</span>
+          </a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  {% if request.user.is_authenticated %}
+    <div class="dcc-panel__user">
+      <span class="dcc-panel__username">{{ request.user.get_username }}</span>
+      <button type="button" class="dcc-panel__theme" @click="cycleTheme()" aria-label="Toggle colour theme" x-text="themeLabel()"></button>
+    </div>
+  {% endif %}
+</nav>
