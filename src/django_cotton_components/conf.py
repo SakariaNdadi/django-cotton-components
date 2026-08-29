@@ -37,6 +37,13 @@ DEFAULTS: dict[str, Any] = {
     # installed model except the built-in sensitive set; a list => exactly those
     # (``"app_label.Model"``). The picker also intersects ``view_`` permission.
     "STUDIO_RESOURCE_MODELS": None,
+    # Alias -> dotted path map for the studio escape hatch. A spec references a
+    # predicate by ``"@alias"`` on a ``visible`` / ``hidden`` config key; it can
+    # never name an import path directly.
+    "STUDIO_CALLABLES": {},
+    # ``Panel.name`` whose home the allauth adapter resolves after login. None =>
+    # fall back to allauth's own ``LOGIN_REDIRECT_URL``.
+    "HOME_PANEL": None,
 }
 
 

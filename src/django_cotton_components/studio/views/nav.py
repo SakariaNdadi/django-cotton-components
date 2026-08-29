@@ -18,10 +18,10 @@ _KINDS = [{"kind": kind, "label": label} for kind, label in NavItem.Kind.choices
 
 
 class StudioHome(StudioView):
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        from django.shortcuts import redirect
+    template_name = "django_cotton_components/studio/home.html"
 
-        return redirect(f"{self.panel.namespace}:studio-nav")
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        return render(request, self.template_name, self.shell_context())
 
 
 class NavBuilder(StudioView):

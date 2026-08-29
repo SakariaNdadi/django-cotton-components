@@ -74,10 +74,22 @@ def _instantiate(registry: Any, node: dict[str, Any], where: str) -> Any:
     except KeyError as exc:
         raise ValidationError(str(exc)) from None
     config = node.get("config", {}) or {}
-    unsafe = _UNSAFE_KEYS.intersection(config)
+    # visible / hidden may carry an "@alias" string resolved via
+    # DCC["STUDIO_CALLABLES"]; every other code-only key stays banned.
+    from .callables import ALIASABLE_KEYS, is_alias
+
+    aliased = {k for k in ALIASABLE_KEYS if is_alias(config.get(k))}
+    unsafe = _UNSAFE_KEYS.intersection(config) - aliased
     if unsafe:
         raise ValidationError(f"{where}.{type_name}: {sorted(unsafe)} take code, not configuration")
-    _check_jsonable(config, f"{where}.{type_name}.config")
+    jsonable_config = {k: v for k, v in config.items() if k not in aliased}
+    _check_jsonable(jsonable_config, f"{where}.{type_name}.config")
+
+    if aliased:
+        from .callables import resolve_config_aliases
+
+        config = resolve_config_aliases(config)
+
     name = node.get("name")
     try:
         component = cls.make(name, **config)

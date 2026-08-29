@@ -37,6 +37,7 @@ dependencies = [
 [project.optional-dependencies]
 images = ["pillow>=11"]
 wizard = ["django-formtools>=2.5"]
+allauth = ["django-allauth>=65"]
 
 [project.urls]
 Homepage = "https://github.com/SakariaNdadi/django-cotton-components"
@@ -118,6 +119,16 @@ files = ["src/django_cotton_components"]
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+# optional extra — allauth base classes are untyped and may be absent
+module = "django_cotton_components.integrations.allauth"
+disallow_subclassing_any = false
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = "allauth.*"
+ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "tests.settings"

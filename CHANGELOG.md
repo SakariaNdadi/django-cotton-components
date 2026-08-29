@@ -76,6 +76,16 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
     builder edits the list view's columns and filters (tabbed), with the same
     inspector / revision guard / `SpecRevision` / live table preview
     (`client_side()`, `qs[:5]`). Form and detail builders come later.
+- **Studio escape hatch.** `DCC["STUDIO_CALLABLES"]` maps an alias to a dotted
+  path; a spec then writes `{"config": {"visible": "@is_overdue"}}` on a field /
+  entry / layout node. Only `visible` / `hidden` accept an alias; `state` /
+  `action` / `authorize` stay code-only, and a spec can never name an import
+  path directly.
+- **django-allauth integration** (optional extra `dcc[allauth]`).
+  `integrations.allauth.DCCAccountAdapter` sends a signed-in user to
+  `resolve_home` for `DCC["HOME_PANEL"]`, falling back to allauth's own
+  redirect. Import-guarded — absent allauth raises `ImproperlyConfigured` from
+  that module alone.
 - **Studio access control.** `studio.models.AccessControlled` mixin — a row is
   visible by an explicit grant (`is_public`, `groups`, `users`,
   `required_permission`), never by a deny; `is_visible_to(user)` /

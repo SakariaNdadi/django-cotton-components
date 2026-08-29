@@ -59,11 +59,13 @@ def test_builder_renders_for_studio_user(client, urlconf, studio_user):
     assert b"nav-boot" in response.content
 
 
-def test_studio_home_redirects_to_nav(client, urlconf, studio_user):
+def test_studio_home_is_a_hub(client, urlconf, studio_user):
     client.force_login(studio_user)
     response = client.get("/s/studio/")
-    assert response.status_code == 302
-    assert response["Location"].endswith("/s/studio/nav/")
+    assert response.status_code == 200
+    assert b"/s/studio/nav/" in response.content
+    assert b"/s/studio/dashboards/" in response.content
+    assert b"/s/studio/resources/" in response.content
 
 
 def test_save_round_trips_with_group_nesting(client, urlconf, studio_user):
