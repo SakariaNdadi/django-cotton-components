@@ -279,6 +279,22 @@ class Panel:
                 make(sviews.DashboardPreview),
                 name="studio-dash-preview",
             ),
+            path("studio/resources/", make(sviews.ResourceIndex), name="studio-resources"),
+            path(
+                "studio/resources/<slug:slug>/",
+                make(sviews.ResourceBuilder),
+                name="studio-resource",
+            ),
+            path(
+                "studio/resources/<slug:slug>/save/",
+                make(sviews.ResourceSave),
+                name="studio-resource-save",
+            ),
+            path(
+                "studio/resources/<slug:slug>/preview/",
+                make(sviews.ResourcePreview),
+                name="studio-resource-preview",
+            ),
             path("studio/api/palette/", make(sviews.PaletteApi), name="studio-api-palette"),
             path("studio/api/models/", make(sviews.ModelsApi), name="studio-api-models"),
             path(

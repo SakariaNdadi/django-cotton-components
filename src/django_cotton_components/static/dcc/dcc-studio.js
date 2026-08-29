@@ -23,6 +23,7 @@
       history: [],
       future: [],
       _cfg: {},
+      listKey: "items",
 
       init() {
         const boot = readJson(bootId);
@@ -31,8 +32,22 @@
           this.palette = boot.palette || {};
           this.revision = boot.revision || 0;
           this._cfg = boot;
+          if (boot.listKey) this.listKey = boot.listKey;
         }
         this.snapshot(true);
+      },
+
+      // -- the active list -------------------------------------------------
+      useList(key) {
+        this.listKey = key;
+        this.selectedId = null;
+      },
+      list() {
+        if (!Array.isArray(this.doc[this.listKey])) this.doc[this.listKey] = [];
+        return this.doc[this.listKey];
+      },
+      setList(rows) {
+        this.doc[this.listKey] = rows;
       },
 
       // -- selection --------------------------------------------------------
@@ -40,7 +55,7 @@
         this.selectedId = id;
       },
       selectedNode() {
-        return this.doc.items.find((it) => it.id === this.selectedId) || null;
+        return this.list().find((it) => it.id === this.selectedId) || null;
       },
 
       // -- mutation --------------------------------------------------------
@@ -55,9 +70,12 @@
           this.history = [copy];
         }
       },
+      _newId() {
+        return "n" + Date.now() + Math.floor(Math.random() * 1000);
+      },
       addItem(kind) {
-        const id = "n" + Date.now() + Math.floor(Math.random() * 1000);
-        this.doc.items.push({
+        const id = this._newId();
+        this.list().push({
           id: id,
           label: titleCase(kind),
           icon: "",
@@ -73,8 +91,8 @@
       },
       // config-shaped nodes (widgets, columns, entries): {id, type, config}
       addNode(type) {
-        const id = "n" + Date.now() + Math.floor(Math.random() * 1000);
-        this.doc.items.push({ id: id, type: type, config: {} });
+        const id = this._newId();
+        this.list().push({ id: id, type: type, config: {} });
         this.snapshot();
         this.select(id);
       },
@@ -100,16 +118,16 @@
         this.snapshot();
       },
       removeItem(id) {
-        this.doc.items = this.doc.items.filter((it) => it.id !== id);
+        this.setList(this.list().filter((it) => it.id !== id));
         if (this.selectedId === id) this.selectedId = null;
         this.snapshot();
       },
       move(from, to) {
-        if (to < 0 || to >= this.doc.items.length || from === to) return;
-        const items = this.doc.items.slice();
-        const [row] = items.splice(from, 1);
-        items.splice(to, 0, row);
-        this.doc.items = items;
+        const rows = this.list().slice();
+        if (to < 0 || to >= rows.length || from === to) return;
+        const [row] = rows.splice(from, 1);
+        rows.splice(to, 0, row);
+        this.setList(rows);
         this.snapshot();
       },
       touch() {

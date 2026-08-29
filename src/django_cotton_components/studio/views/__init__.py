@@ -10,6 +10,7 @@ from .dashboard import (
     DashboardSave,
 )
 from .nav import NavBuilder, NavPreview, NavSave, StudioHome
+from .resource import ResourceBuilder, ResourceIndex, ResourcePreview, ResourceSave
 
 __all__ = [
     "DashboardBuilder",
@@ -22,5 +23,9 @@ __all__ = [
     "NavPreview",
     "NavSave",
     "PaletteApi",
+    "ResourceBuilder",
+    "ResourceIndex",
+    "ResourcePreview",
+    "ResourceSave",
     "StudioHome",
 ]

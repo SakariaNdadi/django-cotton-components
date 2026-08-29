@@ -1,0 +1,99 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}{{ spec.label|default:spec.slug }} · Studio{% endblock %}
+{% block head_extra %}{% dcc_studio_assets %}{% endblock %}
+
+{% block content %}
+<div x-data="dccStudioDoc('res-boot')">
+  {{ boot_json|json_script:"res-boot" }}
+
+  <header class="dcc-panel__header">
+    <h1>{{ spec.label|default:spec.slug }} <span class="dcc-field__help">list view</span></h1>
+  </header>
+
+  <div class="dcc-studio__bar">
+    <button type="button" class="dcc-studio__btn" :class="{ 'dcc-studio__btn--primary': listKey === 'columns' }" @click="useList('columns')">Columns</button>
+    <button type="button" class="dcc-studio__btn" :class="{ 'dcc-studio__btn--primary': listKey === 'filters' }" @click="useList('filters')">Filters</button>
+    <span class="dcc-studio__spacer"></span>
+    <button type="button" class="dcc-studio__btn" @click="undo()">Undo</button>
+    <button type="button" class="dcc-studio__btn" @click="redo()">Redo</button>
+    <span class="dcc-studio__dirty" x-show="dirty">Unsaved changes</span>
+    <button type="button" class="dcc-studio__btn dcc-studio__btn--primary"
+            @click="save()" :disabled="saving" x-text="saving ? 'Saving…' : 'Save'"></button>
+  </div>
+  <p class="dcc-studio__error" x-show="error" x-text="error"></p>
+
+  <div class="dcc-studio">
+    <div class="dcc-studio__panel">
+      <h2 x-text="listKey === 'columns' ? 'Column types' : 'Filter types'"></h2>
+      <template x-for="t in (palette[listKey] || [])" :key="t.name">
+        <button type="button" class="dcc-studio__palette-item" @click="addNode(t.name)" x-text="t.label"></button>
+      </template>
+    </div>
+
+    <div class="dcc-studio__panel">
+      <h2 x-text="listKey === 'columns' ? 'Columns' : 'Filters'"></h2>
+      <ul class="dcc-sortable" x-data="dccSortable"
+          @dcc-reorder="move($event.detail.from, $event.detail.to)">
+        <template x-for="(node, idx) in list()" :key="node.id">
+          <li class="dcc-sortable__item" data-node
+              :class="{ 'is-selected': node.id === selectedId }" @click="select(node.id)">
+            <button type="button" class="dcc-sortable__handle" data-dcc-handle aria-label="Reorder"
+                    @keydown.arrow-up.prevent="move(idx, idx - 1)"
+                    @keydown.arrow-down.prevent="move(idx, idx + 1)">&#8942;&#8942;</button>
+            <span class="dcc-sortable__label" x-text="(node.config && node.config.name) || node.type"></span>
+            <button type="button" class="dcc-studio__btn" @click.stop="removeItem(node.id)">&times;</button>
+          </li>
+        </template>
+      </ul>
+      <p x-show="!list().length" class="dcc-field__help">Add one from the left.</p>
+    </div>
+
+    <div class="dcc-studio__panel">
+      <h2>Settings</h2>
+      <template x-if="selectedNode()">
+        <div>
+          <p class="dcc-field__help" x-text="selectedNode().type"></p>
+          <label class="dcc-studio__field">
+            <span>Field name</span>
+            <input type="text" :value="selectedNode().config.name ?? ''"
+                   @change="setConfig('name', $event.target.value)">
+          </label>
+          <template x-for="setter in (typeInfo(listKey) ? typeInfo(listKey).setters : [])" :key="setter.name">
+            <label class="dcc-studio__field" x-show="!setter.code_only">
+              <span x-text="setter.name"></span>
+              <template x-if="setter.kind === 'boolean'">
+                <input type="checkbox" :checked="!!selectedNode().config[setter.name]"
+                       @change="setConfig(setter.name, $event.target.checked)">
+              </template>
+              <template x-if="setter.kind === 'number'">
+                <input type="number" :value="selectedNode().config[setter.name] ?? ''"
+                       @change="setConfig(setter.name, $event.target.value === '' ? '' : Number($event.target.value))">
+              </template>
+              <template x-if="['keyvalue','list','object'].includes(setter.kind)">
+                <textarea rows="2" @change="setConfigJson(setter.name, $event.target.value)"
+                          x-text="JSON.stringify(selectedNode().config[setter.name] ?? '', null, 0)"></textarea>
+              </template>
+              <template x-if="!['boolean','number','keyvalue','list','object'].includes(setter.kind)">
+                <input type="text" :value="selectedNode().config[setter.name] ?? ''"
+                       @change="setConfig(setter.name, $event.target.value)">
+              </template>
+            </label>
+          </template>
+        </div>
+      </template>
+      <p x-show="!selectedNode()" class="dcc-field__help">Select an item to configure it.</p>
+    </div>
+  </div>
+
+  <div class="dcc-studio__preview">
+    <div class="dcc-studio__bar">
+      <strong class="dcc-field__help">Preview</strong>
+      <span class="dcc-studio__spacer"></span>
+      <button type="button" class="dcc-studio__btn" @click="refreshPreview()">Refresh</button>
+    </div>
+    <div id="dcc-studio-preview"></div>
+  </div>
+</div>
+{% endblock %}
