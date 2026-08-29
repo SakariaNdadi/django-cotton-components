@@ -11,6 +11,7 @@ from .dashboard import (
 )
 from .nav import NavBuilder, NavPreview, NavSave, StudioHome
 from .resource import ResourceBuilder, ResourceIndex, ResourcePreview, ResourceSave
+from .roles import RolesView
 
 __all__ = [
     "DashboardBuilder",
@@ -27,5 +28,6 @@ __all__ = [
     "ResourceIndex",
     "ResourcePreview",
     "ResourceSave",
+    "RolesView",
     "StudioHome",
 ]

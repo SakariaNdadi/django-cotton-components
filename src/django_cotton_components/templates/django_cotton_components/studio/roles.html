@@ -1,0 +1,62 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}Users &amp; Roles · Studio{% endblock %}
+{% block head_extra %}{% dcc_studio_assets %}{% endblock %}
+
+{% block content %}
+<header class="dcc-panel__header"><h1>Users &amp; Roles</h1></header>
+<p class="dcc-field__help">
+  Who can see each studio object. Manage the groups and their members in the Django admin;
+  this screen only controls visibility.
+</p>
+
+<div style="overflow-x:auto">
+<table class="dcc-table" style="width:100%">
+  <thead>
+    <tr>
+      <th>Object</th>
+      <th>Everyone</th>
+      {% for group in groups %}<th>{{ group.name }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.label }} <span class="dcc-field__help">({{ row.kind }})</span></td>
+      <td>
+        <form method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="kind" value="{{ row.kind }}">
+          <input type="hidden" name="pk" value="{{ row.pk }}">
+          <input type="hidden" name="action" value="toggle_public">
+          <button type="submit" class="dcc-studio__btn{% if row.is_public %} dcc-studio__btn--primary{% endif %}">
+            {% if row.is_public %}Yes{% else %}No{% endif %}
+          </button>
+        </form>
+      </td>
+      {% for group in groups %}
+      <td>
+        <form method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="kind" value="{{ row.kind }}">
+          <input type="hidden" name="pk" value="{{ row.pk }}">
+          <input type="hidden" name="group" value="{{ group.pk }}">
+          {% if group.pk in row.group_ids %}
+          <input type="hidden" name="action" value="revoke">
+          <button type="submit" class="dcc-studio__btn dcc-studio__btn--primary">✓</button>
+          {% else %}
+          <input type="hidden" name="action" value="grant">
+          <button type="submit" class="dcc-studio__btn">–</button>
+          {% endif %}
+        </form>
+      </td>
+      {% endfor %}
+    </tr>
+    {% empty %}
+    <tr><td colspan="99" class="dcc-field__help">No studio objects yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

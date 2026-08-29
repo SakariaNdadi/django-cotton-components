@@ -86,6 +86,10 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
   `resolve_home` for `DCC["HOME_PANEL"]`, falling back to allauth's own
   redirect. Import-guarded — absent allauth raises `ImproperlyConfigured` from
   that module alone.
+- **Studio · Users & Roles** — a superuser-only `studio/roles/` matrix of every
+  studio object against the `auth.Group`s that may see it, with grant / revoke
+  and public toggles. `auth.Group` stays off the generic spec builder; raw
+  group and permission editing stays in the Django admin.
 - **Studio access control.** `studio.models.AccessControlled` mixin — a row is
   visible by an explicit grant (`is_public`, `groups`, `users`,
   `required_permission`), never by a deny; `is_visible_to(user)` /

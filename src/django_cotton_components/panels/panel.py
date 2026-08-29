@@ -295,6 +295,7 @@ class Panel:
                 make(sviews.ResourcePreview),
                 name="studio-resource-preview",
             ),
+            path("studio/roles/", make(sviews.RolesView), name="studio-roles"),
             path("studio/api/palette/", make(sviews.PaletteApi), name="studio-api-palette"),
             path("studio/api/models/", make(sviews.ModelsApi), name="studio-api-models"),
             path(
