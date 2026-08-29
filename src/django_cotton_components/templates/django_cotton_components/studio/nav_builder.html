@@ -1,0 +1,86 @@
+{% extends "django_cotton_components/panels/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}Navigation · Studio{% endblock %}
+{% block head_extra %}{% dcc_studio_assets %}{% endblock %}
+
+{% block content %}
+<div x-data="dccStudioDoc('nav-boot')">
+  {{ boot_json|json_script:"nav-boot" }}
+
+  <header class="dcc-panel__header"><h1>Navigation</h1></header>
+
+  <div class="dcc-studio__bar">
+    <button type="button" class="dcc-studio__btn" @click="undo()">Undo</button>
+    <button type="button" class="dcc-studio__btn" @click="redo()">Redo</button>
+    <span class="dcc-studio__spacer"></span>
+    <span class="dcc-studio__dirty" x-show="dirty">Unsaved changes</span>
+    <button type="button" class="dcc-studio__btn dcc-studio__btn--primary"
+            @click="save()" :disabled="saving" x-text="saving ? 'Saving…' : 'Save'"></button>
+  </div>
+
+  <p class="dcc-studio__error" x-show="error" x-text="error"></p>
+
+  <div class="dcc-studio">
+    <div class="dcc-studio__panel">
+      <h2>Add</h2>
+      {% for k in kinds %}
+      <button type="button" class="dcc-studio__palette-item" @click="addItem('{{ k.kind }}')">{{ k.label }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="dcc-studio__panel">
+      <h2>Sidebar</h2>
+      <ul class="dcc-sortable" x-data="dccSortable"
+          @dcc-reorder="move($event.detail.from, $event.detail.to)">
+        <template x-for="(node, idx) in doc.items" :key="node.id">
+          <li class="dcc-sortable__item" data-node
+              :class="{ 'is-selected': node.id === selectedId }" @click="select(node.id)">
+            <button type="button" class="dcc-sortable__handle" data-dcc-handle aria-label="Reorder"
+                    @keydown.arrow-up.prevent="move(idx, idx - 1)"
+                    @keydown.arrow-down.prevent="move(idx, idx + 1)">&#8942;&#8942;</button>
+            <span class="dcc-sortable__label"
+                  :class="{ 'dcc-sortable__label--group': isGroup(node) }"
+                  x-text="node.label || '(untitled)'"></span>
+            <button type="button" class="dcc-studio__btn" @click.stop="removeItem(node.id)">&times;</button>
+          </li>
+        </template>
+      </ul>
+      <p x-show="!doc.items.length" class="dcc-field__help">Nothing yet — add an item from the left.</p>
+    </div>
+
+    <div class="dcc-studio__panel">
+      <h2>Item</h2>
+      <template x-if="selectedNode()">
+        <div>
+          <label class="dcc-studio__field">
+            <span>Label</span>
+            <input type="text" x-model="selectedNode().label" @change="touch()">
+          </label>
+          <label class="dcc-studio__field">
+            <span>Icon</span>
+            <input type="text" x-model="selectedNode().icon" @change="touch()" placeholder="gauge-high">
+          </label>
+          <label class="dcc-studio__field" x-show="!isGroup(selectedNode())">
+            <span>Target — URL, path, slug or URL name</span>
+            <input type="text" x-model="selectedNode().target" @change="touch()">
+          </label>
+          <label class="dcc-studio__field">
+            <span><input type="checkbox" x-model="selectedNode().is_public" @change="touch()"> Visible to everyone</span>
+          </label>
+        </div>
+      </template>
+      <p x-show="!selectedNode()" class="dcc-field__help">Select an item to edit it.</p>
+    </div>
+  </div>
+
+  <div class="dcc-studio__preview">
+    <div class="dcc-studio__bar">
+      <strong class="dcc-field__help">Preview</strong>
+      <span class="dcc-studio__spacer"></span>
+      <button type="button" class="dcc-studio__btn" @click="refreshPreview()">Refresh</button>
+    </div>
+    <div id="dcc-nav-preview"></div>
+  </div>
+</div>
+{% endblock %}

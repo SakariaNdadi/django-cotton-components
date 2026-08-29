@@ -177,8 +177,9 @@ class AuthorResource(Resource):
 admin_panel = (
     Panel("admin")
     .path("panel")
+    .brand("Demo Admin", "gauge-high")
     .pages([DemoDashboard, ReportsPage])
     .resources([ArticleResource, AuthorResource])
-    .dynamic()  # also serve DashboardSpec rows at /panel/d/<slug>/
+    .studio()  # in-browser builder at /panel/studio/ (needs dcc_studio.use_studio)
     .auth(lambda r: r.user.is_authenticated)
 )

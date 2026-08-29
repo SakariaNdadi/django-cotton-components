@@ -28,6 +28,7 @@ class Panel:
         self._pages: list[type[Any]] = []
         self._guards: list[Callable[[HttpRequest], bool]] = []
         self._dynamic = False
+        self._studio = False
         self._login_url: str | None = None
         self.brand_label: str | None = None
         self.brand_icon: str = ""
@@ -55,6 +56,14 @@ class Panel:
         ``{panel}/d/<slug>/``. Requires ``django_cotton_components.studio`` in
         INSTALLED_APPS."""
         self._dynamic = value
+        return self
+
+    def studio(self, value: bool = True) -> Self:
+        """Mount the in-browser builder under ``{panel}/studio/`` for users with
+        the ``dcc_studio.use_studio`` permission. Implies :meth:`dynamic`."""
+        self._studio = value
+        if value:
+            self._dynamic = True
         return self
 
     def login_url(self, url: str) -> Self:
@@ -114,7 +123,10 @@ class Panel:
             from ..studio.models import DashboardSpec
             from ..studio.resource import DynamicResource
 
+            user = getattr(request, "user", None)
             for spec in DashboardSpec.objects.filter(is_enabled=True):
+                if not spec.is_visible_to(user):
+                    continue
                 resource = DynamicResource.for_spec(spec)
                 if not resource.can(request, "view"):
                     continue
@@ -132,6 +144,8 @@ class Panel:
             from ..studio.models import PanelDashboard
 
             for dashboard in PanelDashboard.objects.filter(is_enabled=True):
+                if not dashboard.is_visible_to(user):
+                    continue
                 items.append(
                     {
                         "label": dashboard.label or dashboard.slug.title(),
@@ -141,6 +155,19 @@ class Panel:
                             f"{self.namespace}:studio-dashboard",
                             kwargs={"dash_slug": dashboard.slug},
                         ),
+                    }
+                )
+
+        if self._studio:
+            from ..studio.access import can_use_studio
+
+            if can_use_studio(request):
+                items.append(
+                    {
+                        "label": "Studio",
+                        "icon": "wand-magic-sparkles",
+                        "group": "",
+                        "url": reverse(f"{self.namespace}:studio-home"),
                     }
                 )
         return items
@@ -224,12 +251,35 @@ class Panel:
                 out.append(path("", view, name="index"))
         return out
 
+    def _studio_patterns(self) -> list[Any]:
+        from ..studio import views as sviews
+
+        def make(view_cls: type[Any]) -> Any:
+            bound = type(f"{view_cls.__name__}Bound", (view_cls,), {"panel": self})
+            return bound.as_view()  # type: ignore[attr-defined]
+
+        return [
+            path("studio/", make(sviews.StudioHome), name="studio-home"),
+            path("studio/nav/", make(sviews.NavBuilder), name="studio-nav"),
+            path("studio/nav/save/", make(sviews.NavSave), name="studio-nav-save"),
+            path("studio/nav/preview/", make(sviews.NavPreview), name="studio-nav-preview"),
+            path("studio/api/palette/", make(sviews.PaletteApi), name="studio-api-palette"),
+            path("studio/api/models/", make(sviews.ModelsApi), name="studio-api-models"),
+            path(
+                "studio/api/models/<str:label>/",
+                make(sviews.ModelFieldsApi),
+                name="studio-api-model-fields",
+            ),
+        ]
+
     @property
     def urls(self) -> tuple[list[Any], str]:
         patterns: list[Any] = []
         patterns.extend(self._page_patterns())
         for resource in self._resources:
             patterns.extend(self._resource_patterns(resource))
+        if self._studio:
+            patterns.extend(self._studio_patterns())
         if self._dynamic:
             patterns.extend(self._dynamic_patterns())
         return (patterns, self.namespace)

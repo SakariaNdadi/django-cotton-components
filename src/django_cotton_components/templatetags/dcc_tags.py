@@ -52,6 +52,17 @@ def dcc_assets(
 
 
 @register.simple_tag
+def dcc_studio_assets() -> SafeString:
+    """The studio builder's CSS + JS. Emit inside a page that already ran
+    ``{% dcc_assets %}`` (the builder needs htmx and Alpine)."""
+    css = static("dcc/dcc-studio.css")
+    js = static("dcc/dcc-studio.js")
+    return mark_safe(  # noqa: S308  -- fixed strings + static() URLs
+        f'<link rel="stylesheet" href="{css}">\n<script defer src="{js}"></script>'
+    )
+
+
+@register.simple_tag
 def dcc_icon(name: str, css_class: str = "") -> SafeString:
     """Render a named icon through the active icon set."""
     from django_cotton_components.icons import render_icon
