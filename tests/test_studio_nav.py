@@ -124,3 +124,24 @@ def test_palette_api_gated_and_returns_types(client, urlconf, studio_user):
     response = client.get("/s/studio/api/palette/")
     assert response.status_code == 200
     assert "columns" in response.json()
+
+
+def test_models_api(client, urlconf, django_user_model):
+    root = django_user_model.objects.create_superuser("root-m", "m@x.io", "x")
+    client.force_login(root)
+    response = client.get("/s/studio/api/models/")
+    assert response.status_code == 200
+    labels = {row["label"] for row in response.json()["models"]}
+    assert "testapp.article" in labels
+    assert "auth.group" not in labels
+
+
+def test_model_fields_api(client, urlconf, django_user_model):
+    root = django_user_model.objects.create_superuser("root-f", "f@x.io", "x")
+    client.force_login(root)
+    response = client.get("/s/studio/api/models/testapp.article/")
+    assert response.status_code == 200
+    names = {f["name"] for f in response.json()["fields"]}
+    assert "title" in names
+    assert client.get("/s/studio/api/models/auth.group/").status_code == 404
+    assert client.get("/s/studio/api/models/no.such/").status_code == 404

@@ -74,6 +74,31 @@ def test_navitem_hidden_when_not_visible(urlconf, django_user_model):
     assert "Secret" not in labels
 
 
+def test_navitem_resource_target_resolves(urlconf, django_user_model):
+    root = django_user_model.objects.create_superuser("r3", "r3@x.io", "x")
+    NavItem.objects.create(
+        panel="nav",
+        label="Articles",
+        target_kind=NavItem.Kind.RESOURCE,
+        target="article",
+        is_public=True,
+    )
+    labels = {n.label: n for n in build_nav(panel, _req("/nav/", root))}
+    assert "/nav/article/" in labels["Articles"].url
+
+
+def test_navitem_dead_target_is_dropped(urlconf, django_user_model):
+    root = django_user_model.objects.create_superuser("r4", "r4@x.io", "x")
+    NavItem.objects.create(
+        panel="nav",
+        label="Ghost",
+        target_kind=NavItem.Kind.SPEC,
+        target="does-not-exist",
+        is_public=True,
+    )
+    assert "Ghost" not in {n.label for n in build_nav(panel, _req("/nav/", root))}
+
+
 def test_navitem_nesting_capped_at_two_levels():
     from django.core.exceptions import ValidationError
 

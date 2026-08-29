@@ -80,7 +80,13 @@ addopts = "--strict-markers --strict-config"
 [tool.coverage.run]
 branch = true
 source = ["django_cotton_components"]
-omit = ["*/tests/*", "*/example/*", "*/migrations/*"]
+omit = [
+    "*/tests/*",
+    "*/example/*",
+    "*/migrations/*",
+    # optional third-party integrations — exercised only when the extra is installed
+    "*/integrations/*",
+]
 
 [tool.coverage.report]
 fail_under = 90

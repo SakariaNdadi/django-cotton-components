@@ -61,3 +61,27 @@ def test_staff_guard_redirects_anonymous():
 def test_panel_login_url_override():
     p = Panel("x").login_url("/signin/")
     assert p.get_login_url() == "/signin/"
+
+
+def test_permission_and_group_guards(django_user_model):
+    from django.contrib.auth.models import Group
+    from django.test import RequestFactory
+
+    from django_cotton_components.panels.guards import group_required, permission_required
+
+    rf = RequestFactory()
+    plain = django_user_model.objects.create_user("g1")
+    req = rf.get("/")
+    req.user = plain
+    assert permission_required("testapp.view_article")(req) is False
+    assert group_required("staff")(req) is False
+
+    grp = Group.objects.create(name="staff")
+    plain.groups.add(grp)
+    plain = django_user_model.objects.get(pk=plain.pk)
+    req.user = plain
+    assert group_required("staff")(req) is True
+
+    root = django_user_model.objects.create_superuser("g2", "g@x.io", "x")
+    req.user = root
+    assert group_required("anything")(req) is True

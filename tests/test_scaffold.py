@@ -64,3 +64,26 @@ def test_dcc_scaffold_command_dry_run(capsys):
 def test_dcc_scaffold_command_writes_rows():
     call_command("dcc_scaffold", "testapp.article")
     assert DashboardSpec.objects.filter(slug="article").exists()
+
+
+def test_dcc_scaffold_requires_a_target():
+    from django.core.management.base import CommandError
+
+    with pytest.raises(CommandError):
+        call_command("dcc_scaffold")
+
+
+def test_dcc_scaffold_rejects_unknown_model():
+    from django.core.management.base import CommandError
+
+    with pytest.raises(CommandError):
+        call_command("dcc_scaffold", "nope.Missing")
+
+
+def test_scaffold_dashboard_builds_stat_and_chart():
+    from django_cotton_components.studio.scaffold import scaffold_dashboard
+
+    spec = scaffold_dashboard([Article])
+    types = [w["type"] for w in spec["widgets"]]
+    assert "StatWidget" in types
+    assert "ChartWidget" in types  # Article has a `status` choices field
