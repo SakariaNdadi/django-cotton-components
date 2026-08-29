@@ -56,14 +56,21 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 
 ### Added
 
-- **Studio builder — sidebar.** `Panel.studio()` mounts an in-browser builder
-  at `{panel}/studio/` for users holding `dcc_studio.use_studio`. The navigation
-  builder has a palette of item kinds, a pointer-drag + keyboard reorderable
-  canvas, an inspector, undo/redo, a full-document save (rebuilds the panel's
-  `NavItem` rows) and a live server-rendered preview. New static assets
+- **Studio builder.** `Panel.studio()` mounts an in-browser builder at
+  `{panel}/studio/` for users holding `dcc_studio.use_studio`. New static assets
   `dcc-studio.js` / `dcc-studio.css` (loaded only by `{% dcc_studio_assets %}`),
-  new `dccStudioDoc` / `dccSortable` Alpine components. Read-only JSON endpoints
-  `studio/api/palette/`, `studio/api/models/`, `studio/api/models/<label>/`.
+  new `dccStudioDoc` / `dccSortable` Alpine components — a palette, a
+  pointer-drag + keyboard reorderable canvas, an inspector, undo/redo, a
+  full-document save and a live server-rendered preview. Read-only JSON
+  endpoints `studio/api/palette/`, `studio/api/models/`,
+  `studio/api/models/<label>/`.
+  - *Navigation builder* — rebuilds the panel's `NavItem` rows; groups adopt
+    the items that follow them.
+  - *Dashboard builder* — `studio/dashboards/` lists and creates
+    `PanelDashboard` rows; the per-dashboard builder has a palette-driven
+    inspector (rendered from `describe_all()`), revision-guarded save (409 on a
+    stale edit), a `SpecRevision` snapshot per save (last 20 kept), and live
+    widget preview.
 - **Studio access control.** `studio.models.AccessControlled` mixin — a row is
   visible by an explicit grant (`is_public`, `groups`, `users`,
   `required_permission`), never by a deny; `is_visible_to(user)` /

@@ -71,6 +71,34 @@
       isGroup(node) {
         return node && node.target_kind === "group";
       },
+      // config-shaped nodes (widgets, columns, entries): {id, type, config}
+      addNode(type) {
+        const id = "n" + Date.now() + Math.floor(Math.random() * 1000);
+        this.doc.items.push({ id: id, type: type, config: {} });
+        this.snapshot();
+        this.select(id);
+      },
+      nodeLabel(node) {
+        if (!node) return "";
+        if (node.config && node.config.name) return node.config.name;
+        if (node.config && node.config.label) return node.config.label;
+        return titleCase(node.type || "");
+      },
+      // palette entry for the selected node's type
+      typeInfo(kind) {
+        const node = this.selectedNode();
+        if (!node) return null;
+        const list = (this.palette && this.palette[kind]) || [];
+        return list.find((t) => t.name === node.type) || null;
+      },
+      setConfig(key, value) {
+        const node = this.selectedNode();
+        if (!node) return;
+        if (!node.config) node.config = {};
+        if (value === "" || value === null) delete node.config[key];
+        else node.config[key] = value;
+        this.snapshot();
+      },
       removeItem(id) {
         this.doc.items = this.doc.items.filter((it) => it.id !== id);
         if (this.selectedId === id) this.selectedId = null;
@@ -153,9 +181,17 @@
         this._post(this._cfg.previewUrl)
           .then((r) => r.text())
           .then((html) => {
-            const target = document.getElementById("dcc-nav-preview");
+            const target = document.getElementById("dcc-studio-preview");
             if (target) target.innerHTML = html;
           });
+      },
+      setConfigJson(key, raw) {
+        try {
+          this.setConfig(key, raw.trim() === "" ? "" : JSON.parse(raw));
+          this.error = "";
+        } catch (e) {
+          this.error = key + ": invalid JSON";
+        }
       },
     }));
 

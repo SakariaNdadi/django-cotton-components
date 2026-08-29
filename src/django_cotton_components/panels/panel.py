@@ -263,6 +263,22 @@ class Panel:
             path("studio/nav/", make(sviews.NavBuilder), name="studio-nav"),
             path("studio/nav/save/", make(sviews.NavSave), name="studio-nav-save"),
             path("studio/nav/preview/", make(sviews.NavPreview), name="studio-nav-preview"),
+            path("studio/dashboards/", make(sviews.DashboardIndex), name="studio-dashboards"),
+            path(
+                "studio/dashboards/<slug:slug>/",
+                make(sviews.DashboardBuilder),
+                name="studio-dash",
+            ),
+            path(
+                "studio/dashboards/<slug:slug>/save/",
+                make(sviews.DashboardSave),
+                name="studio-dash-save",
+            ),
+            path(
+                "studio/dashboards/<slug:slug>/preview/",
+                make(sviews.DashboardPreview),
+                name="studio-dash-preview",
+            ),
             path("studio/api/palette/", make(sviews.PaletteApi), name="studio-api-palette"),
             path("studio/api/models/", make(sviews.ModelsApi), name="studio-api-models"),
             path(

@@ -27,10 +27,16 @@ wired to real `django.forms` validation.
 
 ## Docs
 
+Start with [Architecture](docs/architecture.md) — the render model every other
+doc builds on. Then:
+
+[Settings & install](docs/settings.md) · [Views & mixins](docs/views-and-mixins.md) ·
+[Callbacks](docs/callbacks.md) · [Errors](docs/errors.md)
+
 [Schemas / forms](docs/schemas.md) · [Tables](docs/tables.md) ·
-[Actions](docs/actions.md) · [Wizards](docs/wizards.md) ·
-[UI primitives](docs/ui.md) · [Images](docs/images.md) ·
-[Panels & Resources](docs/panels.md) · [Infolists](docs/infolists.md) ·
+[Actions](docs/actions.md) · [Infolists](docs/infolists.md) ·
+[Wizards](docs/wizards.md) · [UI primitives](docs/ui.md) · [Images](docs/images.md) ·
+[Panels & Resources](docs/panels.md) · [Widgets](docs/widgets.md) ·
 [No-code resources](docs/no-code.md) — index: [docs/](docs/README.md)
 
 ## Install
