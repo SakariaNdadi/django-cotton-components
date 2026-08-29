@@ -55,7 +55,7 @@ class ArticleListView(TableMixin, TemplateView):
 
 ## Endpoint views
 
-Both are mounted by `include("django_cotton_components.urls")` under your chosen
+Both are mounted by `include("django_control_components.urls")` under your chosen
 prefix. You do not subclass these.
 
 ### `ActionView` — `dcc:action` at `a/<owner_key>/<action_name>/`

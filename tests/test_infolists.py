@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.infolists import (
+from django_control_components.infolists import (
     BadgeEntry,
     BooleanEntry,
     DateEntry,

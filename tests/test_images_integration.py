@@ -5,12 +5,12 @@ import io
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from django_cotton_components.core.exceptions import ThumbnailBackendError
-from django_cotton_components.images.backends import (
+from django_control_components.core.exceptions import ThumbnailBackendError
+from django_control_components.images.backends import (
     PillowThumbnailBackend,
     get_thumbnail_backend,
 )
-from django_cotton_components.schemas import FileUpload, Schema
+from django_control_components.schemas import FileUpload, Schema
 from tests.testapp.forms import AuthorForm
 from tests.testapp.models import Author
 

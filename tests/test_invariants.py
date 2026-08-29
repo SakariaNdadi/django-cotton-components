@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pathlib
 
-import django_cotton_components
+import django_control_components
 
-ROOT = pathlib.Path(django_cotton_components.__file__).parent
+ROOT = pathlib.Path(django_control_components.__file__).parent
 TEMPLATES = ROOT / "templates"
 
 
@@ -33,15 +33,15 @@ def test_no_hand_rolled_buttons_outside_primitives():
     exempt = {
         "templates/cotton/dcc/button.html",
         "templates/cotton/dcc/modal.html",
-        "templates/django_cotton_components/ui/button.html",
-        "templates/django_cotton_components/ui/menu.html",
-        "templates/django_cotton_components/ui/modal.html",
+        "templates/django_control_components/ui/button.html",
+        "templates/django_control_components/ui/menu.html",
+        "templates/django_control_components/ui/modal.html",
         # component-internal controls with their own class (not dcc-btn)
-        "templates/django_cotton_components/controls/select.html",
-        "templates/django_cotton_components/controls/password.html",
-        "templates/django_cotton_components/layout/tabs.html",
+        "templates/django_control_components/controls/select.html",
+        "templates/django_control_components/controls/password.html",
+        "templates/django_control_components/layout/tabs.html",
         # client-side sort header toggle — bare button, no dcc-btn
-        "templates/django_cotton_components/tables/_content.html",
+        "templates/django_control_components/tables/_content.html",
     }
     offenders = []
     for path in _template_files():

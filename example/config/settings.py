@@ -14,8 +14,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_cotton",
-    "django_cotton_components",
-    "django_cotton_components.studio",
+    "django_control_components",
+    "django_control_components.studio",
     "demo",
 ]
 
@@ -69,7 +69,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# django-cotton-components
+# django-control-components
 DCC = {
     "TABLE_CLIENT_SIDE_MAX_ROWS": 200,
     # Models a stored studio dashboard's ChartWidget.query({...}) may aggregate.

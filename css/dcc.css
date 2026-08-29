@@ -2,7 +2,7 @@
  * Tailwind 4 source for consumers who want to theme or purge the component
  * styles with their own build. The package already ships a compiled,
  * dependency-free stylesheet at
- * src/django_cotton_components/static/dcc/dcc.css — use this only if you want
+ * src/django_control_components/static/dcc/dcc.css — use this only if you want
  * to override tokens or tree-shake.
  *
  *   npx @tailwindcss/cli -i css/dcc.css -o path/to/output.css
@@ -11,7 +11,7 @@
 @import "tailwindcss";
 
 /* Pull component markup into the content graph so classes are not purged. */
-@source "../src/django_cotton_components/templates";
+@source "../src/django_control_components/templates";
 
 @theme {
   --color-dcc-bg: #ffffff;

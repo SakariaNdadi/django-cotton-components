@@ -6,8 +6,8 @@ on:
   pull_request:
     paths:
       - "css/**"
-      - "src/django_cotton_components/templates/**"
-      - "src/django_cotton_components/static/**"
+      - "src/django_control_components/templates/**"
+      - "src/django_control_components/static/**"
 
 jobs:
   freshness:

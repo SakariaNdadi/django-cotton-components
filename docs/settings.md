@@ -3,20 +3,21 @@
 ## Install
 
 ```bash
-pip install "django-cotton-components[images]"        # + Pillow for image fields
-pip install "django-cotton-components[wizard]"        # + django-formtools for wizards
+pip install "django-control-components[images]"        # + Pillow for image fields
+pip install "django-control-components[wizard]"        # + django-formtools for wizards
+pip install "django-control-components[studio]"        # + django-control-components-studio (no-code builder)
 ```
 
 ```python
 INSTALLED_APPS = [
     # ...
-    "django_cotton",                       # BEFORE django_cotton_components
-    "django_cotton_components",
-    "django_cotton_components.studio",     # only for the no-code seam
+    "django_cotton",                       # BEFORE django_control_components
+    "django_control_components",
+    "django_control_components.studio",     # only for the no-code seam
 ]
 ```
 
-`django_cotton` **must** come before `django_cotton_components`. A system check
+`django_cotton` **must** come before `django_control_components`. A system check
 enforces it (below).
 
 ### Assets
@@ -51,7 +52,7 @@ Mount the internal endpoints once:
 ```python
 # config/urls.py
 urlpatterns = [
-    path("dcc/", include("django_cotton_components.urls")),
+    path("dcc/", include("django_control_components.urls")),
     # ...
 ]
 ```
@@ -75,7 +76,7 @@ DCC = {
     "IMAGE_MAX_PIXELS": 24_000_000,
     "THUMBNAIL_BACKEND": None,
     "URL_PREFIX": "dcc/",
-    "ICON_SET": "django_cotton_components.icons.FontAwesome",
+    "ICON_SET": "django_control_components.icons.FontAwesome",
     "ICON_ASSET_URL": "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css",
     "STUDIO_MODELS": [],
 }
@@ -106,8 +107,8 @@ but a `setting_changed` receiver clears that cache, so
 
 | id | level | condition |
 |---|---|---|
-| `django_cotton_components.E001` | Error | `django_cotton` is not in `INSTALLED_APPS` |
-| `django_cotton_components.W002` | Warning | no `django.template.backends.django.DjangoTemplates` backend in `TEMPLATES` — component rendering (`render_to_string`) will fail |
+| `django_control_components.E001` | Error | `django_cotton` is not in `INSTALLED_APPS` |
+| `django_control_components.W002` | Warning | no `django.template.backends.django.DjangoTemplates` backend in `TEMPLATES` — component rendering (`render_to_string`) will fail |
 
 ## Styling
 

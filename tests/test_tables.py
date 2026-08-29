@@ -6,7 +6,7 @@ import pytest
 from django.http import QueryDict
 from django.test import RequestFactory
 
-from django_cotton_components.tables import (
+from django_control_components.tables import (
     BadgeColumn,
     BooleanColumn,
     DateColumn,
@@ -14,8 +14,8 @@ from django_cotton_components.tables import (
     Table,
     TextColumn,
 )
-from django_cotton_components.tables.query import apply_all
-from django_cotton_components.tables.state import TableState
+from django_control_components.tables.query import apply_all
+from django_control_components.tables.state import TableState
 from tests.testapp.models import Article, Author
 
 pytestmark = pytest.mark.django_db
@@ -204,7 +204,7 @@ def test_stream_mode_appends_via_cursor(articles, settings):
 
 
 def test_cursor_encode_decode_roundtrip_and_bad_token():
-    from django_cotton_components.tables import cursor
+    from django_control_components.tables import cursor
 
     tok = cursor.encode("2024-01-01", 7)
     assert cursor.decode(tok) == ("2024-01-01", 7)
@@ -213,7 +213,7 @@ def test_cursor_encode_decode_roundtrip_and_bad_token():
 
 
 def test_cursor_paginate_descending(articles):
-    from django_cotton_components.tables import cursor
+    from django_control_components.tables import cursor
 
     first, token = cursor.paginate(
         articles, sort_field="title", descending=True, after=None, per_page=2
@@ -282,7 +282,7 @@ def test_infinite_scroll_server_uses_cursor_strategy(articles, settings):
 
 
 def test_bulk_toolbar_lives_inside_content(articles, settings):
-    from django_cotton_components.actions import BulkAction
+    from django_control_components.actions import BulkAction
 
     settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}
     table = _table(articles).bulk_actions([BulkAction.make("archive").action(lambda records: None)])
@@ -351,7 +351,7 @@ def test_record_preview_renders_hover_template(articles, settings):
 
 
 def test_record_action_registers_and_marks_rows(articles, settings):
-    from django_cotton_components.actions import Action, registry
+    from django_control_components.actions import Action, registry
 
     registry.clear()
     settings.DCC = {"TABLE_CLIENT_SIDE_MAX_ROWS": 100}

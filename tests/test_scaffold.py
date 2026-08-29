@@ -6,13 +6,13 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 
-from django_cotton_components.studio.deserialize import (
+from django_control_components.studio.deserialize import (
     build_infolist_from_spec,
     build_schema_from_spec,
     build_table_from_spec,
 )
-from django_cotton_components.studio.models import DashboardSpec
-from django_cotton_components.studio.scaffold import scaffold_spec
+from django_control_components.studio.models import DashboardSpec
+from django_control_components.studio.scaffold import scaffold_spec
 from tests.testapp.models import Article
 
 pytestmark = pytest.mark.django_db
@@ -81,7 +81,7 @@ def test_dcc_scaffold_rejects_unknown_model():
 
 
 def test_scaffold_dashboard_builds_stat_and_chart():
-    from django_cotton_components.studio.scaffold import scaffold_dashboard
+    from django_control_components.studio.scaffold import scaffold_dashboard
 
     spec = scaffold_dashboard([Article])
     types = [w["type"] for w in spec["widgets"]]

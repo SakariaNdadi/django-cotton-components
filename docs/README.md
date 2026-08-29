@@ -31,4 +31,4 @@ other doc assumes it.
 | [images.md](images.md) | `FileUpload` validation, the Pillow processing pipeline, thumbnails |
 | [panels.md](panels.md) | `Panel` / `Resource` — an admin-independent CRUD surface; `DashboardPage` + widgets |
 | [widgets.md](widgets.md) | dashboard widgets — `StatWidget`, `ChartWidget`, `BarListWidget`, `TableWidget`, custom widgets |
-| [no-code.md](no-code.md) | resources and dashboards defined by stored configuration (`django_cotton_components.studio`) |
+| [no-code.md](no-code.md) | resources and dashboards defined by stored configuration (`django_control_components.studio`) |

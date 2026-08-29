@@ -1,0 +1,8 @@
+{% for row in rows %}{% include "django_control_components/tables/_row.html" %}{% endfor %}
+{% if load_more_htmx %}
+<tr class="dcc-table__more" {{ load_more_htmx }}>
+  <td class="dcc-table__td" colspan="{{ column_count }}">
+    {% if load_more_label %}<span class="dcc-table__moretext">{{ load_more_label }}</span>{% else %}<span class="dcc-table__moretext">Loading…</span>{% endif %}
+  </td>
+</tr>
+{% endif %}

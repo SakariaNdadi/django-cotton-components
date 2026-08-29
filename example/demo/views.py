@@ -7,11 +7,11 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, TemplateView, UpdateView
 
-from django_cotton_components.infolists import Infolist, TextEntry
-from django_cotton_components.mixins import SchemaFormMixin
-from django_cotton_components.schemas import Schema, TextInput
-from django_cotton_components.tables.views import TableMixin
-from django_cotton_components.wizards import WizardStep, WizardView
+from django_control_components.infolists import Infolist, TextEntry
+from django_control_components.mixins import SchemaFormMixin
+from django_control_components.schemas import Schema, TextInput
+from django_control_components.tables.views import TableMixin
+from django_control_components.wizards import WizardStep, WizardView
 
 from .forms import ArticleForm
 from .models import Article, Author, Comment
@@ -125,7 +125,7 @@ class ComponentsView(TemplateView):
     template_name = "demo/components.html"
 
     def get_context_data(self, **kwargs):
-        from django_cotton_components.schemas import (
+        from django_control_components.schemas import (
             MultiSelect,
             Schema,
             Section,

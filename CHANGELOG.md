@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versioning is
 [SemVer](https://semver.org/) (0.x permits breaking changes).
 
+## [0.0.1] — unreleased
+
+Renamed and re-versioned release of the rebuild described under `1.0.0b1` below.
+
+### Changed
+
+- **Project renamed** `django-cotton-components` → `django-control-components`.
+  Import path `django_cotton_components` → `django_control_components`. The `dcc`
+  tag prefix, `dcc-*` CSS classes, and `DCC[...]` settings keys are unchanged.
+- **Version reset to `0.0.1`.** Supersedes the `1.0.0b1` line.
+- **Studio is now a separate distribution.** `pip install django-control-components`
+  ships only the core (components, tables, wizards, schemas, panels, infolists,
+  actions, widgets). The no-code builder lives in `django-control-components-studio`,
+  installed via `pip install "django-control-components[studio]"`. The import path
+  `django_control_components.studio` and all `INSTALLED_APPS` / template / URL
+  names are unchanged. `Panel.studio()` / `.dynamic()` without the extra raise
+  `ImproperlyConfigured`.
+
 ## [1.0.0b1] — unreleased
 
 Complete rebuild. The package moves from a set of hand-authored cotton templates
@@ -136,17 +154,17 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
   modals, filter forms) instead of the whole `ModelForm`.
 - Component docs: `docs/schemas.md`, `docs/actions.md`, `docs/wizards.md`,
   `docs/ui.md`, `docs/images.md`, and a `docs/` index.
-- `django_cotton_components.ui` — canonical primitives (`Button`, `IconButton`,
+- `django_control_components.ui` — canonical primitives (`Button`, `IconButton`,
   `Badge`, `Icon`, `Checkbox`, `Modal`, `Menu`), one component + one leaf
   template each; every subsystem composes them instead of hand-rolled markup.
-- `django_cotton_components.icons` — swappable icon-set registry
+- `django_control_components.icons` — swappable icon-set registry
   (`DCC["ICON_SET"]`), Font Awesome default; `{% dcc_icon %}`, `<c-dcc.icon>`.
-- `django_cotton_components.infolists` — read-only counterpart to a schema
+- `django_control_components.infolists` — read-only counterpart to a schema
   (`Infolist`, `TextEntry` / `BadgeEntry` / `BooleanEntry` / `DateEntry`).
-- `django_cotton_components.panels` — dashboard **widgets** (`StatWidget`,
+- `django_control_components.panels` — dashboard **widgets** (`StatWidget`,
   `ChartWidget`, `TableWidget`), `DashboardPage`, `Panel.pages([...])` for custom
   pages, and a `delete` action + route on every resource.
-- `django_cotton_components.studio` (separate app) — build a `Resource` from a
+- `django_control_components.studio` (separate app) — build a `Resource` from a
   stored `DashboardSpec` JSON row: type registries, `*_from_spec` deserializers
   (no import paths, no callables), `DynamicResource`, `Panel.dynamic()`.
 - Tables: keyset (cursor) pagination — `.stream()` (default server mode), no
@@ -154,25 +172,25 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
   in. Bulk "select every matching row" hands the callback the filtered queryset.
 - `{% dcc_assets %}` now emits htmx and the icon stylesheet (`htmx=` / `icons=`
   opt-outs); the wizard swaps steps over htmx.
-- `django_cotton_components.schemas` — fluent form builders (`Schema`, `Section`,
+- `django_control_components.schemas` — fluent form builders (`Schema`, `Section`,
   `Grid`, `Tabs`, `Fieldset`, and field components) that decorate an existing
   Django `Form` / `ModelForm`. `Schema.to_form_class()` for standalone use.
-- `django_cotton_components.core` — `Component` primitive, closure evaluation,
+- `django_control_components.core` — `Component` primitive, closure evaluation,
   frozen `RenderContext`, `AttributeBag` (merges `class`, never replaces).
-- `django_cotton_components.tables` — `Table` with automatic client-side
+- `django_control_components.tables` — `Table` with automatic client-side
   (zero-request) / server-side (htmx) rendering by row count, `Column`
   subclasses, filters, injection-safe sort/search, `TableMixin`.
-- `django_cotton_components.actions` — `Action` / `BulkAction`, a key-addressed
+- `django_control_components.actions` — `Action` / `BulkAction`, a key-addressed
   registry (never an import path from the client), authorize-at-render *and*
   at-execute, bulk targets re-scoped to the owner's filtered queryset.
-- `django_cotton_components.wizards` — `WizardView` on `django-formtools`
+- `django_control_components.wizards` — `WizardView` on `django-formtools`
   (`dcc[wizard]`), one DCC schema per step, per-step Django validation.
-- `django_cotton_components.panels` — `Resource` + `Panel` mounting list /
+- `django_control_components.panels` — `Resource` + `Panel` mounting list /
   create / edit / view pages under their own URL namespace, separate from
   `django.contrib.admin`.
-- `django_cotton_components.images` — Pillow-backed upload validation and
+- `django_control_components.images` — Pillow-backed upload validation and
   processing, pluggable `ThumbnailBackend`.
-- `django_cotton_components.htmx` — single adapter emitting every `hx-*`
+- `django_control_components.htmx` — single adapter emitting every `hx-*`
   attribute so an htmx-4 migration is one file.
 - Toast notifications driven by `HX-Trigger`.
 - `{% dcc_assets %}` template tag; prebuilt stylesheet at
@@ -180,7 +198,7 @@ to a Python component layer (Filament-inspired) that drives `django.forms`.
 - uv + hatchling packaging, `src/` layout, nox sessions, CI matrix.
 
 ### Changed / Breaking
-- Import package unchanged (`django_cotton_components`); every template tag and
+- Import package unchanged (`django_control_components`); every template tag and
   prop is new. See [MIGRATION.md](MIGRATION.md).
 - Templates moved to `templates/cotton/dcc/…`; `dcc_` filename prefix dropped.
 - Styling moved from inline Tailwind utility chains to semantic `dcc-*` classes.

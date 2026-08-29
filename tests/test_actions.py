@@ -4,9 +4,9 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 
-from django_cotton_components.actions import Action, BulkAction, registry
-from django_cotton_components.actions.endpoints import ActionView
-from django_cotton_components.tables import SelectFilter, Table, TextColumn
+from django_control_components.actions import Action, BulkAction, registry
+from django_control_components.actions.endpoints import ActionView
+from django_control_components.tables import SelectFilter, Table, TextColumn
 from tests.testapp.models import Article, Author
 
 pytestmark = pytest.mark.django_db
@@ -135,7 +135,7 @@ def test_bulk_select_all_matching_uses_the_filtered_queryset(data):
 
 
 def test_action_with_schema_renders_modal_on_get(data):
-    from django_cotton_components.schemas import Schema, TextInput
+    from django_control_components.schemas import Schema, TextInput
     from tests.testapp.forms import ArticleForm
 
     _, arts = data
@@ -154,7 +154,7 @@ def test_action_with_schema_renders_modal_on_get(data):
 def test_modal_schema_action_saves_via_standalone_form(data):
     """A strict .modal(schema) action must bind only its declared fields, not
     the whole ModelForm (whose slug/author would fail validation)."""
-    from django_cotton_components.schemas import Schema, TextInput
+    from django_control_components.schemas import Schema, TextInput
     from tests.testapp.forms import ArticleForm
 
     _, arts = data

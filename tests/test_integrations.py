@@ -14,12 +14,12 @@ def test_allauth_module_guards_its_missing_dependency():
         from django.core.exceptions import ImproperlyConfigured
 
         with pytest.raises(ImproperlyConfigured):
-            importlib.import_module("django_cotton_components.integrations.allauth")
+            importlib.import_module("django_control_components.integrations.allauth")
     else:  # pragma: no cover - only when the extra is installed
-        mod = importlib.import_module("django_cotton_components.integrations.allauth")
+        mod = importlib.import_module("django_control_components.integrations.allauth")
         assert hasattr(mod, "DCCAccountAdapter")
 
 
 def test_library_imports_without_the_extra():
-    importlib.import_module("django_cotton_components.panels")
-    importlib.import_module("django_cotton_components.studio")
+    importlib.import_module("django_control_components.panels")
+    importlib.import_module("django_control_components.studio")

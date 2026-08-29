@@ -7,7 +7,7 @@ from demo.panels import admin_panel
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("dcc/", include("django_cotton_components.urls")),
+    path("dcc/", include("django_control_components.urls")),
     admin_panel.mount(),
     path("", include("demo.urls")),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

@@ -4,9 +4,9 @@ import pytest
 from django.test import Client
 from django.urls import path
 
-from django_cotton_components.infolists import Infolist, TextEntry
-from django_cotton_components.schemas import Schema, TextInput
-from django_cotton_components.wizards import WizardStep, WizardView
+from django_control_components.infolists import Infolist, TextEntry
+from django_control_components.schemas import Schema, TextInput
+from django_control_components.wizards import WizardStep, WizardView
 from tests.testapp.forms import ArticleForm
 
 pytestmark = pytest.mark.django_db
@@ -78,7 +78,7 @@ def test_wizard_step_validation_blocks_advance(wiz_client):
 
 
 def test_as_view_requires_formtools(monkeypatch):
-    import django_cotton_components.wizards.wizard as mod
+    import django_control_components.wizards.wizard as mod
 
     monkeypatch.setattr(mod, "_HAS_FORMTOOLS", False)
     with pytest.raises(RuntimeError, match="django-formtools"):

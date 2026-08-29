@@ -1,0 +1,12 @@
+{% extends "django_control_components/panels/base.html" %}
+{% block head_extra %}
+  {% for asset in widget_assets %}
+  {% if asset.kind == "style" %}<link rel="stylesheet" href="{{ asset.url }}">{% else %}<script defer src="{{ asset.url }}"></script>{% endif %}
+  {% endfor %}
+{% endblock %}
+{% block content %}
+  <header class="dcc-panel__header"><h1>{{ page_title }}</h1></header>
+  <div class="dcc-widgets">
+    {% for widget in widgets %}{{ widget }}{% endfor %}
+  </div>
+{% endblock %}

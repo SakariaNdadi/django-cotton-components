@@ -3,7 +3,7 @@
 ## Mental model
 
 Validation and processing for uploaded images, driven off a `FileUpload` schema
-field. Needs Pillow (`pip install "django-cotton-components[images]"`).
+field. Needs Pillow (`pip install "django-control-components[images]"`).
 
 Two phases, at two different times:
 
@@ -23,7 +23,7 @@ enforced server-side.
 ## Quick start
 
 ```python
-from django_cotton_components.schemas import FileUpload
+from django_control_components.schemas import FileUpload
 
 FileUpload.make("cover")
     .image()
@@ -98,14 +98,14 @@ Runs on `form.save()` via `schema.process_images(instance)`.
 ## Thumbnails
 
 ```python
-from django_cotton_components.tables import ImageColumn
+from django_control_components.tables import ImageColumn
 ImageColumn.make("cover").thumbnail((48, 48)).rounded()
 ```
 
 or directly:
 
 ```python
-from django_cotton_components.images import get_thumbnail_backend
+from django_control_components.images import get_thumbnail_backend
 url = get_thumbnail_backend().thumbnail(instance.cover, 48, 48)
 ```
 

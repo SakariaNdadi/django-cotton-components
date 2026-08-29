@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "django-control-components-studio"
+version = "0.0.1"
+description = "No-code panel, resource, and dashboard builder for django-control-components."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Sakaria Ndadi", email = "sakariandadi@gmail.com" }]
+keywords = ["django", "no-code", "admin", "builder", "dcc", "filament"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "django>=5.2",
+    "django-control-components>=0.0.1",
+]
+
+[project.optional-dependencies]
+allauth = ["django-allauth>=65"]
+
+[project.urls]
+Homepage = "https://github.com/SakariaNdadi/django-control-components"
+Source = "https://github.com/SakariaNdadi/django-control-components/tree/master/packages/studio"
+Issues = "https://github.com/SakariaNdadi/django-control-components/issues"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src/django_control_components/studio"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/README.md", "/LICENSE"]

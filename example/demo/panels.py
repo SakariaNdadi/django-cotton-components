@@ -2,14 +2,14 @@ from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
-from django_cotton_components.infolists import (
+from django_control_components.infolists import (
     BadgeEntry,
     BooleanEntry,
     DateEntry,
     Infolist,
     TextEntry,
 )
-from django_cotton_components.panels import (
+from django_control_components.panels import (
     BarListWidget,
     ChartWidget,
     DashboardPage,
@@ -19,7 +19,7 @@ from django_cotton_components.panels import (
     StatWidget,
     TableWidget,
 )
-from django_cotton_components.tables import (
+from django_control_components.tables import (
     BadgeColumn,
     BooleanColumn,
     DateColumn,

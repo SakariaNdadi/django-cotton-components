@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.schemas import (
+from django_control_components.schemas import (
     EmailInput,
     Fieldset,
     FileUpload,
@@ -17,7 +17,7 @@ from django_cotton_components.schemas import (
     Tabs,
     TextInput,
 )
-from django_cotton_components.schemas.fields.base import Field
+from django_control_components.schemas.fields.base import Field
 from tests.testapp.forms import ArticleForm
 
 pytestmark = pytest.mark.django_db
@@ -137,10 +137,10 @@ def test_visible_when_is_in(soup):
 
 
 def test_field_base_default_value_used_without_form():
-    from django_cotton_components.core.context import RenderContext
+    from django_control_components.core.context import RenderContext
 
     class Plain(Field):
-        template_name = "django_cotton_components/controls/input.html"
+        template_name = "django_control_components/controls/input.html"
 
     data = Plain("x").default("hello").get_view_data(RenderContext())
     assert data["value"] == "hello"

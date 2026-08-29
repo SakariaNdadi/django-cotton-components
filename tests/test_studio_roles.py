@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Group, Permission
 
-from django_cotton_components.panels import Panel
-from django_cotton_components.studio.models import PanelDashboard
+from django_control_components.panels import Panel
+from django_control_components.studio.models import PanelDashboard
 
 pytestmark = pytest.mark.django_db
 

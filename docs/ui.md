@@ -10,15 +10,15 @@ anywhere outside this layer.
 
 There are **two** ways to use each primitive:
 
-- **The Python class** (`django_cotton_components.ui`) — for code that builds HTML
+- **The Python class** (`django_control_components.ui`) — for code that builds HTML
   (a table cell, an action trigger).
 - **The `<c-dcc.*>` cotton component** (`templates/cotton/dcc/*.html`) — for
   template authors. These are a *separate, smaller* implementation with a
   `{{ slot }}` and a self-contained trigger where relevant.
 
 ```python
-from django_cotton_components.ui import Button, Badge, Icon, Checkbox, Menu, Modal
-from django_cotton_components.core.context import RenderContext
+from django_control_components.ui import Button, Badge, Icon, Checkbox, Menu, Modal
+from django_control_components.core.context import RenderContext
 
 ctx = RenderContext(request=request)
 html = Button.make().label("Save").variant("primary").type("submit").render(ctx)
@@ -164,7 +164,7 @@ the Python `Menu`.
 
 ```python
 DCC = {
-    "ICON_SET": "django_cotton_components.icons.FontAwesome",
+    "ICON_SET": "django_control_components.icons.FontAwesome",
     "ICON_ASSET_URL": "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css",
 }
 ```

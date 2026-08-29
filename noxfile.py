@@ -11,12 +11,12 @@ PYTHONS = ["3.12", "3.13"]
 DJANGOS = ["5.2", "6.1"]
 
 SECURITY_CRITICAL = [
-    "src/django_cotton_components/htmx.py",
-    "src/django_cotton_components/core/attributes.py",
-    "src/django_cotton_components/schemas/forms_bridge.py",
-    "src/django_cotton_components/images/validators.py",
-    "src/django_cotton_components/tables/query.py",
-    "src/django_cotton_components/actions/registry.py",
+    "src/django_control_components/htmx.py",
+    "src/django_control_components/core/attributes.py",
+    "src/django_control_components/schemas/forms_bridge.py",
+    "src/django_control_components/images/validators.py",
+    "src/django_control_components/tables/query.py",
+    "src/django_control_components/actions/registry.py",
 ]
 
 
@@ -81,7 +81,7 @@ def security(session: nox.Session) -> None:
 
 @nox.session
 def build_css(session: nox.Session) -> None:
-    """Compile css/dcc.css -> src/django_cotton_components/static/dcc/dcc.css."""
+    """Compile css/dcc.css -> src/django_control_components/static/dcc/dcc.css."""
     session.run(
         "npx",
         "--yes",
@@ -89,7 +89,7 @@ def build_css(session: nox.Session) -> None:
         "-i",
         "css/dcc.css",
         "-o",
-        "src/django_cotton_components/static/dcc/dcc.css",
+        "src/django_control_components/static/dcc/dcc.css",
         "--minify",
         external=True,
     )
@@ -99,21 +99,26 @@ def build_css(session: nox.Session) -> None:
 def css_check(session: nox.Session) -> None:
     build_css(session)
     session.run(
-        "git", "diff", "--exit-code", "--", "src/django_cotton_components/static/", external=True
+        "git", "diff", "--exit-code", "--", "src/django_control_components/static/", external=True
     )
 
 
 @nox.session
 def packaging(session: nox.Session) -> None:
     _install(session)
-    session.run("uv", "build", external=True)
+    session.run("uv", "build", "--all-packages", external=True)
     session.run(
         "python",
         "-c",
         "import zipfile,glob,sys;"
-        "w=sorted(glob.glob('dist/*.whl'))[-1];"
-        "n=zipfile.ZipFile(w).namelist();"
-        "want=['django_cotton_components/templates/','django_cotton_components/static/dcc/dcc.css'];"
-        "missing=[x for x in want if not any(e.startswith(x) or e==x for e in n)];"
-        "sys.exit('missing from wheel: '+str(missing) if missing else 0)",
+        "core=[w for w in glob.glob('dist/*.whl') if 'studio' not in w][-1];"
+        "studio=[w for w in glob.glob('dist/*.whl') if 'studio' in w][-1];"
+        "cn=zipfile.ZipFile(core).namelist();"
+        "sn=zipfile.ZipFile(studio).namelist();"
+        "want=['django_control_components/templates/','django_control_components/static/dcc/dcc.css'];"
+        "missing=[x for x in want if not any(e.startswith(x) or e==x for e in cn)];"
+        "missing+=['studio/ leaked into core wheel'] if any('/studio/' in e for e in cn) else [];"
+        "missing+=['studio wheel missing templates'] if not any('studio/templates/' in e for e in sn) else [];"
+        "missing+=['studio wheel ships __init__.py'] if 'django_control_components/__init__.py' in sn else [];"
+        "sys.exit('packaging check failed: '+str(missing) if missing else 0)",
     )

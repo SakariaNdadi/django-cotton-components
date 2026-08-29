@@ -1,0 +1,10 @@
+{% extends "django_control_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header"><h1>Delete {{ resource_label }}</h1></header>
+  <p>Permanently delete <strong>{{ object }}</strong>? This cannot be undone.</p>
+  <form method="post" class="dcc-panel__actions">
+    {% csrf_token %}
+    <c-dcc.button variant="secondary" href="{{ cancel_url }}" label="Cancel" />
+    <c-dcc.button type="submit" variant="danger" label="Delete" icon="trash" />
+  </form>
+{% endblock %}

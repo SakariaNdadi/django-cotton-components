@@ -4,13 +4,13 @@ import json
 
 import pytest
 
-from django_cotton_components.panels import (
+from django_control_components.panels import (
     BarListWidget,
     ChartWidget,
     StatWidget,
     TableWidget,
 )
-from django_cotton_components.tables import Table, TextColumn
+from django_control_components.tables import Table, TextColumn
 from tests.testapp.models import Article, Author
 
 pytestmark = pytest.mark.django_db

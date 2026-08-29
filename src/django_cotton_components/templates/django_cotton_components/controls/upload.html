@@ -1,6 +1,0 @@
-{% include "django_cotton_components/controls/_open.html" %}
-  <div class="dcc-upload" x-data="dccUpload()">
-    <img class="dcc-upload__preview" x-show="preview || '{{ current_url }}'" x-bind:src="preview || '{{ current_url }}'" alt="" x-cloak>
-    {% if widget_html %}{{ widget_html }}{% else %}<input id="{{ id }}" name="{{ name }}" type="file" accept="{{ accept|default:'image/*' }}"{% if required %} required{% endif %}{% if disabled %} disabled{% endif %} x-on:change="show($event)" {{ attrs }} />{% endif %}
-  </div>
-  {% include "django_cotton_components/controls/_close.html" %}

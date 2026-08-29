@@ -5,13 +5,13 @@ import json
 import pytest
 from django.core.exceptions import ValidationError
 
-from django_cotton_components.panels import Panel
-from django_cotton_components.studio.deserialize import (
+from django_control_components.panels import Panel
+from django_control_components.studio.deserialize import (
     build_schema_from_spec,
     build_table_from_spec,
     build_widgets_from_spec,
 )
-from django_cotton_components.studio.models import DashboardSpec, PanelDashboard
+from django_control_components.studio.models import DashboardSpec, PanelDashboard
 from tests.testapp.models import Article, Author
 
 pytestmark = pytest.mark.django_db
@@ -115,7 +115,7 @@ def test_schema_spec_nested_layout_children():
 
 
 def test_infolist_spec_and_default():
-    from django_cotton_components.studio.deserialize import build_infolist_from_spec
+    from django_control_components.studio.deserialize import build_infolist_from_spec
 
     built = build_infolist_from_spec(Article, {"entries": [{"type": "TextEntry", "name": "title"}]})
     assert "dcc-infolist" in str(built.render(record=None))

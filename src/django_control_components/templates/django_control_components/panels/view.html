@@ -1,0 +1,11 @@
+{% extends "django_control_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header">
+    <h1>{{ object }}</h1>
+    <div class="dcc-panel__actions">
+      <c-dcc.button variant="secondary" href="{{ edit_url }}" label="Edit" icon="pen" />
+      {% if can_delete %}<c-dcc.button variant="danger" href="{{ delete_url }}" label="Delete" icon="trash" />{% endif %}
+    </div>
+  </header>
+  {{ infolist_html }}
+{% endblock %}

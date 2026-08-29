@@ -1,0 +1,8 @@
+{% extends "django_control_components/panels/base.html" %}
+{% block content %}
+  <header class="dcc-panel__header">
+    <h1>{{ resource_label }}</h1>
+    {% if can_create %}<c-dcc.button variant="primary" href="{{ create_url }}" label="New" icon="plus" />{% endif %}
+  </header>
+  {{ table_html }}
+{% endblock %}

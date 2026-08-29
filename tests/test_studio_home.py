@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Group
 
-from django_cotton_components.panels import Panel
-from django_cotton_components.studio.home import resolve_home
-from django_cotton_components.studio.models import PanelDashboard, UserPreference
+from django_control_components.panels import Panel
+from django_control_components.studio.home import resolve_home
+from django_control_components.studio.models import PanelDashboard, UserPreference
 
 pytestmark = pytest.mark.django_db
 

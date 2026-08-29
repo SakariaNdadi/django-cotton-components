@@ -4,9 +4,9 @@ import threading
 
 import pytest
 
-from django_cotton_components.core import UNSET, AttributeBag, RenderContext
-from django_cotton_components.core.component import Component, setter
-from django_cotton_components.core.evaluate import ClosureInjectionError, evaluate
+from django_control_components.core import UNSET, AttributeBag, RenderContext
+from django_control_components.core.component import Component, setter
+from django_control_components.core.evaluate import ClosureInjectionError, evaluate
 
 
 class Widget(Component):
@@ -94,7 +94,7 @@ def test_component_instance_renders_concurrently_without_crosstalk(monkeypatch):
         seen.append(ctx.record)
         return ""
 
-    monkeypatch.setattr("django_cotton_components.core.renderer.render_component", fake_render)
+    monkeypatch.setattr("django_control_components.core.renderer.render_component", fake_render)
     w = Widget.make("f")
 
     def run(tag):

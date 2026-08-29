@@ -6,21 +6,21 @@ import pytest
 from django.test import RequestFactory
 from django.utils import timezone
 
-from django_cotton_components.core.context import RenderContext
-from django_cotton_components.schemas import Schema, TextInput
-from django_cotton_components.schemas.endpoints import (
+from django_control_components.core.context import RenderContext
+from django_control_components.schemas import Schema, TextInput
+from django_control_components.schemas.endpoints import (
     SchemaValidateView,
     clear_schemas,
     register_schema,
 )
-from django_cotton_components.tables.columns import (
+from django_control_components.tables.columns import (
     BadgeColumn,
     BooleanColumn,
     DateColumn,
     ImageColumn,
     TextColumn,
 )
-from django_cotton_components.tables.filters import (
+from django_control_components.tables.filters import (
     BooleanFilter,
     Filter,
     SelectFilter,
@@ -154,7 +154,7 @@ def test_schema_validate_unknown_schema_and_field():
 
 
 def test_action_setters_and_run_injection():
-    from django_cotton_components.actions import Action, BulkAction
+    from django_control_components.actions import Action, BulkAction
 
     seen = {}
 
@@ -187,8 +187,8 @@ def test_pipeline_resize_and_convert(tmp_path, settings):
     from django.core.files.base import ContentFile
     from PIL import Image
 
-    from django_cotton_components.images.pipeline import process_image
-    from django_cotton_components.images.specs import ImageSpec
+    from django_control_components.images.pipeline import process_image
+    from django_control_components.images.specs import ImageSpec
 
     buf = io.BytesIO()
     Image.new("RGB", (400, 300), (1, 2, 3)).save(buf, format="PNG")

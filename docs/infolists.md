@@ -15,7 +15,7 @@ resolves to empty, never called).
 ## Quick start
 
 ```python
-from django_cotton_components.infolists import (
+from django_control_components.infolists import (
     Infolist, TextEntry, BadgeEntry, BooleanEntry, DateEntry,
 )
 
@@ -67,7 +67,7 @@ Values are **escaped** — there is no `.allow_html()` on an entry.
 
 ## Layout
 
-`Section` / `Grid` from `django_cotton_components.schemas` nest inside
+`Section` / `Grid` from `django_control_components.schemas` nest inside
 `.schema([...])` exactly as in a form schema.
 
 ## In a panel

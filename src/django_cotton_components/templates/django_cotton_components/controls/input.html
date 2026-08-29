@@ -1,3 +1,0 @@
-{% include "django_cotton_components/controls/_open.html" %}
-  {% if widget_html %}{{ widget_html }}{% else %}<input id="{{ id }}" name="{{ name }}" type="{{ type|default:'text' }}" class="dcc-input"{% if value %} value="{{ value }}"{% endif %}{% if placeholder %} placeholder="{{ placeholder }}"{% endif %}{% if required %} required{% endif %}{% if disabled %} disabled{% endif %}{% if readonly %} readonly{% endif %} {{ attrs }}{% if htmx_attrs %} {{ htmx_attrs }}{% endif %} />{% endif %}
-  {% include "django_cotton_components/controls/_close.html" %}

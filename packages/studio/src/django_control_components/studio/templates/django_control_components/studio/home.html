@@ -1,0 +1,30 @@
+{% extends "django_control_components/panels/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}Studio{% endblock %}
+{% block head_extra %}{% dcc_studio_assets %}{% endblock %}
+
+{% block content %}
+<header class="dcc-panel__header"><h1>Studio</h1></header>
+
+<div class="dcc-studio">
+  <a class="dcc-studio__panel" href="{% url panel.namespace|add:':studio-nav' %}">
+    <h2>{% dcc_icon "bars" %} Navigation</h2>
+    <p class="dcc-field__help">Build the sidebar — links, groups, icons, per-group visibility.</p>
+  </a>
+  <a class="dcc-studio__panel" href="{% url panel.namespace|add:':studio-dashboards' %}">
+    <h2>{% dcc_icon "gauge-high" %} Dashboards</h2>
+    <p class="dcc-field__help">Compose analytics dashboards from widgets, no code.</p>
+  </a>
+  <a class="dcc-studio__panel" href="{% url panel.namespace|add:':studio-resources' %}">
+    <h2>{% dcc_icon "table" %} Resources</h2>
+    <p class="dcc-field__help">Scaffold a model into a working list / form / detail resource.</p>
+  </a>
+  {% if request.user.is_superuser %}
+  <a class="dcc-studio__panel" href="{% url panel.namespace|add:':studio-roles' %}">
+    <h2>{% dcc_icon "users" %} Users &amp; Roles</h2>
+    <p class="dcc-field__help">Control which groups can see each studio object.</p>
+  </a>
+  {% endif %}
+</div>
+{% endblock %}

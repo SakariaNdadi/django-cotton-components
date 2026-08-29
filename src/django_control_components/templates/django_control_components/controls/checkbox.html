@@ -1,0 +1,6 @@
+{% include "django_control_components/controls/_open.html" %}
+  <label class="dcc-choice">
+    {% if widget_html %}{{ widget_html }}{% else %}<input id="{{ id }}" name="{{ name }}" type="checkbox" value="{{ value|default:'on' }}"{% if checked %} checked{% endif %}{% if required %} required{% endif %}{% if disabled %} disabled{% endif %} {{ attrs }} />{% endif %}
+    <span class="dcc-choice__label">{{ label }}{% if required %}<span class="dcc-field__required" aria-hidden="true">*</span>{% endif %}</span>
+  </label>
+  {% include "django_control_components/controls/_close.html" %}

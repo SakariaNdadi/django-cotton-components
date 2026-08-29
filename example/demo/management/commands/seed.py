@@ -124,7 +124,7 @@ class Command(BaseCommand):
 
     def _seed_dashboard_spec(self):
         """A resource defined entirely from stored JSON — no Python subclass."""
-        from django_cotton_components.studio.models import DashboardSpec
+        from django_control_components.studio.models import DashboardSpec
 
         DashboardSpec.objects.update_or_create(
             slug="comments",
@@ -181,7 +181,7 @@ class Command(BaseCommand):
 
     def _seed_panel_dashboard(self):
         """A widget dashboard defined entirely from stored JSON."""
-        from django_cotton_components.studio.models import PanelDashboard
+        from django_control_components.studio.models import PanelDashboard
 
         PanelDashboard.objects.update_or_create(
             slug="metrics",

@@ -11,18 +11,18 @@ A form step's form contains **only that step's declared fields**
 (`schema.to_form_class()`).
 
 ```bash
-pip install "django-cotton-components[wizard]"
+pip install "django-control-components[wizard]"
 ```
 
 Calling `WizardView.as_view()` without `django-formtools` installed raises
 `RuntimeError("WizardView needs django-formtools. Install
-django-cotton-components[wizard].")`.
+django-control-components[wizard].")`.
 
 ## Quick start
 
 ```python
-from django_cotton_components.wizards import WizardView, WizardStep
-from django_cotton_components.schemas import Schema, TextInput
+from django_control_components.wizards import WizardView, WizardStep
+from django_control_components.schemas import Schema, TextInput
 
 class ArticleWizard(WizardView):
     template_name = "articles/wizard.html"   # optional — a default ships
@@ -76,7 +76,7 @@ Non-form bodies get an empty, always-valid form — **`Next` never blocks** on t
 and they contribute nothing to `form_list` / `get_all_cleaned_data()`.
 
 ```python
-from django_cotton_components.infolists import Infolist, TextEntry
+from django_control_components.infolists import Infolist, TextEntry
 
 steps_config = [
     WizardStep("intro", "<p>Nothing is saved until the final step.<p>",

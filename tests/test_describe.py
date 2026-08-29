@@ -6,15 +6,15 @@ import json
 
 import pytest
 
-from django_cotton_components.core.describe import (
+from django_control_components.core.describe import (
     CODE_ONLY_SETTERS,
     describe_type,
     strip_privileged_setters,
 )
-from django_cotton_components.infolists import ENTRY_TYPES
-from django_cotton_components.panels import WIDGET_TYPES
-from django_cotton_components.schemas import FIELD_TYPES
-from django_cotton_components.tables import COLUMN_TYPES, FILTER_TYPES
+from django_control_components.infolists import ENTRY_TYPES
+from django_control_components.panels import WIDGET_TYPES
+from django_control_components.schemas import FIELD_TYPES
+from django_control_components.tables import COLUMN_TYPES, FILTER_TYPES
 
 ALL_REGISTRIES = [COLUMN_TYPES, FILTER_TYPES, FIELD_TYPES, ENTRY_TYPES, WIDGET_TYPES]
 
@@ -38,7 +38,7 @@ def test_layout_types_accept_children_and_leaves_do_not():
 
 
 def test_state_setter_is_code_only():
-    from django_cotton_components.tables.columns import TextColumn
+    from django_control_components.tables.columns import TextColumn
 
     info = describe_type(TextColumn)
     state = next(s for s in info.setters if s.name == "state")
@@ -58,7 +58,7 @@ def test_allow_html_is_superuser_gated_and_stripped_for_others():
 
 
 def test_choice_kind_from_literal_annotation():
-    from django_cotton_components.panels.widgets import ChartWidget
+    from django_control_components.panels.widgets import ChartWidget
 
     info = describe_type(ChartWidget)
     kind = next(s for s in info.setters if s.name == "kind")
@@ -69,7 +69,7 @@ def test_choice_kind_from_literal_annotation():
 
 
 def test_palette_json_is_serialisable_and_gated(rf, django_user_model):
-    from django_cotton_components.studio.palette import palette
+    from django_control_components.studio.palette import palette
 
     staff = django_user_model.objects.create_user("staff", is_staff=True)
     request = rf.get("/")

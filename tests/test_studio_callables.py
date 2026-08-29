@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from django.core.exceptions import ValidationError
 
-from django_cotton_components.studio.deserialize import build_infolist_from_spec
+from django_control_components.studio.deserialize import build_infolist_from_spec
 from tests.testapp.models import Article
 
 pytestmark = pytest.mark.django_db

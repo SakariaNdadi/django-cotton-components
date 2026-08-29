@@ -8,8 +8,8 @@ import json
 import pytest
 from django.contrib.auth.models import Permission
 
-from django_cotton_components.panels import Panel
-from django_cotton_components.studio.models import PanelDashboard, SpecRevision
+from django_control_components.panels import Panel
+from django_control_components.studio.models import PanelDashboard, SpecRevision
 
 pytestmark = pytest.mark.django_db
 

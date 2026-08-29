@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.core.exceptions import SchemaError
-from django_cotton_components.schemas import (
+from django_control_components.core.exceptions import SchemaError
+from django_control_components.schemas import (
     Checkbox,
     Schema,
     Section,

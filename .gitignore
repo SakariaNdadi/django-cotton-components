@@ -24,7 +24,7 @@ htmlcov/
 coverage.xml
 
 # Build output that is regenerated from source
-src/django_cotton_components/static/dcc/dcc.css.map
+src/django_control_components/static/dcc/dcc.css.map
 
 # Example project local state
 example/db.sqlite3

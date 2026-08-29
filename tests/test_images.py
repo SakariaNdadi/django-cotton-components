@@ -5,13 +5,13 @@ import io
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from django_cotton_components.images.specs import (
+from django_control_components.images.specs import (
     ImageSpec,
     ImageValidationError,
     parse_ratio,
     parse_size,
 )
-from django_cotton_components.images.validators import validate_image
+from django_control_components.images.validators import validate_image
 
 PIL = pytest.importorskip("PIL")
 from PIL import Image  # noqa: E402
@@ -64,7 +64,7 @@ def test_allowed_svg_still_size_limited():
 
 
 def test_aspect_tolerance_is_configurable():
-    from django_cotton_components.schemas import FileUpload
+    from django_control_components.schemas import FileUpload
 
     lenient = ImageSpec.from_field_config(
         FileUpload.make("cover").aspect_ratio("1:1").aspect_tolerance(0.5).image_spec()
@@ -97,7 +97,7 @@ def test_pipeline_strips_exif_and_converts(tmp_path, settings):
     settings.MEDIA_ROOT = str(tmp_path)
     from django.core.files.base import ContentFile
 
-    from django_cotton_components.images.pipeline import process_image
+    from django_control_components.images.pipeline import process_image
     from tests.testapp.models import Author
 
     # build a JPEG carrying a GPS EXIF tag

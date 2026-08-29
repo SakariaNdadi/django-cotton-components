@@ -1,0 +1,22 @@
+{% load dcc_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ resource_label }}{% if panel.brand_label %} · {{ panel.brand_label }}{% endif %}{% endblock %}</title>
+  {% block head_extra %}{% endblock %}
+  {% dcc_assets %}
+</head>
+<body class="dcc-body">
+  <div class="dcc-panel" x-data="dccShell()" :class="{ 'is-nav-open': navOpen }">
+    <button type="button" class="dcc-panel__navtoggle" aria-label="Toggle navigation" @click="navOpen = !navOpen">
+      {% dcc_icon "bars" %}
+    </button>
+    <div class="dcc-panel__scrim" @click="navOpen = false" x-show="navOpen" x-transition.opacity></div>
+    {% include "django_control_components/panels/_nav.html" %}
+    <main class="dcc-panel__main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

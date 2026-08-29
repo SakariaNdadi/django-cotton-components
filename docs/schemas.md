@@ -20,7 +20,7 @@ validation.
 ## Quick start
 
 ```python
-from django_cotton_components.schemas import (
+from django_control_components.schemas import (
     Schema, Section, Grid, TextInput, Textarea, Select, MultiSelect, Toggle, FileUpload,
 )
 
@@ -49,7 +49,7 @@ def article_schema():
 Render from a `CreateView` / `UpdateView` with `SchemaFormMixin`:
 
 ```python
-from django_cotton_components.mixins import SchemaFormMixin
+from django_control_components.mixins import SchemaFormMixin
 
 class ArticleCreateView(SchemaFormMixin, CreateView):
     model = Article
@@ -114,7 +114,7 @@ Pass a `form` to render your view's bound instance (with errors).
 
 ## Fields
 
-Import from `django_cotton_components.schemas`.
+Import from `django_control_components.schemas`.
 
 | Field | Notes |
 |---|---|

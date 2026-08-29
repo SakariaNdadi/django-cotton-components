@@ -8,7 +8,7 @@ fragment over htmx, so a chart repaints without a full page load.
 Compose them in `DashboardPage.widgets(request)`:
 
 ```python
-from django_cotton_components.panels import (
+from django_control_components.panels import (
     BarListWidget, ChartWidget, DashboardPage, StatWidget, TableWidget,
 )
 
@@ -76,8 +76,8 @@ plain server-rendered markup, or `payload(request)` to hand a JSON blob to an
 Alpine component.
 
 ```python
-from django_cotton_components.panels import Widget
-from django_cotton_components.panels.assets import Asset
+from django_control_components.panels import Widget
+from django_control_components.panels.assets import Asset
 
 class SparklineWidget(Widget):
     template_name = "myapp/widgets/sparkline.html"

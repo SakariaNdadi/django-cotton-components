@@ -20,7 +20,7 @@ The security model (`actions/registry.py:1-11`):
 ## Quick start
 
 ```python
-from django_cotton_components.actions import Action, BulkAction
+from django_control_components.actions import Action, BulkAction
 
 Action.make("publish")
     .label("Publish")
@@ -87,7 +87,7 @@ Return value is ignored. Raise to abort — the exception propagates as a 500
 
 ## Request flow
 
-One endpoint — `dcc:action`, from `django_cotton_components.urls`
+One endpoint — `dcc:action`, from `django_control_components.urls`
 (`a/<owner_key>/<action_name>/`). You mount it once; see [settings.md](settings.md).
 
 - **GET** → render the confirm / schema modal into `#dcc-modal-<owner>`.

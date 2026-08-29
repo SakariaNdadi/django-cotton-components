@@ -1,4 +1,4 @@
-# django-cotton-components
+# django-control-components
 
 Filament-inspired schema, table, and action builders for Django. Declare UI in
 Python; it renders itself through [django-cotton](https://django-cotton.com/),
@@ -22,7 +22,7 @@ wired to real `django.forms` validation.
 | Wizard (`dcc[wizard]`, django-formtools) — **htmx step swapping** | ✅ |
 | Panels / Resources (list · create · edit · view · **delete**), admin-independent | ✅ |
 | Infolists; dashboard **widgets** + `DashboardPage`; custom pages | ✅ |
-| No-code resources from stored JSON (`django_cotton_components.studio`) | ✅ |
+| No-code resources from stored JSON (`dcc[studio]`, `django_control_components.studio`) | ✅ |
 | Global search, relation managers, a visual dashboard builder | 🔜 |
 
 ## Docs
@@ -42,26 +42,28 @@ doc builds on. Then:
 ## Install
 
 ```bash
-pip install "django-cotton-components[images]"
+pip install "django-control-components[images]"
+pip install "django-control-components[studio]"   # + the no-code builder (separate distribution)
 ```
 
 ```python
 INSTALLED_APPS = [
     # ...
-    "django_cotton",  # before django_cotton_components
-    "django_cotton_components",
+    "django_cotton",  # before django_control_components
+    "django_control_components",
 ]
 ```
 
 Add `{% dcc_assets %}` to your base template `<head>` — it emits the stylesheet,
 the small Alpine helpers, htmx, Alpine and the icon-set stylesheet. Pass
 `htmx=False` / `alpine=False` / `icons=False` for anything the host page already
-loads. For the no-code seam, also add `"django_cotton_components.studio"`.
+loads. For the no-code seam, install the `studio` extra and also add
+`"django_control_components.studio"` to `INSTALLED_APPS`.
 
 ## Quick start
 
 ```python
-from django_cotton_components.schemas import Schema, Section, Select, TextInput, Toggle
+from django_control_components.schemas import Schema, Section, Select, TextInput, Toggle
 
 
 def article_schema():
@@ -92,7 +94,7 @@ def article_schema():
 
 ```python
 from django.views.generic import CreateView
-from django_cotton_components.mixins import SchemaFormMixin
+from django_control_components.mixins import SchemaFormMixin
 
 
 class ArticleCreateView(SchemaFormMixin, CreateView):

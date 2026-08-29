@@ -6,8 +6,8 @@ import pytest
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 
-from django_cotton_components.studio.deserialize import validate_spec
-from django_cotton_components.studio.introspect import (
+from django_control_components.studio.deserialize import validate_spec
+from django_control_components.studio.introspect import (
     describe_model,
     installed_models,
     safe_paths,

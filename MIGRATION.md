@@ -1,5 +1,16 @@
 # Migrating from 0.1.x to 1.0
 
+> **Rename + re-version (0.0.1).** The project is now `django-control-components`
+> (import `django_control_components`) and the current release is `0.0.1`. Replace
+> `django-cotton-components` / `django_cotton_components` everywhere. The `dcc` tag
+> prefix, `dcc-*` classes, and `DCC[...]` settings keys did **not** change.
+>
+> **Studio moved to its own distribution.** `django_control_components.studio` now
+> ships in `django-control-components-studio`. Install it with
+> `pip install "django-control-components[studio]"` — the import path and
+> `INSTALLED_APPS` entry are unchanged. A `Panel.studio()` / `.dynamic()` mount
+> without the extra now raises `ImproperlyConfigured`.
+
 1.0 is a hard break. The old templates were defective (unescaped JS
 interpolation, a table that shipped every row's full model dict to the browser)
 and are not carried forward. There is no compatibility shim.
@@ -29,13 +40,13 @@ prebuilt stylesheet with `{% dcc_assets %}` in your base template, or point your
 Tailwind 4 build at the source:
 
 ```css
-@source "../../.venv/lib/python*/site-packages/django_cotton_components";
+@source "../../.venv/lib/python*/site-packages/django_control_components";
 ```
 
 ## Preferred path: build UI in Python
 
 ```python
-from django_cotton_components.schemas import Schema, Section, TextInput, Select
+from django_control_components.schemas import Schema, Section, TextInput, Select
 
 schema = (
     Schema.make()

@@ -1,18 +1,28 @@
 # No-code resources (studio)
 
-`django_cotton_components.studio` lets an admin define a panel resource from
+`django_control_components.studio` lets an admin define a panel resource from
 **stored JSON** instead of a Python subclass — the seam a visual dashboard
 builder would sit on top of. The builder UI itself is not included yet.
 
 ## Enable it
 
+Studio ships as a **separate distribution** (`django-control-components-studio`).
+Install it via the extra:
+
+```bash
+pip install "django-control-components[studio]"
+```
+
 ```python
 INSTALLED_APPS = [
     # ...
-    "django_cotton_components",
-    "django_cotton_components.studio",
+    "django_control_components",
+    "django_control_components.studio",
 ]
 ```
+
+Calling `.studio()` or `.dynamic()` on a `Panel` without the extra installed
+raises `ImproperlyConfigured` with the install hint.
 
 ```python
 admin_panel = Panel("admin").path("panel").resources([...]).dynamic()

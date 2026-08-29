@@ -4,8 +4,8 @@ from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.utils.timesince import timesince
 
-from django_cotton_components.actions import Action, BulkAction
-from django_cotton_components.tables import (
+from django_control_components.actions import Action, BulkAction
+from django_control_components.tables import (
     BooleanColumn,
     DateColumn,
     SelectFilter,
@@ -166,7 +166,7 @@ def needs_review_table(request):
 
 
 def _quick_edit_schema():
-    from django_cotton_components.schemas import Schema, Select, TextInput
+    from django_control_components.schemas import Schema, Select, TextInput
 
     from .forms import ArticleForm
 

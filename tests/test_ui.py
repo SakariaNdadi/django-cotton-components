@@ -3,10 +3,10 @@ from __future__ import annotations
 import pytest
 from django.test import override_settings
 
-from django_cotton_components import htmx
-from django_cotton_components.core.attributes import AttributeBag
-from django_cotton_components.core.context import RenderContext
-from django_cotton_components.ui import Badge, Button, Checkbox, Icon, IconButton, Menu, Modal
+from django_control_components import htmx
+from django_control_components.core.attributes import AttributeBag
+from django_control_components.core.context import RenderContext
+from django_control_components.ui import Badge, Button, Checkbox, Icon, IconButton, Menu, Modal
 
 CTX = RenderContext()
 
@@ -77,7 +77,7 @@ def test_menu_lists_prerendered_items():
 
 @override_settings(DCC={"ICON_ASSET_URL": None})
 def test_icon_set_can_self_host():
-    from django_cotton_components.icons import icon_assets
+    from django_control_components.icons import icon_assets
 
     assert str(icon_assets()) == ""
 

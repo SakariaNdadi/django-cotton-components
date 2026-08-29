@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.schemas import MultiSelect, Schema, Section, Select, TextInput
+from django_control_components.schemas import MultiSelect, Schema, Section, Select, TextInput
 from tests.testapp.forms import ArticleForm
 from tests.testapp.models import Author, Tag
 

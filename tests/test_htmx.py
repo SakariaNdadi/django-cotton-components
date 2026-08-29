@@ -6,7 +6,7 @@ import pytest
 from django.http import HttpResponse
 from django.test import RequestFactory
 
-from django_cotton_components import htmx
+from django_control_components import htmx
 
 
 @pytest.fixture

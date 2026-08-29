@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.schemas import Schema, Select, Textarea, TextInput
+from django_control_components.schemas import Schema, Select, Textarea, TextInput
 from tests.testapp.forms import ArticleForm
 from tests.testapp.models import Author
 
@@ -58,7 +58,7 @@ def test_no_js_full_post_round_trip():
 
 
 def test_traverse_refuses_alters_data_callables():
-    from django_cotton_components.core.paths import traverse
+    from django_control_components.core.paths import traverse
 
     class Rec:
         calls: list[int] = []
@@ -74,7 +74,7 @@ def test_traverse_refuses_alters_data_callables():
 
 
 def test_traverse_refuses_private_segments():
-    from django_cotton_components.core.paths import traverse
+    from django_control_components.core.paths import traverse
 
     class Rec:
         _secret = "leaked"
@@ -84,7 +84,7 @@ def test_traverse_refuses_private_segments():
 
 
 def test_spec_column_named_delete_renders_empty_and_keeps_the_row(article):
-    from django_cotton_components.studio.deserialize import build_table_from_spec
+    from django_control_components.studio.deserialize import build_table_from_spec
     from tests.testapp.models import Article
 
     spec = {"columns": [{"type": "TextColumn", "name": "delete"}]}
@@ -98,7 +98,7 @@ def test_validate_spec_rejects_oversized_and_over_deep_specs():
     import pytest as _pytest
     from django.core.exceptions import ValidationError
 
-    from django_cotton_components.studio.deserialize import validate_spec
+    from django_control_components.studio.deserialize import validate_spec
 
     huge = {"table": {"columns": [{"type": "TextColumn", "name": "x" * 2000}] * 40}}
     with _pytest.raises(ValidationError):
@@ -114,7 +114,7 @@ def test_validate_spec_rejects_oversized_and_over_deep_specs():
 
 
 def test_permission_prefix_keeps_actions_distinct():
-    from django_cotton_components.panels.resource import Resource
+    from django_control_components.panels.resource import Resource
     from tests.testapp.models import Article
 
     class R(Resource):

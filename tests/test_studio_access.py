@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Group, Permission
 
-from django_cotton_components.studio.access import can_use_studio, require_studio
-from django_cotton_components.studio.models import PanelDashboard, visible_queryset
+from django_control_components.studio.access import can_use_studio, require_studio
+from django_control_components.studio.models import PanelDashboard, visible_queryset
 
 pytestmark = pytest.mark.django_db
 
@@ -86,7 +86,7 @@ def test_studio_permission_gate(django_user_model):
 def test_require_studio_raises_login_required_for_anonymous():
     from django.contrib.auth.models import AnonymousUser
 
-    from django_cotton_components.panels.guards import LoginRequired
+    from django_control_components.panels.guards import LoginRequired
 
     with pytest.raises(LoginRequired):
         require_studio(_req(AnonymousUser()))

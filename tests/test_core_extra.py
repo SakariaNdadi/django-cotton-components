@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 from django.test import RequestFactory
 
-from django_cotton_components.core.component import UNSET, Component, setter
-from django_cotton_components.core.context import RenderContext
-from django_cotton_components.core.evaluate import evaluate
+from django_control_components.core.component import UNSET, Component, setter
+from django_control_components.core.context import RenderContext
+from django_control_components.core.evaluate import evaluate
 
 
 class W(Component):

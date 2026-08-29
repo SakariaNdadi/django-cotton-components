@@ -8,8 +8,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "django_cotton",
-    "django_cotton_components",
-    "django_cotton_components.studio",
+    "django_control_components",
+    "django_control_components.studio",
     "tests.testapp",
 ]
 

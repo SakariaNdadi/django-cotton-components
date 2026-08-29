@@ -1,0 +1,108 @@
+{% load dcc_tags %}
+<div id="{{ table_id }}-content"
+  {% if mode == "client" %}x-data="dccTable('{{ config_id }}')"
+  x-on:dcc-table-search.window="search = $event.detail"{% endif %}>
+  {% if mode == "client" %}{{ client_config|json_script:config_id }}{% endif %}
+
+  {% if bulk_action_triggers %}
+  <div class="dcc-table__bulk" x-show="selectedCount() > 0" x-cloak>
+    <span class="dcc-table__bulkcount" x-text="selectAll ? 'All matching rows' : `${selectedCount()} selected`"></span>
+    <label class="dcc-check dcc-table__selectall" x-show="allSelected()">
+      <input type="checkbox" class="dcc-check__box" x-model="selectAll">
+      <span class="dcc-check__label">Select every matching row</span>
+    </label>
+    <input type="hidden" name="select_all" x-bind:value="selectAll ? '1' : ''">
+    <template x-for="pk in selected" :key="pk"><input type="hidden" name="records" x-bind:value="pk"></template>
+    {% for trigger in bulk_action_triggers %}{{ trigger }}{% endfor %}
+    <c-dcc.button variant="ghost" label="Clear" x-on:click="clearSelection()" />
+  </div>
+  {% endif %}
+
+  {% if presentation == "feed" %}
+  {% include "django_control_components/tables/_feed.html" %}
+  {% else %}
+  <div class="dcc-table__scroll">
+  <table class="dcc-table__grid">
+    <thead>
+      <tr>
+        {% if has_bulk %}
+        <th scope="col" class="dcc-table__th dcc-table__select">
+          <input type="checkbox" class="dcc-check__box" aria-label="Select all rows"
+            x-on:change="toggleAll($event.target.checked)" x-bind:checked="allSelected()">
+        </th>
+        {% endif %}
+        {% for head in headers %}
+        <th scope="col" class="dcc-table__th{% if head.sorted %} is-sorted-{{ head.sorted }}{% endif %}">
+          {% if head.sortable and mode == "server" %}
+          <a {{ head.htmx }} href="?">{{ head.label }}<span class="dcc-table__sortcue">{% if head.sorted == 'asc' %}▲{% elif head.sorted == 'desc' %}▼{% endif %}</span></a>
+          {% elif head.sortable and mode == "client" %}
+          <button type="button" x-on:click="sortBy({{ forloop.counter0 }})">{{ head.label }}<span class="dcc-table__sortcue" x-text="sortCue({{ forloop.counter0 }})"></span></button>
+          {% else %}{{ head.label }}{% endif %}
+        </th>
+        {% endfor %}
+        {% if row_actions %}<th scope="col" class="dcc-table__th dcc-table__actionscell">Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody {% if mode == "client" %}x-ref="body"{% endif %}>
+      {% for row in rows %}{% include "django_control_components/tables/_row.html" %}
+      {% empty %}
+      <tr><td class="dcc-table__td" colspan="{{ column_count }}">{{ empty_message }}</td></tr>
+      {% endfor %}
+      {% if load_more_htmx %}
+      <tr class="dcc-table__more" {{ load_more_htmx }}>
+        <td class="dcc-table__td" colspan="{{ column_count }}"><span class="dcc-table__moretext">{{ load_more_label|default:"Loading…" }}</span></td>
+      </tr>
+      {% endif %}
+      {% if mode == "client" %}
+      <tr data-dcc-empty x-show="matchCount === 0" x-cloak>
+        <td class="dcc-table__td" colspan="{{ column_count }}">{{ empty_message }}</td>
+      </tr>
+      {% if infinite_scroll %}
+      <tr class="dcc-table__sentinel" data-dcc-sentinel x-show="page < totalPages()" x-cloak>
+        <td class="dcc-table__td" colspan="{{ column_count }}"><span class="dcc-table__moretext">Loading…</span></td>
+      </tr>
+      {% endif %}
+      {% endif %}
+    </tbody>
+  </table>
+  </div>
+
+  {% if show_per_page or pagination or mode == "client" and not infinite_scroll %}
+  <div class="dcc-table__footer">
+    {% if show_per_page %}
+    {% if mode == "client" %}
+    <label class="dcc-table__perpage">
+      <span>Rows</span>
+      <select class="dcc-input" x-model.number="perPage">
+        {% for choice in per_page_choices %}<option value="{{ choice }}">{{ choice }}</option>{% endfor %}
+      </select>
+    </label>
+    {% else %}
+    <form class="dcc-table__perpage" {% if per_page_htmx %}{{ per_page_htmx }}{% endif %}>
+      <label><span>Rows</span>
+        <select name="{{ per_page_param }}" class="dcc-input">
+          {% for choice in per_page_choices %}<option value="{{ choice }}" {% if choice == per_page %}selected{% endif %}>{{ choice }}</option>{% endfor %}
+        </select>
+      </label>
+    </form>
+    {% endif %}
+    {% endif %}
+
+    {% if mode == "client" and not infinite_scroll %}
+    <nav class="dcc-table__pagination dcc-table__pagination--{{ pagination_position }}" x-show="matchCount > 0" x-cloak>
+      <c-dcc.button variant="secondary" label="Previous" x-on:click="prevPage()" x-bind:disabled="page === 1" />
+      <span x-text="`Page ${page} of ${totalPages()} · ${matchCount} rows`"></span>
+      <c-dcc.button variant="secondary" label="Next" x-on:click="nextPage()" x-bind:disabled="page >= totalPages()" />
+    </nav>
+    {% elif pagination %}
+    <nav class="dcc-table__pagination dcc-table__pagination--{{ pagination_position }}">
+      {% for link in pagination %}
+      {% if link.current %}<span>{{ link.label }}</span>
+      {% else %}<a class="dcc-btn dcc-btn--secondary" {{ link.htmx }} href="?">{{ link.label }}</a>{% endif %}
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>

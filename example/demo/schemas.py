@@ -1,4 +1,4 @@
-from django_cotton_components.schemas import (
+from django_control_components.schemas import (
     FileUpload,
     MultiSelect,
     Schema,

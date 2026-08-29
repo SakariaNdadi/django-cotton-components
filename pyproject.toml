@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "django-cotton-components"
-version = "1.0.0b1"
+name = "django-control-components"
+version = "0.0.1"
 description = "Filament-inspired schema, table, and action builders for Django, rendered through django-cotton."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -13,7 +13,7 @@ authors = [{ name = "Sakaria Ndadi", email = "sakariandadi@gmail.com" }]
 keywords = ["django", "components", "ui", "cotton", "forms", "tables", "filament"]
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -38,17 +38,26 @@ dependencies = [
 images = ["pillow>=11"]
 wizard = ["django-formtools>=2.5"]
 allauth = ["django-allauth>=65"]
+studio = ["django-control-components-studio>=0.0.1"]
 
 [project.urls]
-Homepage = "https://github.com/SakariaNdadi/django-cotton-components"
-Documentation = "https://github.com/SakariaNdadi/django-cotton-components#readme"
-Source = "https://github.com/SakariaNdadi/django-cotton-components"
-Changelog = "https://github.com/SakariaNdadi/django-cotton-components/blob/master/CHANGELOG.md"
-Issues = "https://github.com/SakariaNdadi/django-cotton-components/issues"
+Homepage = "https://github.com/SakariaNdadi/django-control-components"
+Documentation = "https://github.com/SakariaNdadi/django-control-components#readme"
+Source = "https://github.com/SakariaNdadi/django-control-components"
+Changelog = "https://github.com/SakariaNdadi/django-control-components/blob/master/CHANGELOG.md"
+Issues = "https://github.com/SakariaNdadi/django-control-components/issues"
+
+[tool.uv.workspace]
+members = ["packages/studio"]
+
+[tool.uv.sources]
+django-control-components = { workspace = true }
+django-control-components-studio = { workspace = true }
 
 [dependency-groups]
 dev = [
     "django",
+    "django-control-components-studio",
     "pillow>=11",
     "django-formtools>=2.5",
     "pytest>=8",
@@ -64,8 +73,8 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/django_cotton_components"]
-artifacts = ["src/django_cotton_components/static/**/*"]
+packages = ["src/django_control_components"]
+artifacts = ["src/django_control_components/static/**/*"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/tests", "/css", "/README.md", "/CHANGELOG.md", "/LICENSE"]
@@ -79,7 +88,7 @@ addopts = "--strict-markers --strict-config"
 
 [tool.coverage.run]
 branch = true
-source = ["django_cotton_components"]
+source = ["django_control_components"]
 omit = [
     "*/tests/*",
     "*/example/*",
@@ -113,14 +122,17 @@ ignore = ["S101"]
 "noxfile.py" = ["S", "E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["django_cotton_components"]
+known-first-party = ["django_control_components"]
 
 [tool.mypy]
 python_version = "3.12"
 plugins = ["mypy_django_plugin.main"]
 strict = true
 warn_return_any = false
-files = ["src/django_cotton_components"]
+files = ["src/django_control_components", "packages/studio/src/django_control_components/studio"]
+mypy_path = ["src", "packages/studio/src"]
+explicit_package_bases = true
+namespace_packages = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"
@@ -128,7 +140,7 @@ disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 # optional extra — allauth base classes are untyped and may be absent
-module = "django_cotton_components.integrations.allauth"
+module = "django_control_components.integrations.allauth"
 disallow_subclassing_any = false
 warn_unused_ignores = false
 

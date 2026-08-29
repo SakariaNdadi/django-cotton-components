@@ -5,8 +5,8 @@ from django.template import Context, Template
 from django.test import RequestFactory
 from django.views.generic import CreateView
 
-from django_cotton_components.mixins import SchemaFormMixin
-from django_cotton_components.schemas import Schema, Section, TextInput
+from django_control_components.mixins import SchemaFormMixin
+from django_control_components.schemas import Schema, Section, TextInput
 from tests.testapp.forms import ArticleForm
 from tests.testapp.models import Article
 

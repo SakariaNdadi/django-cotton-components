@@ -26,10 +26,10 @@ point at a wrong row inside the already-scoped queryset.
 
 ```python
 from django.urls import reverse
-from django_cotton_components.tables import (
+from django_control_components.tables import (
     Table, TextColumn, DateColumn, BooleanColumn, SelectFilter, TernaryFilter,
 )
-from django_cotton_components.actions import Action, BulkAction
+from django_control_components.actions import Action, BulkAction
 
 def article_table(request):
     return (
@@ -64,7 +64,7 @@ def article_table(request):
 Render it from a view with `TableMixin`:
 
 ```python
-from django_cotton_components.tables.views import TableMixin
+from django_control_components.tables.views import TableMixin
 
 class ArticleListView(TableMixin, TemplateView):
     template_name = "articles/list.html"
@@ -125,7 +125,7 @@ All methods are **fluent-only** and return `self`. (They are not `@setter`s —
 
 ## Columns
 
-Import from `django_cotton_components.tables`.
+Import from `django_control_components.tables`.
 
 | Column | `format` behaviour / extra setters |
 |---|---|

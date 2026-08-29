@@ -1,0 +1,3 @@
+{% include "django_control_components/controls/_open.html" %}
+  {% if widget_html %}{{ widget_html }}{% else %}<textarea id="{{ id }}" name="{{ name }}" class="dcc-textarea" rows="{{ rows|default:4 }}"{% if placeholder %} placeholder="{{ placeholder }}"{% endif %}{% if required %} required{% endif %}{% if disabled %} disabled{% endif %}{% if readonly %} readonly{% endif %} {{ attrs }}{% if htmx_attrs %} {{ htmx_attrs }}{% endif %}>{{ value }}</textarea>{% endif %}
+  {% include "django_control_components/controls/_close.html" %}

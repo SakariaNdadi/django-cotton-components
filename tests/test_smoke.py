@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-import django_cotton_components
+import django_control_components
 
 
 def test_version_exposed():
-    assert django_cotton_components.__version__ == "1.0.0b1"
+    assert django_control_components.__version__ == "0.0.1"
 
 
 @pytest.mark.django_db  # the studio DashboardSpec JSONField check probes the backend

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from django_cotton_components.panels import Panel
-from django_cotton_components.panels.guards import login_required, staff_required
-from django_cotton_components.panels.resource import Resource
+from django_control_components.panels import Panel
+from django_control_components.panels.guards import login_required, staff_required
+from django_control_components.panels.resource import Resource
 from tests.testapp.models import Article
 
 pytestmark = pytest.mark.django_db
@@ -48,7 +48,7 @@ def test_superuser_passes(client, urlconf, django_user_model):
 def test_staff_guard_redirects_anonymous():
     from django.test import RequestFactory
 
-    from django_cotton_components.panels.guards import LoginRequired
+    from django_control_components.panels.guards import LoginRequired
 
     request = RequestFactory().get("/")
     from django.contrib.auth.models import AnonymousUser
@@ -67,7 +67,7 @@ def test_permission_and_group_guards(django_user_model):
     from django.contrib.auth.models import Group
     from django.test import RequestFactory
 
-    from django_cotton_components.panels.guards import group_required, permission_required
+    from django_control_components.panels.guards import group_required, permission_required
 
     rf = RequestFactory()
     plain = django_user_model.objects.create_user("g1")

@@ -15,9 +15,9 @@ pages (yet — see *Custom pages* below).
 
 ```python
 # app/panels.py
-from django_cotton_components.panels import Panel, Resource
-from django_cotton_components.schemas import Schema, Section, TextInput, Select
-from django_cotton_components.tables import Table, TextColumn, DateColumn, SelectFilter
+from django_control_components.panels import Panel, Resource
+from django_control_components.schemas import Schema, Section, TextInput, Select
+from django_control_components.tables import Table, TextColumn, DateColumn, SelectFilter
 
 from .models import Article
 
@@ -79,7 +79,7 @@ Override points:
 # config/urls.py
 from django.urls import path
 from app.panels import ArticleResource
-from django_cotton_components.panels import Panel
+from django_control_components.panels import Panel
 
 admin_panel = (
     Panel("admin")
@@ -105,11 +105,11 @@ where the namespace is `dcc-panel-{panel-name}`.
 ## Skin a panel
 
 The package ships a minimal shell at
-`django_cotton_components/panels/base.html`. Shadow it from your app to drop
+`django_control_components/panels/base.html`. Shadow it from your app to drop
 panel pages into your own chrome:
 
 ```django
-{# app/templates/django_cotton_components/panels/base.html #}
+{# app/templates/django_control_components/panels/base.html #}
 {% extends "app/base.html" %}
 {% block crumbs %} / {{ resource_label }}{% endblock %}
 ```
