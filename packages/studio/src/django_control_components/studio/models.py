@@ -89,6 +89,18 @@ def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QueryS
     return queryset.filter(grant).distinct()
 
 
+def visible_list(queryset: models.QuerySet[Any], user: Any) -> list[Any]:
+    """Like :func:`visible_queryset` but returns a list with the
+    ``required_permission`` deny gate applied in Python.
+
+    ``visible_queryset`` cannot express ``required_permission`` in SQL, so a
+    ``RESTRICTED`` row carrying one is returned by it and must be re-filtered by
+    the caller. Use this wherever the result is shown to the user directly
+    rather than gated again by ``is_visible_to``.
+    """
+    return [obj for obj in visible_queryset(queryset, user) if obj.is_visible_to(user)]
+
+
 class DashboardSpec(AccessControlled):
     """A resource defined by stored configuration instead of a Python subclass.
 

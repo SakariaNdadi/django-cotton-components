@@ -152,7 +152,9 @@ class Action:
     def is_authorized(self, request: HttpRequest, record: Any = None) -> bool:
         rule = self._config.get("authorize", UNSET)
         if rule is UNSET:
-            return True
+            from ..conf import dcc_settings
+
+            return not dcc_settings.ACTIONS_DEFAULT_DENY
         if isinstance(rule, str):
             user = getattr(request, "user", None)
             return bool(user and user.has_perm(rule, record))

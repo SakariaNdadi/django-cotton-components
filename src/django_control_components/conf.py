@@ -58,6 +58,10 @@ DEFAULTS: dict[str, Any] = {
     # Optional Subresource Integrity map, ``{cdn_url: "sha384-..."}``. Any CDN asset
     # URL present here is emitted with ``integrity`` + ``crossorigin="anonymous"``.
     "ASSET_SRI": {},
+    # When True, an ``Action`` with no ``.authorize()`` rule is denied instead of
+    # allowed. Safer default for teams that treat every action as privileged;
+    # left False so existing code is not silently locked out on upgrade.
+    "ACTIONS_DEFAULT_DENY": False,
 }
 
 

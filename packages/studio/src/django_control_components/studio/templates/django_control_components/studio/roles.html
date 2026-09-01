@@ -16,6 +16,8 @@
     <tr>
       <th>Object</th>
       <th>Audience</th>
+      <th>Required permission</th>
+      <th>Users</th>
       {% for group in groups %}<th>{{ group.name }}</th>{% endfor %}
     </tr>
   </thead>
@@ -34,6 +36,26 @@
             <option value="{{ value }}"{% if value == row.visibility %} selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>
+        </form>
+      </td>
+      <td>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="kind" value="{{ row.kind }}">
+          <input type="hidden" name="pk" value="{{ row.pk }}">
+          <input type="hidden" name="action" value="set_permission">
+          <input type="text" name="required_permission" value="{{ row.required_permission }}"
+                 placeholder="app.codename" class="dcc-input">
+        </form>
+      </td>
+      <td>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="kind" value="{{ row.kind }}">
+          <input type="hidden" name="pk" value="{{ row.pk }}">
+          <input type="hidden" name="action" value="set_users">
+          <input type="text" name="usernames" value="{{ row.usernames }}"
+                 placeholder="alice, bob" class="dcc-input">
         </form>
       </td>
       {% for group in groups %}

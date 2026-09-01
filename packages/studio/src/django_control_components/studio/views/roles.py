@@ -44,6 +44,10 @@ class RolesView(StudioView):
                         "label": str(obj),
                         "visibility": obj.visibility,
                         "group_ids": set(obj.groups.values_list("pk", flat=True)),
+                        "required_permission": obj.required_permission,
+                        "usernames": ", ".join(
+                            obj.users.values_list(obj.users.model.USERNAME_FIELD, flat=True)
+                        ),
                     }
                 )
         return render(
@@ -69,6 +73,20 @@ class RolesView(StudioView):
             if value in Visibility.values:
                 obj.visibility = value
                 obj.save(update_fields=["visibility"])
+        elif action == "set_permission":
+            obj.required_permission = (request.POST.get("required_permission") or "").strip()
+            obj.save(update_fields=["required_permission"])
+        elif action == "set_users":
+            from django.contrib.auth import get_user_model
+
+            user_model = get_user_model()
+            names = [
+                n.strip() for n in (request.POST.get("usernames") or "").split(",") if n.strip()
+            ]
+            matched = user_model._default_manager.filter(
+                **{f"{user_model.USERNAME_FIELD}__in": names}
+            )
+            obj.users.set(matched)
         elif action in ("grant", "revoke"):
             group_pk = request.POST.get("group") or ""
             group = Group.objects.filter(pk=int(group_pk)).first() if group_pk.isdigit() else None
