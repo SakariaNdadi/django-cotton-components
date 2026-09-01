@@ -265,6 +265,23 @@ class Panel:
                 out.append(path("", view, name="index"))
         return out
 
+    def _page_catchall_patterns(self) -> list[Any]:
+        """The stored-``Page`` catch-all, reserved under ``p/`` and registered
+        last so a resource or dynamic slug can never collide with it."""
+        from django.urls import re_path
+
+        from ._studio import require_studio
+
+        spages = require_studio("pages")
+        view_cls = type("DynamicPageBound", (spages.DynamicPage,), {"panel": self})
+        return [
+            re_path(
+                r"^p/(?P<route>[\w./-]*)$",
+                view_cls.as_view(),  # type: ignore[attr-defined]
+                name="page",
+            )
+        ]
+
     @property
     def urls(self) -> tuple[list[Any], str]:
         patterns: list[Any] = []
@@ -273,6 +290,7 @@ class Panel:
             patterns.extend(self._resource_patterns(resource))
         if self._dynamic:
             patterns.extend(self._dynamic_patterns())
+            patterns.extend(self._page_catchall_patterns())
         return (patterns, self.namespace)
 
     def mount(self) -> URLResolver:

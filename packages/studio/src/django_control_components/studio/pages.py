@@ -55,6 +55,27 @@ class DynamicDelete(_ResolveSpec, panel_pages.DeleteRecord):
     pass
 
 
+class DynamicPage(panel_pages.PanelPage):
+    """Serve a stored :class:`~.models.Page` (``mount="panel"``) as an in-app
+    page: the panel guards run first, then the block tree renders in the panel
+    shell. A page the user may not see 404s, not 403s."""
+
+    template_name = "django_control_components/studio/panel_page.html"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        from django.utils.safestring import mark_safe
+
+        from .routing import render_page_tree, resolve_page
+
+        page = resolve_page("panel", self.panel.name, kwargs.get("route", ""), self.request)
+        ctx = super().get_context_data(**kwargs)
+        ctx["page"] = page
+        ctx["page_title"] = page.title
+        ctx["resource_label"] = page.title
+        ctx["content"] = mark_safe(render_page_tree(page, self.request))  # noqa: S308
+        return ctx
+
+
 class DynamicDashboardPage(panel_pages.DashboardPage):
     """Serve a stored :class:`PanelDashboard` row as a widget dashboard."""
 

@@ -1,0 +1,17 @@
+{% load dcc_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }}</title>
+  {% if seo_description %}<meta name="description" content="{{ seo_description }}">{% endif %}
+  {% dcc_assets %}
+</head>
+<body class="dcc-body">
+  <div class="dcc-site" x-data="dccShell()">
+    <main class="dcc-site__main">
+      {{ content }}
+    </main>
+  </div>
+</body>
+</html>
