@@ -12,20 +12,28 @@ from django.utils.text import slugify
 from .deserialize import validate_spec, validate_widgets_spec
 
 
-class AccessControlled(models.Model):
-    """Mixin: a row is visible to a user by an explicit grant, never by a deny.
+class Visibility(models.TextChoices):
+    PUBLIC = "public", "Everyone, including signed-out visitors"
+    AUTHENTICATED = "auth", "Any signed-in user"
+    RESTRICTED = "restricted", "Only the groups / users / permission below"
 
-    Resolution (``is_visible_to``): superuser → yes; anonymous → no;
-    ``required_permission`` set and not held → no; otherwise visible if
-    ``is_public``, or the user is in ``users``, or shares a group with
-    ``groups``. An ungranted, non-public row is invisible.
+
+class AccessControlled(models.Model):
+    """Mixin: a row's audience, resolved by an explicit grant, never by a deny.
+
+    ``is_visible_to``: superuser → yes; then by ``visibility`` —
+    ``PUBLIC`` → yes (anonymous included); ``AUTHENTICATED`` → any signed-in
+    user; ``RESTRICTED`` → ``required_permission`` deny gate, then the ``users``
+    / ``groups`` grants. An ungranted ``RESTRICTED`` row is invisible.
 
     This controls **visibility only** — a nav item pointing at a resource the
     user lacks ``view_`` permission for is still dropped by the nav builder and
     still 403s if hit directly.
     """
 
-    is_public = models.BooleanField(default=False, help_text="Visible to every authenticated user.")
+    visibility = models.CharField(
+        max_length=10, choices=Visibility.choices, default=Visibility.RESTRICTED
+    )
     groups = models.ManyToManyField(
         "auth.Group", blank=True, related_name="+", verbose_name="visible to groups"
     )
@@ -40,14 +48,16 @@ class AccessControlled(models.Model):
         abstract = True
 
     def is_visible_to(self, user: Any) -> bool:
+        if self.visibility == Visibility.PUBLIC:
+            return True
         if user is None or not user.is_authenticated:
             return False
         if user.is_superuser:
             return True
+        if self.visibility == Visibility.AUTHENTICATED:
+            return True
         if self.required_permission and not user.has_perm(self.required_permission):
             return False
-        if self.is_public:
-            return True
         if self.users.filter(pk=user.pk).exists():
             return True
         return self.groups.filter(pk__in=user.groups.all()).exists()
@@ -56,11 +66,17 @@ class AccessControlled(models.Model):
 def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QuerySet[Any]:
     """The ``AccessControlled`` rows in ``queryset`` visible to ``user`` — one
     query, for nav rendering."""
+    public = Q(visibility=Visibility.PUBLIC)
     if user is None or not user.is_authenticated:
-        return queryset.none()
+        return queryset.filter(public).distinct()
     if user.is_superuser:
         return queryset
-    grant = Q(is_public=True) | Q(users=user) | Q(groups__in=user.groups.all())
+    grant = (
+        public
+        | Q(visibility=Visibility.AUTHENTICATED)
+        | Q(users=user)
+        | Q(groups__in=user.groups.all())
+    )
     # required_permission is a string check we cannot express in SQL — rows that
     # carry one are filtered in Python by the caller when it matters. For nav the
     # extra rows are still gated by is_visible_to() before display.

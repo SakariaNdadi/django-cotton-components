@@ -47,7 +47,7 @@ def test_code_resource_is_grouped(urlconf, django_user_model):
 def test_navitem_url_target_and_active_state(urlconf, django_user_model):
     root = django_user_model.objects.create_superuser("root2", "r2@x.io", "x")
     NavItem.objects.create(
-        panel="nav", label="Docs", target_kind=NavItem.Kind.URL, target="/docs/", is_public=True
+        panel="nav", label="Docs", target_kind=NavItem.Kind.URL, target="/docs/", visibility="auth"
     )
     tree = build_nav(panel, _req("/docs/sub/", root))
     docs = next(n for n in tree if n.label == "Docs")
@@ -81,7 +81,7 @@ def test_navitem_resource_target_resolves(urlconf, django_user_model):
         label="Articles",
         target_kind=NavItem.Kind.RESOURCE,
         target="article",
-        is_public=True,
+        visibility="auth",
     )
     labels = {n.label: n for n in build_nav(panel, _req("/nav/", root))}
     assert "/nav/article/" in labels["Articles"].url
@@ -94,7 +94,7 @@ def test_navitem_dead_target_is_dropped(urlconf, django_user_model):
         label="Ghost",
         target_kind=NavItem.Kind.SPEC,
         target="does-not-exist",
-        is_public=True,
+        visibility="auth",
     )
     assert "Ghost" not in {n.label for n in build_nav(panel, _req("/nav/", root))}
 

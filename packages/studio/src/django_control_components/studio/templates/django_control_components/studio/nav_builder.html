@@ -65,7 +65,10 @@
             <input type="text" x-model="selectedNode().target" @change="touch()">
           </label>
           <label class="dcc-studio__field">
-            <span><input type="checkbox" x-model="selectedNode().is_public" @change="touch()"> Visible to everyone</span>
+            <span>Audience</span>
+            <select x-model="selectedNode().visibility" @change="touch()">
+              {% for v in visibilities %}<option value="{{ v.value }}">{{ v.label }}</option>{% endfor %}
+            </select>
           </label>
         </div>
       </template>

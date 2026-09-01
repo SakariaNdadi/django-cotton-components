@@ -15,7 +15,7 @@
   <thead>
     <tr>
       <th>Object</th>
-      <th>Everyone</th>
+      <th>Audience</th>
       {% for group in groups %}<th>{{ group.name }}</th>{% endfor %}
     </tr>
   </thead>
@@ -28,10 +28,12 @@
           {% csrf_token %}
           <input type="hidden" name="kind" value="{{ row.kind }}">
           <input type="hidden" name="pk" value="{{ row.pk }}">
-          <input type="hidden" name="action" value="toggle_public">
-          <button type="submit" class="dcc-studio__btn{% if row.is_public %} dcc-studio__btn--primary{% endif %}">
-            {% if row.is_public %}Yes{% else %}No{% endif %}
-          </button>
+          <input type="hidden" name="action" value="set_visibility">
+          <select name="visibility" onchange="this.form.submit()" class="dcc-input">
+            {% for value, label in visibilities %}
+            <option value="{{ value }}"{% if value == row.visibility %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
         </form>
       </td>
       {% for group in groups %}

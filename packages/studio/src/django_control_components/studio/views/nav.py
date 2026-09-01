@@ -11,15 +11,11 @@ from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
-from ..models import NavDocument, NavItem
+from ..models import NavDocument, NavItem, Visibility
 from .base import StudioView
 
 _KINDS = [{"kind": kind, "label": label} for kind, label in NavItem.Kind.choices]
-
-#: fields the nav builder owns and may overwrite on an existing row. Access-matrix
-#: fields (``required_permission``, ``groups``, ``users``) are edited in RolesView
-#: and are deliberately left untouched here.
-_BUILDER_FIELDS = ("label", "icon", "target_kind", "target", "is_enabled", "open_in_new_tab")
+_VISIBILITIES = [{"value": v, "label": lbl} for v, lbl in Visibility.choices]
 
 
 class StudioHome(StudioView):
@@ -49,7 +45,12 @@ class NavBuilder(StudioView):
         return render(
             request,
             self.template_name,
-            self.shell_context(boot_json=json.dumps(boot), kinds=_KINDS, panel_name=panel),
+            self.shell_context(
+                boot_json=json.dumps(boot),
+                kinds=_KINDS,
+                visibilities=_VISIBILITIES,
+                panel_name=panel,
+            ),
         )
 
 
@@ -128,7 +129,7 @@ def _row_to_item(row: NavItem) -> dict[str, Any]:
         "target_kind": row.target_kind,
         "is_enabled": row.is_enabled,
         "open_in_new_tab": row.open_in_new_tab,
-        "is_public": row.is_public,
+        "visibility": row.visibility,
     }
 
 
@@ -170,6 +171,9 @@ def _apply(panel_name: str, items: list[Any]) -> None:
         row.target = (raw.get("target") or "").strip()
         row.is_enabled = bool(raw.get("is_enabled", True))
         row.open_in_new_tab = bool(raw.get("open_in_new_tab", False))
+        visibility = raw.get("visibility")
+        if visibility in Visibility.values:
+            row.visibility = visibility
         row.order = order
         row.parent = None if kind == NavItem.Kind.GROUP else current_group
         row.save()

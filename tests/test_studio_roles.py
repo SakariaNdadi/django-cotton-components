@@ -64,12 +64,29 @@ def test_grant_and_revoke_a_group(client, urlconf, django_user_model, dashboard)
     assert not dashboard.groups.filter(pk=group.pk).exists()
 
 
-def test_toggle_public(client, urlconf, django_user_model, dashboard):
+def test_set_visibility(client, urlconf, django_user_model, dashboard):
     root = django_user_model.objects.create_superuser("root3", "r3@x.io", "x")
     client.force_login(root)
     client.post(
         "/studio/roles/",
-        {"kind": "dashboard", "pk": dashboard.pk, "action": "toggle_public"},
+        {
+            "kind": "dashboard",
+            "pk": dashboard.pk,
+            "action": "set_visibility",
+            "visibility": "public",
+        },
     )
     dashboard.refresh_from_db()
-    assert dashboard.is_public is True
+    assert dashboard.visibility == "public"
+
+    client.post(
+        "/studio/roles/",
+        {
+            "kind": "dashboard",
+            "pk": dashboard.pk,
+            "action": "set_visibility",
+            "visibility": "bogus",
+        },
+    )
+    dashboard.refresh_from_db()
+    assert dashboard.visibility == "public"  # invalid value ignored

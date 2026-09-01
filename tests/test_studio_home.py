@@ -36,7 +36,7 @@ def test_falls_back_to_panel_index_when_nothing_matches(urlconf, django_user_mod
 
 def test_first_visible_dashboard(urlconf, django_user_model):
     user = django_user_model.objects.create_user("u2")
-    PanelDashboard.objects.create(slug="a", widgets=[], is_public=True)
+    PanelDashboard.objects.create(slug="a", widgets=[], visibility="auth")
     url = resolve_home(_req(user), panel)
     assert url.endswith("/dash/a/")
 
@@ -45,16 +45,16 @@ def test_group_default_dashboard_wins(urlconf, django_user_model):
     user = django_user_model.objects.create_user("u3")
     group = Group.objects.create(name="ops")
     user.groups.add(group)
-    PanelDashboard.objects.create(slug="general", widgets=[], is_public=True)
-    special = PanelDashboard.objects.create(slug="ops-board", widgets=[], is_public=True)
+    PanelDashboard.objects.create(slug="general", widgets=[], visibility="auth")
+    special = PanelDashboard.objects.create(slug="ops-board", widgets=[], visibility="auth")
     special.default_for_groups.add(group)
     assert resolve_home(_req(user), panel).endswith("/dash/ops-board/")
 
 
 def test_user_preference_wins(urlconf, django_user_model):
     user = django_user_model.objects.create_user("u4")
-    PanelDashboard.objects.create(slug="default", widgets=[], is_public=True)
-    PanelDashboard.objects.create(slug="mine", widgets=[], is_public=True)
+    PanelDashboard.objects.create(slug="default", widgets=[], visibility="auth")
+    PanelDashboard.objects.create(slug="mine", widgets=[], visibility="auth")
     UserPreference.objects.create(user=user, home_kind="dashboard", home_target="mine")
     assert resolve_home(_req(user), panel).endswith("/dash/mine/")
 

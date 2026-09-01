@@ -12,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
-from ..models import AccessControlled, DashboardSpec, NavItem, PanelDashboard
+from ..models import AccessControlled, DashboardSpec, NavItem, PanelDashboard, Visibility
 from .base import StudioView
 
 _MODELS: dict[str, type[AccessControlled]] = {
@@ -42,14 +42,14 @@ class RolesView(StudioView):
                         "kind": kind,
                         "pk": obj.pk,
                         "label": str(obj),
-                        "is_public": obj.is_public,
+                        "visibility": obj.visibility,
                         "group_ids": set(obj.groups.values_list("pk", flat=True)),
                     }
                 )
         return render(
             request,
             self.template_name,
-            self.shell_context(groups=groups, rows=rows),
+            self.shell_context(groups=groups, rows=rows, visibilities=Visibility.choices),
         )
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -64,9 +64,11 @@ class RolesView(StudioView):
             raise PermissionDenied("no such object")
 
         action = request.POST.get("action")
-        if action == "toggle_public":
-            obj.is_public = not obj.is_public
-            obj.save(update_fields=["is_public"])
+        if action == "set_visibility":
+            value = request.POST.get("visibility", "")
+            if value in Visibility.values:
+                obj.visibility = value
+                obj.save(update_fields=["visibility"])
         elif action in ("grant", "revoke"):
             group_pk = request.POST.get("group") or ""
             group = Group.objects.filter(pk=int(group_pk)).first() if group_pk.isdigit() else None
