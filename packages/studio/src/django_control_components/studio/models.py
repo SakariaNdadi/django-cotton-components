@@ -233,6 +233,26 @@ class NavItem(AccessControlled):
                 )
 
 
+class NavDocument(models.Model):
+    """Optimistic-concurrency token for a panel's whole sidebar.
+
+    The sidebar is a set of :class:`NavItem` rows, not a single row, so the
+    ``revision`` counter that guards :class:`DashboardSpec` lives here instead.
+    Bumped once per successful nav save; a stale client revision is a 409.
+    """
+
+    panel = models.CharField(max_length=100, unique=True, help_text="Panel.name")
+    revision = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "dcc_studio"
+        verbose_name = "navigation document"
+
+    def __str__(self) -> str:
+        return f"{self.panel} @ r{self.revision}"
+
+
 class UserPreference(models.Model):
     """Per-user studio preferences — the home dashboard override and shell state."""
 

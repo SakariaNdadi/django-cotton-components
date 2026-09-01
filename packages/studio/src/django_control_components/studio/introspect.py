@@ -97,8 +97,14 @@ def _picker_allows(model: type[Model]) -> bool:
     return _label_of(model) in set(allow)
 
 
-def installed_models(request: HttpRequest | None) -> list[dict[str, str]]:
-    """Models a staff user may build a resource / dashboard for."""
+def installed_models(request: HttpRequest | None, *, trusted: bool = False) -> list[dict[str, str]]:
+    """Models a staff user may build a resource / dashboard for.
+
+    ``trusted=True`` is for the management command: it runs from a shell with DB
+    access, so the per-user ``view_`` permission gate (and the user-model
+    superuser restriction) do not apply — only the sensitive-model deny list and
+    ``DCC["STUDIO_RESOURCE_MODELS"]`` still filter.
+    """
     user = getattr(request, "user", None)
     is_superuser = bool(user and getattr(user, "is_superuser", False))
     user_model = get_user_model()
@@ -106,11 +112,11 @@ def installed_models(request: HttpRequest | None) -> list[dict[str, str]]:
     for model in apps.get_models():
         if is_sensitive_model(model):
             continue
-        if model is user_model and not is_superuser:
+        if model is user_model and not is_superuser and not trusted:
             continue
         if not _picker_allows(model):
             continue
-        if not _user_can_view(request, model):
+        if not trusted and not _user_can_view(request, model):
             continue
         out.append(
             {

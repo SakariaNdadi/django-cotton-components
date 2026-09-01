@@ -110,5 +110,11 @@ class Resource:
             return False
         if user.is_superuser:
             return True
-        # model-level check; object-level auth is opt-in by overriding can()
-        return user.has_perm(cls.perm(action))
+        perm = cls.perm(action)
+        # Object-level backends (django-guardian, rules) get first say when an object
+        # is in hand. Django's default ``ModelBackend`` returns ``False`` for any
+        # object-scoped check, so fall back to the model-level permission — that
+        # preserves the plain-Django behaviour while letting an object backend grant.
+        if obj is not None and user.has_perm(perm, obj):
+            return True
+        return user.has_perm(perm)

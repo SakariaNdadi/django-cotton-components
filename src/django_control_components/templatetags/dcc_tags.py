@@ -15,8 +15,32 @@ if TYPE_CHECKING:
 
 register = template.Library()
 
-_ALPINE_SRC = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-_ALPINE_FOCUS_SRC = "https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"
+# Pinned exactly. A floating range let a production app inherit an upstream
+# regression on its next page load. Bump deliberately, in lockstep with the
+# vendored copies fetched by ``manage.py dcc_vendor_assets``.
+ALPINE_VERSION = "3.17.1"
+_ALPINE_SRC = f"https://cdn.jsdelivr.net/npm/alpinejs@{ALPINE_VERSION}/dist/cdn.min.js"
+_ALPINE_FOCUS_SRC = f"https://cdn.jsdelivr.net/npm/@alpinejs/focus@{ALPINE_VERSION}/dist/cdn.min.js"
+# Vendored file names under ``DCC["VENDOR_ASSET_DIR"]`` (CDN URL -> local basename).
+# ``manage.py dcc_vendor_assets`` writes exactly these names.
+VENDOR_NAMES = {
+    "htmx": "htmx.min.js",
+    _ALPINE_SRC: "alpine.min.js",
+    _ALPINE_FOCUS_SRC: "alpine-focus.min.js",
+}
+
+
+def _script(
+    url: str, *, vendor: bool, vendor_dir: str, sri: dict[str, str], vendor_key: str | None = None
+) -> str:
+    """One ``<script defer>`` tag — self-hosted when ``vendor``, else CDN with an
+    optional ``integrity`` from ``DCC["ASSET_SRI"]``."""
+    key = vendor_key or url
+    if vendor and key in VENDOR_NAMES:
+        return f'<script defer src="{static(vendor_dir + VENDOR_NAMES[key])}"></script>'
+    integrity = sri.get(url)
+    attrs = f' integrity="{integrity}" crossorigin="anonymous"' if integrity else ""
+    return f'<script defer src="{url}"{attrs}></script>'
 
 
 @register.simple_tag
@@ -29,9 +53,18 @@ def dcc_assets(
     already loads them. Tables, actions and wizards drive their mutations through
     htmx, so it is on by default. ``focus=False`` skips the Alpine focus plugin
     that ``x-trap`` (modal / drawer focus containment) depends on.
+
+    Set ``DCC["VENDOR_ASSETS"] = True`` to serve htmx / Alpine / focus from the
+    project's own static files; ``DCC["ASSET_SRI"]`` adds integrity hashes to any
+    CDN asset that stays remote.
     """
+    from ..conf import dcc_settings
     from ..htmx import HTMX_SRC
     from ..icons import icon_assets
+
+    vendor = bool(dcc_settings.VENDOR_ASSETS)
+    vendor_dir = dcc_settings.VENDOR_ASSET_DIR
+    sri = dcc_settings.ASSET_SRI or {}
 
     parts = [f'<link rel="stylesheet" href="{static("dcc/dcc.css")}">']
     if icons:
@@ -39,15 +72,17 @@ def dcc_assets(
         if icon_html:
             parts.append(icon_html)
     if htmx:
-        parts.append(f'<script src="{HTMX_SRC}" defer></script>')
+        parts.append(
+            _script(HTMX_SRC, vendor=vendor, vendor_dir=vendor_dir, sri=sri, vendor_key="htmx")
+        )
     # dcc.js MUST load before Alpine so it can register its `alpine:init`
     # listener before Alpine starts and scans the DOM.
     parts.append(f'<script defer src="{static("dcc/dcc.js")}"></script>')
     if alpine:
         # Plugins must load before Alpine core; `defer` preserves order.
         if focus:
-            parts.append(f'<script defer src="{_ALPINE_FOCUS_SRC}"></script>')
-        parts.append(f'<script defer src="{_ALPINE_SRC}"></script>')
+            parts.append(_script(_ALPINE_FOCUS_SRC, vendor=vendor, vendor_dir=vendor_dir, sri=sri))
+        parts.append(_script(_ALPINE_SRC, vendor=vendor, vendor_dir=vendor_dir, sri=sri))
     return mark_safe("\n".join(parts))  # noqa: S308  -- fixed strings + static() URL
 
 

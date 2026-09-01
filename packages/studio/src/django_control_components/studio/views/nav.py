@@ -11,10 +11,15 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from ..models import NavItem
+from ..models import NavDocument, NavItem
 from .base import StudioView
 
 _KINDS = [{"kind": kind, "label": label} for kind, label in NavItem.Kind.choices]
+
+#: fields the nav builder owns and may overwrite on an existing row. Access-matrix
+#: fields (``required_permission``, ``groups``, ``users``) are edited in RolesView
+#: and are deliberately left untouched here.
+_BUILDER_FIELDS = ("label", "icon", "target_kind", "target", "is_enabled", "open_in_new_tab")
 
 
 class StudioHome(StudioView):
@@ -33,7 +38,7 @@ class NavBuilder(StudioView):
         boot = {
             "doc": {"items": _current_items(self.panel.name)},
             "kinds": _KINDS,
-            "revision": 0,
+            "revision": _revision_of(self.panel.name),
             "saveUrl": _url(self.panel, "studio-nav-save"),
             "previewUrl": _url(self.panel, "studio-nav-preview"),
             "csrfToken": get_token(request),
@@ -52,14 +57,30 @@ class NavSave(StudioView):
         if not isinstance(items, list):
             return _error_response(["items: expected a list"])
 
+        panel_name = self.panel.name
         try:
-            with transaction.atomic():
-                NavItem.objects.filter(panel=self.panel.name).delete()
-                _rebuild(self.panel.name, items)
-        except ValidationError as exc:
-            return _error_response(list(exc.messages))
+            client_revision = int(request.POST.get("revision", -1))
+        except (TypeError, ValueError):
+            client_revision = -1
 
-        return JsonResponse({"revision": 1})
+        with transaction.atomic():
+            navdoc, _ = NavDocument.objects.select_for_update().get_or_create(panel=panel_name)
+            if client_revision != navdoc.revision:
+                return JsonResponse(
+                    {
+                        "revision": navdoc.revision,
+                        "doc": {"items": _current_items(panel_name)},
+                    },
+                    status=409,
+                )
+            try:
+                _apply(panel_name, items)
+            except ValidationError as exc:
+                return _error_response(list(exc.messages))
+            navdoc.revision += 1
+            navdoc.save(update_fields=["revision", "updated_at"])
+
+        return JsonResponse({"revision": navdoc.revision})
 
 
 class NavPreview(StudioView):
@@ -101,12 +122,29 @@ def _row_to_item(row: NavItem) -> dict[str, Any]:
         "icon": row.icon,
         "target": row.target,
         "target_kind": row.target_kind,
+        "is_enabled": row.is_enabled,
+        "open_in_new_tab": row.open_in_new_tab,
         "is_public": row.is_public,
     }
 
 
-def _rebuild(panel_name: str, items: list[Any]) -> None:
+def _revision_of(panel_name: str) -> int:
+    row = NavDocument.objects.filter(panel=panel_name).values_list("revision", flat=True).first()
+    return row or 0
+
+
+def _apply(panel_name: str, items: list[Any]) -> None:
+    """Reconcile the panel's nav rows against ``items`` by client id.
+
+    Existing rows (``id`` = ``"db<pk>"``) are updated in place — so
+    access-matrix fields set in RolesView survive. Rows missing from the payload
+    are deleted; new items are created. Two levels deep, folded under the most
+    recent ``group`` item exactly as before.
+    """
+    existing = {row.pk: row for row in NavItem.objects.filter(panel=panel_name)}
+    seen_pks: set[int] = set()
     current_group: NavItem | None = None
+
     for order, raw in enumerate(items):
         if not isinstance(raw, dict):
             raise ValidationError("each nav item must be an object")
@@ -117,21 +155,36 @@ def _rebuild(panel_name: str, items: list[Any]) -> None:
         if kind not in NavItem.Kind.values:
             raise ValidationError(f"unknown nav kind {kind!r}")
 
-        item = NavItem(
-            panel=panel_name,
-            label=label,
-            icon=(raw.get("icon") or "").strip(),
-            order=order,
-            target_kind=kind,
-            target=(raw.get("target") or "").strip(),
-            is_public=bool(raw.get("is_public", True)),
-        )
+        pk = _pk_from_id(raw.get("id"))
+        row = existing.get(pk) if pk is not None else None
+        if row is None:
+            row = NavItem(panel=panel_name)
+
+        row.label = label
+        row.icon = (raw.get("icon") or "").strip()
+        row.target_kind = kind
+        row.target = (raw.get("target") or "").strip()
+        row.is_enabled = bool(raw.get("is_enabled", True))
+        row.open_in_new_tab = bool(raw.get("open_in_new_tab", False))
+        row.order = order
+        row.parent = None if kind == NavItem.Kind.GROUP else current_group
+        row.save()
+        seen_pks.add(row.pk)
         if kind == NavItem.Kind.GROUP:
-            item.save()
-            current_group = item
-        else:
-            item.parent = current_group
-            item.save()
+            current_group = row
+
+    stale = set(existing) - seen_pks
+    if stale:
+        NavItem.objects.filter(pk__in=stale).delete()
+
+
+def _pk_from_id(raw_id: Any) -> int | None:
+    if isinstance(raw_id, str) and raw_id.startswith("db"):
+        try:
+            return int(raw_id[2:])
+        except ValueError:
+            return None
+    return None
 
 
 def _preview_tree(items: list[Any]) -> list[Any]:

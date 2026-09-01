@@ -86,7 +86,7 @@ class DashboardSave(StudioView):
 
         widgets = [_clean_node(node) for node in doc.get("items", []) if isinstance(node, dict)]
         try:
-            validate_widgets_spec(widgets)
+            validate_widgets_spec(widgets, request=request)
         except ValidationError as exc:
             return JsonResponse(
                 {"errors": [{"path": "", "message": str(m)} for m in exc.messages]}, status=422
@@ -110,7 +110,7 @@ class DashboardPreview(StudioView):
         doc = self.read_doc()
         widgets = [_clean_node(n) for n in doc.get("items", []) if isinstance(n, dict)]
         try:
-            validate_widgets_spec(widgets)
+            validate_widgets_spec(widgets, request=request)
             built = build_widgets_from_spec(widgets)
             body = "".join(str(w.render(request)) for w in built)
         except ValidationError as exc:

@@ -39,6 +39,31 @@ def test_dcc_assets_can_skip_htmx():
     assert "htmx" not in out
 
 
+def test_dcc_assets_pins_alpine_exactly():
+    out = Template("{% load dcc_tags %}{% dcc_assets %}").render(Context())
+    assert "alpinejs@3.x.x" not in out
+    assert "alpinejs@3.17.1" in out
+
+
+def test_dcc_assets_vendor_mode_serves_local(settings):
+    settings.DCC = {"VENDOR_ASSETS": True, "ICON_ASSET_URL": None}
+    out = Template("{% load dcc_tags %}{% dcc_assets %}").render(Context())
+    assert "cdn.jsdelivr.net" not in out
+    assert "dcc/vendor/alpine.min.js" in out
+    assert "dcc/vendor/alpine-focus.min.js" in out
+    assert "dcc/vendor/htmx.min.js" in out
+
+
+def test_dcc_assets_applies_sri_to_cdn(settings):
+    settings.DCC = {
+        "ASSET_SRI": {
+            "https://cdn.jsdelivr.net/npm/alpinejs@3.17.1/dist/cdn.min.js": "sha384-deadbeef",
+        }
+    }
+    out = Template("{% load dcc_tags %}{% dcc_assets %}").render(Context())
+    assert 'integrity="sha384-deadbeef" crossorigin="anonymous"' in out
+
+
 def test_dcc_form_tag_renders_form_with_csrf(rf):
     request = rf.get("/")
     tpl = Template("{% load dcc_tags %}{% dcc_form schema %}")

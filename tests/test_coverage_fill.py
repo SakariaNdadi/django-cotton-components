@@ -125,13 +125,26 @@ def _clear():
     clear_schemas()
 
 
-def test_schema_validate_view_returns_field_fragment():
+def test_schema_validate_view_returns_field_fragment(django_user_model):
     schema = Schema.make().form(ArticleForm).strict().schema([TextInput.make("title")])
     register_schema("art", schema)
     req = RequestFactory().post("/dcc/v/art/", {"_field": "title", "title": ""})
+    req.user = django_user_model(username="u", is_active=True)
     resp = SchemaValidateView.as_view()(req, schema_key="art")
     assert resp.status_code == 200
     assert b"dcc-field" in resp.content
+
+
+def test_schema_validate_view_rejects_anonymous():
+    from django.contrib.auth.models import AnonymousUser
+    from django.core.exceptions import PermissionDenied
+
+    schema = Schema.make().form(ArticleForm).strict().schema([TextInput.make("title")])
+    register_schema("art", schema)
+    req = RequestFactory().post("/dcc/v/art/", {"_field": "title", "title": ""})
+    req.user = AnonymousUser()
+    with pytest.raises(PermissionDenied):
+        SchemaValidateView.as_view()(req, schema_key="art")
 
 
 def test_schema_validate_unknown_schema_and_field():
@@ -142,7 +155,7 @@ def test_schema_validate_unknown_schema_and_field():
         SchemaValidateView.as_view()(req, schema_key="nope")
 
     schema = Schema.make().form(ArticleForm).strict().schema([TextInput.make("title")])
-    register_schema("art", schema)
+    register_schema("art", schema, authorize=lambda _req: True)
     req2 = RequestFactory().post("/x/", {})
     assert SchemaValidateView.as_view()(req2, schema_key="art").status_code == 400
     req3 = RequestFactory().post("/x/", {"_field": "ghost"})

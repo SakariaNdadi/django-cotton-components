@@ -66,6 +66,13 @@ def test_dcc_scaffold_command_writes_rows():
     assert DashboardSpec.objects.filter(slug="article").exists()
 
 
+def test_dcc_scaffold_all_writes_rows():
+    call_command("dcc_scaffold", "--all")
+    slugs = set(DashboardSpec.objects.values_list("slug", flat=True))
+    assert "article" in slugs  # a project model got scaffolded
+    assert "group" not in slugs  # sensitive models still skipped
+
+
 def test_dcc_scaffold_requires_a_target():
     from django.core.management.base import CommandError
 

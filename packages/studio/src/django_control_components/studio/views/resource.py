@@ -106,7 +106,7 @@ class ResourceSave(StudioView):
 
         candidate = {"table": table, "schema": spec.schema, "infolist": spec.infolist}
         try:
-            validate_spec(candidate, model=spec.resolve_model())
+            validate_spec(candidate, model=spec.resolve_model(), request=request)
         except ValidationError as exc:
             return JsonResponse(
                 {"errors": [{"path": "", "message": str(m)} for m in exc.messages]}, status=422
@@ -136,7 +136,7 @@ class ResourcePreview(StudioView):
         from django.utils.html import escape
 
         try:
-            validate_spec({"table": table_spec}, model=model)
+            validate_spec({"table": table_spec}, model=model, request=request)
             table = build_table_from_spec(model._default_manager.all()[:5], table_spec)
             table.client_side()
             body = str(table.render(request))

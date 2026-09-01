@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         labels: list[str] = list(options["models"])
         if options["all"]:
-            labels += [row["label"] for row in installed_models(None)]
+            labels += [row["label"] for row in installed_models(None, trusted=True)]
         if not labels:
             raise CommandError("pass one or more app_label.Model, or --all")
 

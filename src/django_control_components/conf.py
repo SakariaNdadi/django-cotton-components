@@ -44,6 +44,16 @@ DEFAULTS: dict[str, Any] = {
     # ``Panel.name`` whose home the allauth adapter resolves after login. None =>
     # fall back to allauth's own ``LOGIN_REDIRECT_URL``.
     "HOME_PANEL": None,
+    # Serve htmx / Alpine / the focus plugin from the project's own static files
+    # instead of a CDN. Air-gapped and privacy-sensitive deploys set this True and
+    # place the pinned files under ``VENDOR_ASSET_DIR`` (``manage.py dcc_vendor_assets``
+    # fetches them).
+    "VENDOR_ASSETS": False,
+    # Static path prefix the vendored copies live under when ``VENDOR_ASSETS``.
+    "VENDOR_ASSET_DIR": "dcc/vendor/",
+    # Optional Subresource Integrity map, ``{cdn_url: "sha384-..."}``. Any CDN asset
+    # URL present here is emitted with ``integrity`` + ``crossorigin="anonymous"``.
+    "ASSET_SRI": {},
 }
 
 

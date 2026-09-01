@@ -65,7 +65,31 @@ def _check_jsonable(value: Any, where: str) -> None:
     raise ValidationError(f"{where}: {type(value).__name__} is not allowed in a spec")
 
 
-def _instantiate(registry: Any, node: dict[str, Any], where: str) -> Any:
+def _reject_privileged_setters(
+    registry: Any, type_name: str, config: dict[str, Any], where: str
+) -> None:
+    """Reject config keys whose setter is gated ``requires="superuser"``.
+
+    The palette hides these from a non-superuser (``strip_privileged_setters``),
+    but that is presentation only — a hand-crafted ``doc`` POST bypasses it.
+    ``allow_html`` on a column is the stored-XSS case this closes.
+    """
+    try:
+        info = registry.info(type_name)
+    except (KeyError, AttributeError):
+        return
+    gated = {s.name for s in info.setters if s.requires == "superuser"}
+    offending = gated.intersection(config)
+    if offending:
+        raise ValidationError(
+            f"{where}.{type_name}: {sorted(offending)} require superuser "
+            "and cannot be set from a spec"
+        )
+
+
+def _instantiate(
+    registry: Any, node: dict[str, Any], where: str, *, privileged: bool = True
+) -> Any:
     if not isinstance(node, dict) or "type" not in node:
         raise ValidationError(f"{where}: each node needs a 'type'")
     type_name = node["type"]
@@ -74,6 +98,8 @@ def _instantiate(registry: Any, node: dict[str, Any], where: str) -> Any:
     except KeyError as exc:
         raise ValidationError(str(exc)) from None
     config = node.get("config", {}) or {}
+    if not privileged:
+        _reject_privileged_setters(registry, type_name, config, where)
     # visible / hidden may carry an "@alias" string resolved via
     # DCC["STUDIO_CALLABLES"]; every other code-only key stays banned.
     from .callables import ALIASABLE_KEYS, is_alias
@@ -163,15 +189,25 @@ def build_widgets_from_spec(nodes: list[dict[str, Any]]) -> list[Any]:
     return [_instantiate(WIDGET_TYPES, node, f"widgets[{i}]") for i, node in enumerate(nodes or [])]
 
 
-def validate_widgets_spec(nodes: Any) -> None:
+def _is_privileged(request: Any) -> bool:
+    """A spec built by server-side code (no request) is trusted; over HTTP only a
+    superuser may name ``requires="superuser"`` setters."""
+    if request is None:
+        return True
+    user = getattr(request, "user", None)
+    return bool(user is not None and user.is_superuser)
+
+
+def validate_widgets_spec(nodes: Any, *, request: Any = None) -> None:
     """Raise ``ValidationError`` if any widget node is malformed. Called from
     ``PanelDashboard.clean``."""
     if not isinstance(nodes, list):
         raise ValidationError("widgets: expected a list of widget nodes")
     from ..panels import WIDGET_TYPES
 
+    privileged = _is_privileged(request)
     for i, node in enumerate(nodes):
-        _instantiate(WIDGET_TYPES, node, f"widgets[{i}]")
+        _instantiate(WIDGET_TYPES, node, f"widgets[{i}]", privileged=privileged)
         query = (node.get("config") or {}).get("query") if isinstance(node, dict) else None
         if query is not None:
             _check_query_shape(query, f"widgets[{i}].query")
@@ -259,12 +295,13 @@ def validate_spec(spec: dict[str, Any], *, model: Any = None, request: Any = Non
     from ..tables import COLUMN_TYPES, FILTER_TYPES
 
     _check_size_and_depth(spec)
+    privileged = _is_privileged(request)
     for i, node in enumerate((spec.get("table") or {}).get("columns", [])):
-        _instantiate(COLUMN_TYPES, node, f"table.columns[{i}]")
+        _instantiate(COLUMN_TYPES, node, f"table.columns[{i}]", privileged=privileged)
     for i, node in enumerate((spec.get("table") or {}).get("filters", [])):
-        _instantiate(FILTER_TYPES, node, f"table.filters[{i}]")
+        _instantiate(FILTER_TYPES, node, f"table.filters[{i}]", privileged=privileged)
     for i, node in enumerate((spec.get("infolist") or {}).get("entries", [])):
-        _instantiate(ENTRY_TYPES, node, f"infolist.entries[{i}]")
+        _instantiate(ENTRY_TYPES, node, f"infolist.entries[{i}]", privileged=privileged)
 
     if model is not None:
         _validate_spec_paths(spec, model, request)

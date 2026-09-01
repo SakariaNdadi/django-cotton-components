@@ -77,7 +77,7 @@ def test_save_round_trips_with_group_nesting(client, urlconf, studio_user):
             {"id": "c", "label": "Docs", "target_kind": "url", "target": "/docs/"},
         ]
     }
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc)})
+    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 200
     assert response.json()["revision"] == 1
 
@@ -88,10 +88,55 @@ def test_save_round_trips_with_group_nesting(client, urlconf, studio_user):
     assert docs.parent_id == group.pk
 
 
+def test_save_is_non_destructive_and_keeps_access_grants(client, urlconf, studio_user):
+    """An in-place update must not wipe RolesView-managed access fields."""
+    from django.contrib.auth.models import Group
+
+    client.force_login(studio_user)
+    first = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
+    r1 = client.post("/s/studio/nav/save/", {"doc": json.dumps(first), "revision": 0})
+    assert r1.json()["revision"] == 1
+
+    row = NavItem.objects.get(panel="s")
+    group = Group.objects.create(name="editors")
+    row.groups.add(group)
+    row.required_permission = "testapp.view_article"
+    row.save()
+
+    second = {
+        "items": [
+            {
+                "id": f"db{row.pk}",
+                "label": "Documentation",
+                "target_kind": "url",
+                "target": "/docs/",
+            }
+        ]
+    }
+    r2 = client.post("/s/studio/nav/save/", {"doc": json.dumps(second), "revision": 1})
+    assert r2.json()["revision"] == 2
+
+    row.refresh_from_db()
+    assert row.label == "Documentation"
+    assert row.pk == NavItem.objects.get(panel="s").pk  # same row, not recreated
+    assert list(row.groups.values_list("name", flat=True)) == ["editors"]
+    assert row.required_permission == "testapp.view_article"
+
+
+def test_save_rejects_stale_revision(client, urlconf, studio_user):
+    client.force_login(studio_user)
+    doc = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
+    client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    stale = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    assert stale.status_code == 409
+    assert stale.json()["revision"] == 1
+    assert stale.json()["doc"]["items"][0]["label"] == "Docs"
+
+
 def test_save_rejects_unknown_kind(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "X", "target_kind": "wormhole"}]}
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc)})
+    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 422
     assert "wormhole" in response.json()["errors"][0]["message"]
 
@@ -99,7 +144,7 @@ def test_save_rejects_unknown_kind(client, urlconf, studio_user):
 def test_save_rejects_missing_label(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "  ", "target_kind": "url", "target": "/x/"}]}
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc)})
+    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 422
 
 
@@ -114,7 +159,7 @@ def test_preview_renders_a_nav_fragment(client, urlconf, studio_user):
 def test_save_then_reload_prefills_the_builder(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
-    client.post("/s/studio/nav/save/", {"doc": json.dumps(doc)})
+    client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
     response = client.get("/s/studio/nav/")
     assert b"Docs" in response.content
 
