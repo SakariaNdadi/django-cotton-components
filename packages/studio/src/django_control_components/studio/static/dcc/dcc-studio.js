@@ -2,14 +2,48 @@
  * django-control-components — studio builder runtime.
  * Loaded only by {% dcc_studio_assets %}, never on a normal panel page.
  *
- * Three Alpine components:
- *   dccStudioDoc(bootId)   the edited document + dirty/undo/redo + save
+ * Alpine components:
+ *   dccStudioDoc(bootId)   flat document (dashboard / resource) + undo/redo + save
+ *   dccTree(bootId)        the nested block-tree editor (pages), on x-recurse
  *   dccSortable            pointer-events reorder of a flat <ul> of [data-node]
- *   dccInspector           renders a node's editable fields from the palette JSON
+ * Alpine directive:
+ *   x-recurse="<array>"    a self-referencing <template> — Alpine has none natively
  */
 (function () {
+  var MAX_DEPTH = 12; // mirrors deserialize._MAX_TREE_DEPTH
+
   function register() {
     if (!window.Alpine) return;
+
+    // ---- x-recurse: a self-referencing template -------------------------
+    // <ul x-recurse="node.slots.default" data-dcc-tpl="tpl-id"></ul>
+    window.Alpine.directive(
+      "recurse",
+      (el, { expression }, { evaluate, effect, cleanup }) => {
+        const tpl = document.getElementById(el.getAttribute("data-dcc-tpl"));
+        if (!tpl) return;
+        let mounted = [];
+        effect(() => {
+          const items = evaluate(expression) || [];
+          mounted.forEach((n) => {
+            window.Alpine.destroyTree(n);
+            n.remove();
+          });
+          mounted = [];
+          const depth = Number(el.dataset.dccDepth || 0);
+          if (depth > MAX_DEPTH) return;
+          for (const item of items) {
+            const node = tpl.content.firstElementChild.cloneNode(true);
+            node.dataset.dccDepth = depth + 1;
+            window.Alpine.addScopeToNode(node, { node: item });
+            el.appendChild(node);
+            window.Alpine.initTree(node);
+            mounted.push(node);
+          }
+        });
+        cleanup(() => mounted.forEach((n) => window.Alpine.destroyTree(n)));
+      },
+    );
 
     // ---- the document store ------------------------------------------------
     window.Alpine.data("dccStudioDoc", (bootId) => ({
@@ -213,17 +247,24 @@
       },
     }));
 
-    // ---- page builder: raw block-tree editor ----------------------------
-    // Phase 5 replaces the <textarea> with dccTree on x-recurse; the store,
-    // dirty/save/409/preview plumbing is already what it will keep.
-    window.Alpine.data("dccPageDoc", (bootId) => ({
+    // ---- page builder: the nested block-tree editor --------------------
+    // The tree renders through x-recurse (see the directive above); this store
+    // owns the doc, selection, per-node collapse, structural edits and the
+    // same dirty/undo/save/409/preview plumbing as dccStudioDoc.
+    window.Alpine.data("dccTree", (bootId) => ({
       root: {},
       raw: "{}",
+      showRaw: false,
       palette: {},
       revision: 0,
+      selectedId: null,
+      activeSlot: "",
+      collapsed: {},
       dirty: false,
       saving: false,
       error: "",
+      history: [],
+      future: [],
       _cfg: {},
 
       init() {
@@ -231,19 +272,158 @@
         this._cfg = boot;
         this.palette = boot.palette || {};
         this.revision = boot.revision || 0;
-        this.root = (boot.doc && boot.doc.root) || {};
+        const root = boot.doc && boot.doc.root;
+        this.root = root && root.type ? root : { id: this._newId(), type: "AppShell", props: {}, slots: {} };
+        this._syncRaw();
+        this.snapshot(true);
+      },
+
+      // -- palette / slots -----------------------------------------------
+      blockInfo(type) {
+        return ((this.palette && this.palette.blocks) || []).find((b) => b.name === type) || null;
+      },
+      slotNames(type) {
+        const info = this.blockInfo(type);
+        return (info && info.slots) || [];
+      },
+
+      // -- tree walk ---------------------------------------------------
+      _locate(id, node, parent, slot) {
+        node = node || this.root;
+        if (node.id === id) return { node: node, parent: parent || null, slot: slot || null };
+        const slots = node.slots || {};
+        for (const s of Object.keys(slots)) {
+          for (const child of slots[s] || []) {
+            const hit = this._locate(id, child, node, s);
+            if (hit) return hit;
+          }
+        }
+        return null;
+      },
+      selectedNode() {
+        return this.selectedId ? (this._locate(this.selectedId) || {}).node || null : null;
+      },
+      select(id) {
+        this.selectedId = id;
+        const slots = this.slotNames((this.selectedNode() || {}).type);
+        this.activeSlot = slots[0] || "";
+      },
+      isCollapsed(id) {
+        return !!this.collapsed[id];
+      },
+      toggleCollapse(id) {
+        this.collapsed[id] = !this.collapsed[id];
+      },
+
+      // -- structural edits -----------------------------------------
+      _newId() {
+        return "b" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+      },
+      addChild(type) {
+        const target = this.selectedNode() || this.root;
+        const slots = this.slotNames(target.type);
+        if (!slots.length) {
+          this.error = target.type + " accepts no children";
+          return;
+        }
+        const slot = slots.indexOf(this.activeSlot) >= 0 ? this.activeSlot : slots[0];
+        if (!target.slots) target.slots = {};
+        if (!Array.isArray(target.slots[slot])) target.slots[slot] = [];
+        const node = { id: this._newId(), type: type, props: {}, slots: {} };
+        target.slots[slot].push(node);
+        this.error = "";
+        this.snapshot();
+        this.select(node.id);
+      },
+      remove(id) {
+        const hit = this._locate(id);
+        if (!hit || !hit.parent) {
+          this.error = "the root block cannot be removed";
+          return;
+        }
+        hit.parent.slots[hit.slot] = hit.parent.slots[hit.slot].filter((n) => n.id !== id);
+        if (this.selectedId === id) this.selectedId = null;
+        this.snapshot();
+      },
+      move(id, dir) {
+        const hit = this._locate(id);
+        if (!hit || !hit.parent) return;
+        const arr = hit.parent.slots[hit.slot];
+        const i = arr.findIndex((n) => n.id === id);
+        const j = i + dir;
+        if (j < 0 || j >= arr.length) return;
+        const tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+        this.snapshot();
+      },
+      setProp(key, value) {
+        const node = this.selectedNode();
+        if (!node) return;
+        if (!node.props) node.props = {};
+        if (value === "" || value === null) delete node.props[key];
+        else node.props[key] = value;
+        this.snapshot();
+      },
+      setPropJson(key, raw) {
+        try {
+          this.setProp(key, raw.trim() === "" ? "" : JSON.parse(raw));
+          this.error = "";
+        } catch (e) {
+          this.error = key + ": invalid JSON";
+        }
+      },
+      typeInfo() {
+        const node = this.selectedNode();
+        return node ? this.blockInfo(node.type) : null;
+      },
+
+      // -- raw JSON escape hatch ------------------------------------
+      _syncRaw() {
         this.raw = JSON.stringify(this.root, null, 2);
       },
-      edit(text) {
+      editRaw(text) {
         this.raw = text;
         try {
-          this.root = text.trim() === "" ? {} : JSON.parse(text);
+          const parsed = text.trim() === "" ? {} : JSON.parse(text);
+          this.root = parsed;
           this.error = "";
-          this.dirty = true;
+          this.snapshot();
         } catch (e) {
           this.error = "Invalid JSON";
         }
       },
+
+      // -- history ---------------------------------------------------
+      snapshot(initial) {
+        const copy = JSON.parse(JSON.stringify(this.root));
+        if (initial) {
+          this.history = [copy];
+          return;
+        }
+        this.history.push(copy);
+        if (this.history.length > 50) this.history.shift();
+        this.future = [];
+        this.dirty = true;
+        this._syncRaw();
+      },
+      undo() {
+        if (this.history.length < 2) return;
+        this.future.push(this.history.pop());
+        this.root = JSON.parse(JSON.stringify(this.history[this.history.length - 1]));
+        this.dirty = true;
+        this._syncRaw();
+      },
+      redo() {
+        if (!this.future.length) return;
+        const next = this.future.pop();
+        this.history.push(next);
+        this.root = JSON.parse(JSON.stringify(next));
+        this.dirty = true;
+        this._syncRaw();
+      },
+
+      // -- persistence --------------------------------------------
       _post(url) {
         const body = new URLSearchParams({
           doc: JSON.stringify({ root: this.root }),

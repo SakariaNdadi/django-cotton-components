@@ -4,8 +4,32 @@
 {% block title %}{{ page.title }} · Studio{% endblock %}
 
 {% block content %}
-<div x-data="dccPageDoc('page-boot')">
+<div x-data="dccTree('page-boot')">
   {{ boot_json|json_script:"page-boot" }}
+
+  {# self-referencing template — cloned by the x-recurse directive #}
+  <template id="dcc-block-tpl">
+    <li class="dcc-tree__node">
+      <div class="dcc-tree__row" :class="{ 'is-selected': node.id === selectedId }">
+        <button type="button" class="dcc-tree__toggle" x-show="slotNames(node.type).length"
+                @click="toggleCollapse(node.id)" x-text="isCollapsed(node.id) ? '▸' : '▾'"></button>
+        <button type="button" class="dcc-tree__label" data-dcc-handle
+                @click="select(node.id)" x-text="node.type"></button>
+        <span class="dcc-tree__spacer"></span>
+        <button type="button" class="dcc-studio__btn" @click="move(node.id, -1)">↑</button>
+        <button type="button" class="dcc-studio__btn" @click="move(node.id, 1)">↓</button>
+        <button type="button" class="dcc-studio__btn" @click="remove(node.id)">×</button>
+      </div>
+      <div x-show="!isCollapsed(node.id)">
+        <template x-for="s in slotNames(node.type)" :key="s">
+          <div class="dcc-tree__slot">
+            <span class="dcc-tree__slotname" x-text="s"></span>
+            <ul class="dcc-tree" x-recurse="(node.slots && node.slots[s]) || []" data-dcc-tpl="dcc-block-tpl"></ul>
+          </div>
+        </template>
+      </div>
+    </li>
+  </template>
 
   <header class="dcc-panel__header">
     <h1>{{ page.title }}</h1>
@@ -13,6 +37,8 @@
   </header>
 
   <div class="dcc-studio__bar">
+    <button type="button" class="dcc-studio__btn" @click="undo()">Undo</button>
+    <button type="button" class="dcc-studio__btn" @click="redo()">Redo</button>
     <span class="dcc-studio__spacer"></span>
     <span class="dcc-studio__dirty" x-show="dirty">Unsaved changes</span>
     <button type="button" class="dcc-studio__btn dcc-studio__btn--primary"
@@ -23,18 +49,81 @@
   <div class="dcc-studio">
     <div class="dcc-studio__panel">
       <h2>Blocks</h2>
-      <p class="dcc-field__help">Available block types (drag-and-drop tree editing lands in a later release):</p>
-      <ul class="dcc-field__help">
-        {% for b in block_types %}<li>{{ b.label }} — <code>{{ b.name }}</code></li>{% endfor %}
-      </ul>
+      <p class="dcc-field__help">Adds into the selected block's
+        <select @change="activeSlot = $event.target.value">
+          <template x-for="s in slotNames((selectedNode() || root).type)" :key="s">
+            <option :value="s" :selected="s === activeSlot" x-text="s"></option>
+          </template>
+        </select> slot.
+      </p>
+      {% for b in block_types %}
+      <button type="button" class="dcc-studio__palette-item" @click="addChild('{{ b.name }}')">{{ b.label }}</button>
+      {% endfor %}
     </div>
 
     <div class="dcc-studio__panel" style="flex:2">
       <h2>Tree</h2>
-      <textarea rows="18" class="dcc-input" style="width:100%;font-family:monospace"
-                x-text="raw" @input="edit($event.target.value)"></textarea>
+      <ul class="dcc-tree dcc-tree--root">
+        <li class="dcc-tree__node">
+          <div class="dcc-tree__row" :class="{ 'is-selected': root.id === selectedId }">
+            <button type="button" class="dcc-tree__label" @click="select(root.id)" x-text="root.type"></button>
+            <span class="dcc-field__help">root</span>
+          </div>
+          <template x-for="s in slotNames(root.type)" :key="s">
+            <div class="dcc-tree__slot">
+              <span class="dcc-tree__slotname" x-text="s"></span>
+              <ul class="dcc-tree" x-recurse="(root.slots && root.slots[s]) || []" data-dcc-tpl="dcc-block-tpl"></ul>
+            </div>
+          </template>
+        </li>
+      </ul>
+    </div>
+
+    <div class="dcc-studio__panel">
+      <h2>Settings</h2>
+      <template x-if="selectedNode()">
+        <div>
+          <p class="dcc-field__help" x-text="selectedNode().type"></p>
+          <template x-for="setter in (typeInfo() ? typeInfo().setters : [])" :key="setter.name">
+            <label class="dcc-studio__field" x-show="!setter.code_only">
+              <span x-text="setter.name"></span>
+              <template x-if="setter.kind === 'boolean'">
+                <input type="checkbox" :checked="!!selectedNode().props[setter.name]"
+                       @change="setProp(setter.name, $event.target.checked)">
+              </template>
+              <template x-if="setter.kind === 'choice'">
+                <select @change="setProp(setter.name, $event.target.value)">
+                  <option value="">—</option>
+                  <template x-for="opt in setter.choices" :key="opt[0]">
+                    <option :value="opt[0]" :selected="selectedNode().props[setter.name] === opt[0]" x-text="opt[1]"></option>
+                  </template>
+                </select>
+              </template>
+              <template x-if="setter.kind === 'number'">
+                <input type="number" :value="selectedNode().props[setter.name] ?? ''"
+                       @change="setProp(setter.name, $event.target.value === '' ? '' : Number($event.target.value))">
+              </template>
+              <template x-if="['keyvalue','list','object'].includes(setter.kind)">
+                <textarea rows="2" @change="setPropJson(setter.name, $event.target.value)"
+                          x-text="JSON.stringify(selectedNode().props[setter.name] ?? '', null, 0)"></textarea>
+              </template>
+              <template x-if="!['boolean','choice','number','keyvalue','list','object'].includes(setter.kind)">
+                <input type="text" :value="selectedNode().props[setter.name] ?? ''"
+                       @change="setProp(setter.name, $event.target.value)">
+              </template>
+            </label>
+          </template>
+        </div>
+      </template>
+      <p x-show="!selectedNode()" class="dcc-field__help">Select a block to configure it.</p>
     </div>
   </div>
+
+  <details class="dcc-studio__panel" style="margin-top:1rem">
+    <summary>Raw JSON</summary>
+    <textarea rows="12" class="dcc-input" style="width:100%;font-family:monospace"
+              x-text="raw" @change="editRaw($event.target.value)"></textarea>
+  </details>
 
   <div class="dcc-studio__preview">
     <div class="dcc-studio__bar">

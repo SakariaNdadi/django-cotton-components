@@ -33,11 +33,17 @@ def palette(request: HttpRequest | None = None) -> dict[str, list[dict[str, Any]
             for info in registry.describe_all()
         ]
 
+    blocks = dump(BLOCK_TYPES)
+    for entry in blocks:
+        # the tree editor needs each block's named slots to know where a child
+        # may be dropped; the other registries have a single implicit child list.
+        entry["slots"] = list(BLOCK_TYPES.get(entry["name"]).slots)
+
     return {
         "columns": dump(COLUMN_TYPES),
         "filters": dump(FILTER_TYPES),
         "fields": dump(FIELD_TYPES),
         "entries": dump(ENTRY_TYPES),
         "widgets": dump(WIDGET_TYPES),
-        "blocks": dump(BLOCK_TYPES),
+        "blocks": blocks,
     }

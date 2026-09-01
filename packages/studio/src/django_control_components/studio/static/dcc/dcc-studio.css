@@ -102,3 +102,15 @@
   padding: 1rem;
   margin-top: 1rem;
 }
+
+/* -- block-tree editor (dccTree / x-recurse) -- */
+.dcc-tree, .dcc-tree--root { list-style: none; margin: 0; padding: 0; }
+.dcc-tree .dcc-tree { margin-left: 0.75rem; border-left: 1px solid var(--dcc-border); padding-left: 0.5rem; }
+.dcc-tree__node { margin: 0.15rem 0; }
+.dcc-tree__row { display: flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.3rem; border-radius: var(--dcc-radius); }
+.dcc-tree__row.is-selected { background: var(--dcc-primary); color: var(--dcc-primary-fg); }
+.dcc-tree__row .dcc-tree__spacer { flex: 1; }
+.dcc-tree__toggle { border: 0; background: none; color: inherit; cursor: pointer; width: 1rem; }
+.dcc-tree__label { border: 0; background: none; color: inherit; cursor: pointer; font: inherit; font-weight: 600; }
+.dcc-tree__slot { margin: 0.1rem 0 0.1rem 0.5rem; }
+.dcc-tree__slotname { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--dcc-muted, var(--dcc-fg)); }
