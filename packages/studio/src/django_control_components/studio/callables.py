@@ -17,7 +17,12 @@ from django.core.exceptions import ValidationError
 from django.utils.module_loading import import_string
 
 #: config keys that may carry an ``@alias`` string
-ALIASABLE_KEYS = frozenset({"visible", "hidden"})
+#: config keys whose value may be an ``@alias`` string resolved through
+#: ``DCC["STUDIO_CALLABLES"]`` to a project callable. ``visible`` / ``hidden``
+#: are predicates; ``label`` / ``url`` are value producers. ``authorize`` is
+#: deliberately absent and can never be added — a stored spec must not name the
+#: callable that decides access.
+ALIASABLE_KEYS = frozenset({"visible", "hidden", "label", "url"})
 
 
 def is_alias(value: Any) -> bool:

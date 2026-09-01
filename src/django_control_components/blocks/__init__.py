@@ -6,6 +6,8 @@ through ``studio/palette.py`` and inherits ``strip_privileged_setters``.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from ..core.type_registry import TypeRegistry
 from .base import Block
 from .chrome import AppShell, Footer, Navbar, NotificationBell, Sidebar
@@ -31,6 +33,37 @@ for _cls, _label, _icon, _slots in (
         _cls, label=_label, icon=_icon, category="block", accepts_children=bool(_slots)
     )
 
+
+def block(
+    label: str | None = None,
+    *,
+    name: str | None = None,
+    icon: str = "",
+    category: str = "block",
+) -> Callable[[type[Block]], type[Block]]:
+    """Class decorator: register a custom :class:`Block` so it is draggable in
+    the studio palette immediately — the sugar form of ``BLOCK_TYPES.register``.
+
+        @block("Callout", icon="bullhorn")
+        class Callout(Block):
+            slots = ("default",)
+            template_name = "myapp/blocks/callout.html"
+    """
+
+    def decorate(cls: type[Block]) -> type[Block]:
+        BLOCK_TYPES.register(
+            cls,
+            name=name,
+            label=label,
+            icon=icon,
+            category=category,
+            accepts_children=bool(getattr(cls, "slots", ())),
+        )
+        return cls
+
+    return decorate
+
+
 __all__ = [
     "BLOCK_TYPES",
     "AppShell",
@@ -46,4 +79,5 @@ __all__ = [
     "Sidebar",
     "Spacer",
     "Stack",
+    "block",
 ]

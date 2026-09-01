@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from ...introspect import installed_models, is_sensitive_model, resolve_model
 from ...models import DashboardSpec
-from ...scaffold import scaffold_spec
+from ...scaffold import eject_to_python, scaffold_spec
 
 
 class Command(BaseCommand):
@@ -24,6 +24,11 @@ class Command(BaseCommand):
         parser.add_argument("models", nargs="*", help="app_label.Model labels")
         parser.add_argument("--all", action="store_true", help="every eligible model")
         parser.add_argument("--dry-run", action="store_true", help="print, do not write")
+        parser.add_argument(
+            "--eject",
+            action="store_true",
+            help="print a Python Resource subclass instead of writing a spec row",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         labels: list[str] = list(options["models"])
@@ -42,6 +47,9 @@ class Command(BaseCommand):
                 continue
 
             spec = scaffold_spec(model)
+            if options["eject"]:
+                self.stdout.write(eject_to_python(label, spec))
+                continue
             if options["dry_run"]:
                 self.stdout.write(f"# {label}")
                 self.stdout.write(json.dumps(spec, indent=2))
