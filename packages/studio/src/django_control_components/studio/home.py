@@ -25,6 +25,10 @@ def resolve_home(request: HttpRequest, panel: Panel) -> str:
     if preferred:
         return preferred
 
+    home_page = _home_page(user, panel)
+    if home_page:
+        return home_page
+
     dashboard = _default_dashboard(user)
     if dashboard is not None:
         try:
@@ -62,6 +66,21 @@ def _from_preference(user: Any, panel: Panel) -> str:
     except NoReverseMatch:
         return ""
     return ""
+
+
+def _home_page(user: Any, panel: Panel) -> str:
+    """A ``Page`` for this panel flagged ``is_home`` and visible to the user."""
+    from .models import Page
+
+    page = Page.objects.filter(
+        mount="panel", panel=panel.name, is_home=True, is_enabled=True
+    ).first()
+    if page is None or not page.is_visible_to(user):
+        return ""
+    try:
+        return reverse(f"{panel.namespace}:page", kwargs={"route": page.route})
+    except NoReverseMatch:
+        return ""
 
 
 def _default_dashboard(user: Any) -> Any:

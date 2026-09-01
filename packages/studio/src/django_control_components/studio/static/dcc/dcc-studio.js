@@ -213,6 +213,94 @@
       },
     }));
 
+    // ---- page builder: raw block-tree editor ----------------------------
+    // Phase 5 replaces the <textarea> with dccTree on x-recurse; the store,
+    // dirty/save/409/preview plumbing is already what it will keep.
+    window.Alpine.data("dccPageDoc", (bootId) => ({
+      root: {},
+      raw: "{}",
+      palette: {},
+      revision: 0,
+      dirty: false,
+      saving: false,
+      error: "",
+      _cfg: {},
+
+      init() {
+        const boot = readJson(bootId) || {};
+        this._cfg = boot;
+        this.palette = boot.palette || {};
+        this.revision = boot.revision || 0;
+        this.root = (boot.doc && boot.doc.root) || {};
+        this.raw = JSON.stringify(this.root, null, 2);
+      },
+      edit(text) {
+        this.raw = text;
+        try {
+          this.root = text.trim() === "" ? {} : JSON.parse(text);
+          this.error = "";
+          this.dirty = true;
+        } catch (e) {
+          this.error = "Invalid JSON";
+        }
+      },
+      _post(url) {
+        const body = new URLSearchParams({
+          doc: JSON.stringify({ root: this.root }),
+          revision: this.revision,
+        });
+        return fetch(url, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": this._cfg.csrfToken || "",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: body,
+        });
+      },
+      save() {
+        if (this.saving) return;
+        this.saving = true;
+        this.error = "";
+        this._post(this._cfg.saveUrl)
+          .then((r) => r.json().then((data) => ({ ok: r.ok, status: r.status, data: data })))
+          .then(({ ok, status, data }) => {
+            this.saving = false;
+            if (ok) {
+              this.revision = data.revision != null ? data.revision : this.revision;
+              this.dirty = false;
+              document.body.dispatchEvent(new CustomEvent("dcc:toast", { detail: "Saved" }));
+              this.refreshPreview();
+            } else if (status === 409) {
+              this.error = "Someone else saved a newer version — reload to continue.";
+              if (data.doc) {
+                this.root = data.doc.root || {};
+                this.raw = JSON.stringify(this.root, null, 2);
+                this.revision = data.revision;
+                this.dirty = false;
+              }
+            } else if (data.errors) {
+              this.error = data.errors.map((e) => e.message).join("; ");
+            } else {
+              this.error = "Save failed.";
+            }
+          })
+          .catch(() => {
+            this.saving = false;
+            this.error = "Save failed (network).";
+          });
+      },
+      refreshPreview() {
+        if (!this._cfg.previewUrl) return;
+        this._post(this._cfg.previewUrl)
+          .then((r) => r.text())
+          .then((html) => {
+            const target = document.getElementById("dcc-studio-preview");
+            if (target) target.innerHTML = html;
+          });
+      },
+    }));
+
     // ---- pointer-events reorder ------------------------------------------
     // <ul x-data="dccSortable" @dcc-reorder="...">  with children
     //   <li data-node data-index="N"> ... <button data-dcc-handle> ... </li>

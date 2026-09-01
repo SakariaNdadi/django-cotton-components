@@ -1,0 +1,48 @@
+{% extends "django_control_components/studio/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}{{ page.title }} · Studio{% endblock %}
+
+{% block content %}
+<div x-data="dccPageDoc('page-boot')">
+  {{ boot_json|json_script:"page-boot" }}
+
+  <header class="dcc-panel__header">
+    <h1>{{ page.title }}</h1>
+    <p class="dcc-field__help">{{ page.get_mount_display }}{% if page.panel %} · {{ page.panel }}{% endif %} · /{{ page.route }}</p>
+  </header>
+
+  <div class="dcc-studio__bar">
+    <span class="dcc-studio__spacer"></span>
+    <span class="dcc-studio__dirty" x-show="dirty">Unsaved changes</span>
+    <button type="button" class="dcc-studio__btn dcc-studio__btn--primary"
+            @click="save()" :disabled="saving" x-text="saving ? 'Saving…' : 'Save'"></button>
+  </div>
+  <p class="dcc-studio__error" x-show="error" x-text="error"></p>
+
+  <div class="dcc-studio">
+    <div class="dcc-studio__panel">
+      <h2>Blocks</h2>
+      <p class="dcc-field__help">Available block types (drag-and-drop tree editing lands in a later release):</p>
+      <ul class="dcc-field__help">
+        {% for b in block_types %}<li>{{ b.label }} — <code>{{ b.name }}</code></li>{% endfor %}
+      </ul>
+    </div>
+
+    <div class="dcc-studio__panel" style="flex:2">
+      <h2>Tree</h2>
+      <textarea rows="18" class="dcc-input" style="width:100%;font-family:monospace"
+                x-text="raw" @input="edit($event.target.value)"></textarea>
+    </div>
+  </div>
+
+  <div class="dcc-studio__preview">
+    <div class="dcc-studio__bar">
+      <strong class="dcc-field__help">Preview</strong>
+      <span class="dcc-studio__spacer"></span>
+      <button type="button" class="dcc-studio__btn" @click="refreshPreview()">Refresh</button>
+    </div>
+    <div id="dcc-studio-preview"></div>
+  </div>
+</div>
+{% endblock %}

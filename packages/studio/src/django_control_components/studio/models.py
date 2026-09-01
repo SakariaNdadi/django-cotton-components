@@ -206,6 +206,7 @@ class NavItem(AccessControlled):
         RESOURCE = "resource", "Code resource"
         SPEC = "spec", "Studio resource"
         DASHBOARD = "dashboard", "Studio dashboard"
+        PAGE = "page", "Studio page"
         URL_NAME = "url_name", "Named URL"
         URL = "url", "URL / path"
 

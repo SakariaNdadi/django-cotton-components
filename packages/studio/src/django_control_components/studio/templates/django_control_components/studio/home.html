@@ -13,6 +13,10 @@
     <p class="dcc-field__help">Build the sidebar — links, groups, icons, per-group visibility.</p>
   </a>
   {% endfor %}
+  <a class="dcc-studio__panel" href="{% url 'dcc_studio:pages' %}">
+    <h2>{% dcc_icon "file-lines" %} Pages</h2>
+    <p class="dcc-field__help">Build public and in-app pages from a block tree — index, about, dashboards.</p>
+  </a>
   <a class="dcc-studio__panel" href="{% url 'dcc_studio:dashboards' %}">
     <h2>{% dcc_icon "gauge-high" %} Dashboards</h2>
     <p class="dcc-field__help">Compose analytics dashboards from widgets, no code.</p>

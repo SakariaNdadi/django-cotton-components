@@ -1,0 +1,35 @@
+{% extends "django_control_components/studio/base.html" %}
+{% load dcc_tags %}
+
+{% block title %}Pages · Studio{% endblock %}
+
+{% block content %}
+<header class="dcc-panel__header"><h1>Pages</h1></header>
+
+{% if error %}<p class="dcc-studio__error">{{ error }}</p>{% endif %}
+
+<ul class="dcc-sortable">
+  {% for page in pages %}
+  <li class="dcc-sortable__item">
+    <span class="dcc-sortable__label">
+      {{ page.title }}
+      <small class="dcc-field__help">{{ page.get_mount_display }}{% if page.panel %} · {{ page.panel }}{% endif %} · /{{ page.route }}</small>
+    </span>
+    <a class="dcc-studio__btn" href="{% url 'dcc_studio:page' pk=page.pk %}">Edit</a>
+  </li>
+  {% empty %}
+  <li class="dcc-field__help">No pages yet.</li>
+  {% endfor %}
+</ul>
+
+<form method="post" class="dcc-studio__bar" style="margin-top:1rem;flex-wrap:wrap">
+  {% csrf_token %}
+  <input type="text" name="title" placeholder="Page title" class="dcc-input" required>
+  <input type="text" name="route" placeholder="route (blank = index)" class="dcc-input">
+  <select name="mount" class="dcc-input">
+    {% for m in mounts %}<option value="{{ m.value }}">{{ m.label }}</option>{% endfor %}
+  </select>
+  <input type="text" name="panel" placeholder="panel name (if in-app)" class="dcc-input">
+  <button type="submit" class="dcc-studio__btn dcc-studio__btn--primary">Create</button>
+</form>
+{% endblock %}

@@ -20,6 +20,7 @@
       </a>
       <ul class="dcc-nav">
         <li><a class="dcc-nav__link{% if active == "home" %} is-active{% endif %}" href="{% url 'dcc_studio:home' %}">{% dcc_icon "house" %}<span>Home</span></a></li>
+        <li><a class="dcc-nav__link{% if active == "pages" %} is-active{% endif %}" href="{% url 'dcc_studio:pages' %}">{% dcc_icon "file-lines" %}<span>Pages</span></a></li>
         <li><a class="dcc-nav__link{% if active == "dashboards" %} is-active{% endif %}" href="{% url 'dcc_studio:dashboards' %}">{% dcc_icon "gauge-high" %}<span>Dashboards</span></a></li>
         <li><a class="dcc-nav__link{% if active == "resources" %} is-active{% endif %}" href="{% url 'dcc_studio:resources' %}">{% dcc_icon "table" %}<span>Resources</span></a></li>
         {% for p in studio_panels %}

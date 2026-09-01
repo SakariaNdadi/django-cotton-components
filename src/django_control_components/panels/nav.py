@@ -123,6 +123,11 @@ def _resolve_target(row: Any, panel: Panel, request: HttpRequest) -> tuple[str, 
             return reverse(f"{ns}:studio-list", kwargs={"spec_slug": target}), False
         if kind == row.Kind.DASHBOARD:
             return reverse(f"{ns}:studio-dashboard", kwargs={"dash_slug": target}), False
+        if kind == row.Kind.PAGE:
+            page = _visible_page(panel, request, target)
+            if page is None:
+                return "", False
+            return reverse(f"{ns}:page", kwargs={"route": page.route}), False
     except NoReverseMatch:
         return "", False
     return "", False
@@ -146,6 +151,19 @@ def _can_view_spec(request: HttpRequest, slug: str) -> bool:
     if spec is None:
         return False
     return bool(DynamicResource.for_spec(spec).can(request, "view"))
+
+
+def _visible_page(panel: Panel, request: HttpRequest, route: str) -> Any:
+    try:
+        from ..studio.models import Page
+    except ModuleNotFoundError:
+        return None
+    page = Page.objects.filter(
+        mount="panel", panel=panel.name, route=route.strip("/"), is_enabled=True
+    ).first()
+    if page is None or not page.is_visible_to(getattr(request, "user", None)):
+        return None
+    return page
 
 
 def _mark_active(nodes: list[NavNode], path: str) -> None:
