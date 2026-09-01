@@ -1,0 +1,27 @@
+{% load dcc_tags %}
+<div class="dcc-bell"
+     x-data="dccBell()"
+     data-endpoint="{{ endpoint }}"
+     data-interval="{{ interval }}"
+     @click.outside="open = false">
+  <button type="button" class="dcc-bell__button" @click="open = !open" aria-label="Notifications">
+    {% dcc_icon "bell" %}
+    <span class="dcc-bell__badge" x-show="unread > 0" x-text="unread"></span>
+  </button>
+  <div class="dcc-bell__menu" x-show="open" x-transition style="display:none">
+    <div class="dcc-bell__head">
+      <strong>Notifications</strong>
+      <button type="button" class="dcc-bell__mark" @click="markRead()" x-show="unread > 0">Mark all read</button>
+    </div>
+    <ul class="dcc-bell__list">
+      <template x-for="n in items" :key="n.id">
+        <li class="dcc-bell__item" :class="{ 'is-unread': !n.read, ['dcc-bell__item--' + n.level]: true }">
+          <a x-show="n.url" :href="n.url" x-text="n.title"></a>
+          <span x-show="!n.url" x-text="n.title"></span>
+          <p class="dcc-bell__body" x-show="n.body" x-text="n.body"></p>
+        </li>
+      </template>
+      <li class="dcc-bell__empty" x-show="!items.length">Nothing yet.</li>
+    </ul>
+  </div>
+</div>

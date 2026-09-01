@@ -519,6 +519,32 @@
   transition: opacity 0.3s, transform 0.3s;
 }
 .dcc-toast.is-leaving { opacity: 0; transform: translateY(0.5rem); }
+.dcc-toast a { color: inherit; text-decoration: underline; }
+.dcc-toast--success { background: var(--dcc-success, #15803d); color: #fff; }
+.dcc-toast--warning { background: var(--dcc-warning, #b45309); color: #fff; }
+.dcc-toast--error { background: var(--dcc-danger, #b91c1c); color: #fff; }
+
+/* ---- notification bell ---------------------------------- */
+.dcc-bell { position: relative; display: inline-block; }
+.dcc-bell__button { position: relative; border: 0; background: none; color: inherit; cursor: pointer; padding: 0.25rem; }
+.dcc-bell__badge {
+  position: absolute; inset-block-start: -0.15rem; inset-inline-end: -0.15rem;
+  min-width: 1rem; padding: 0 0.2rem; border-radius: 999px;
+  background: var(--dcc-danger, #b91c1c); color: #fff; font-size: 0.65rem; line-height: 1rem; text-align: center;
+}
+.dcc-bell__menu {
+  position: absolute; inset-inline-end: 0; inset-block-start: 100%; z-index: 40;
+  width: 18rem; background: var(--dcc-bg); color: var(--dcc-fg);
+  border: 1px solid var(--dcc-border); border-radius: var(--dcc-radius); box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.dcc-bell__head { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--dcc-border); }
+.dcc-bell__mark { border: 0; background: none; color: var(--dcc-primary); cursor: pointer; font-size: 0.75rem; }
+.dcc-bell__list { list-style: none; margin: 0; padding: 0; max-height: 20rem; overflow-y: auto; }
+.dcc-bell__item { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--dcc-border); font-size: 0.8125rem; }
+.dcc-bell__item.is-unread { background: color-mix(in srgb, var(--dcc-primary) 8%, transparent); }
+.dcc-bell__item a { color: inherit; }
+.dcc-bell__body { margin: 0.15rem 0 0; color: var(--dcc-muted, inherit); }
+.dcc-bell__empty { padding: 0.75rem; text-align: center; color: var(--dcc-muted, inherit); font-size: 0.8125rem; }
 
 /* ---- image upload preview -------------------------------- */
 

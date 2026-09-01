@@ -454,14 +454,56 @@
         }
       },
     }));
+
+    // Notification bell: polls its endpoint (data-endpoint / data-interval on
+    // the root element) for the unread count and recent items. No websockets.
+    window.Alpine.data("dccBell", () => ({
+      open: false,
+      unread: 0,
+      items: [],
+      _url: "",
+      init() {
+        this._url = this.$el.dataset.endpoint || "";
+        if (!this._url) return;
+        const seconds = Number(this.$el.dataset.interval || 30);
+        this.refresh();
+        this._timer = setInterval(() => this.refresh(), Math.max(5, seconds) * 1000);
+        this.$el.addEventListener("dcc:refresh", () => this.refresh());
+      },
+      destroy() {
+        if (this._timer) clearInterval(this._timer);
+      },
+      refresh() {
+        fetch(this._url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (!data) return;
+            this.unread = data.unread || 0;
+            this.items = data.items || [];
+          })
+          .catch(() => {});
+      },
+      markRead() {
+        const token = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || "";
+        fetch(this._url, { method: "POST", headers: { "X-CSRFToken": token } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then(() => {
+            this.unread = 0;
+            this.items = this.items.map((n) => Object.assign({}, n, { read: true }));
+          })
+          .catch(() => {});
+      },
+    }));
   }
 
   document.addEventListener("alpine:init", register);
   if (window.Alpine) register();
 
-  // Toasts: the action endpoint fires HX-Trigger {"dcc:toast": "..."} which
-  // htmx re-emits as a window event. Render it if a container is present.
-  function toast(message) {
+  // Toasts. Two contracts, both re-emitted by htmx from HX-Trigger:
+  //   dcc:toast  -> a bare string (the pre-1.0 shorthand)
+  //   dcc:notify -> {level, title, body, url} for a levelled / linked toast
+  // The shell renders #dcc-toasts; this only falls back to creating it.
+  function toastHost() {
     let host = document.getElementById("dcc-toasts");
     if (!host) {
       host = document.createElement("div");
@@ -469,15 +511,35 @@
       host.className = "dcc-toasts";
       document.body.appendChild(host);
     }
+    return host;
+  }
+  function toast(detail) {
+    const data =
+      typeof detail === "string"
+        ? { title: detail }
+        : detail && detail.value !== undefined
+          ? { title: detail.value }
+          : detail || {};
+    const level = data.level || "info";
     const el = document.createElement("div");
-    el.className = "dcc-toast";
-    el.setAttribute("role", "status");
-    el.textContent = typeof message === "string" ? message : (message && message.value) || "Done";
-    host.appendChild(el);
-    setTimeout(() => el.classList.add("is-leaving"), 3200);
-    setTimeout(() => el.remove(), 3600);
+    el.className = "dcc-toast dcc-toast--" + level;
+    el.setAttribute("role", level === "error" ? "alert" : "status");
+    const text = [data.title, data.body].filter(Boolean).join(" — ") || "Done";
+    if (data.url) {
+      const link = document.createElement("a");
+      link.href = data.url;
+      link.textContent = text;
+      el.appendChild(link);
+    } else {
+      el.textContent = text;
+    }
+    toastHost().appendChild(el);
+    const ttl = level === "error" ? 6000 : 3200;
+    setTimeout(() => el.classList.add("is-leaving"), ttl);
+    setTimeout(() => el.remove(), ttl + 400);
   }
   document.body.addEventListener("dcc:toast", (e) => toast(e.detail));
+  document.body.addEventListener("dcc:notify", (e) => toast(e.detail));
   // dcc:refresh is handled by htmx: the table shell carries a hidden element
   // with hx-trigger="dcc:refresh from:body" that re-fetches its content.
 

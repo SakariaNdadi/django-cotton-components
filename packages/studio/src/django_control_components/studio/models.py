@@ -359,6 +359,39 @@ class Page(AccessControlled):
         return build_block_tree_from_spec(self.document, request=request)
 
 
+class Notification(models.Model):
+    """A per-user notification. Written by :func:`.notifications.notify` (and the
+    ``django.contrib.messages`` bridge); surfaced as a toast on the next
+    response and, unread, by the ``NotificationBell`` block."""
+
+    class Level(models.TextChoices):
+        INFO = "info", "Info"
+        SUCCESS = "success", "Success"
+        WARNING = "warning", "Warning"
+        ERROR = "error", "Error"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="dcc_notifications"
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    level = models.CharField(max_length=10, choices=Level.choices, default=Level.INFO)
+    title = models.CharField(max_length=200)
+    body = models.CharField(max_length=500, blank=True)
+    url = models.CharField(max_length=300, blank=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "dcc_studio"
+        ordering = ("-created_at",)
+        indexes = [models.Index(fields=["user", "read_at"])]  # noqa: RUF012
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class UserPreference(models.Model):
     """Per-user studio preferences — the home dashboard override and shell state."""
 

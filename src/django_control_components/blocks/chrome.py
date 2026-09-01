@@ -79,3 +79,34 @@ class Footer(Block):
 
     slots = ("default",)
     template_name = "django_control_components/blocks/footer.html"
+
+
+class NotificationBell(Block):
+    """A bell that polls an endpoint for the unread count and shows recent
+    notifications. ``endpoint`` defaults to ``dcc_studio:notifications`` when
+    that URL is mounted; a project can point it elsewhere. No websockets."""
+
+    slots = ()
+    template_name = "django_control_components/blocks/notification_bell.html"
+
+    @setter
+    def endpoint(self, value: str) -> Self:
+        return self._set("endpoint", value)
+
+    @setter
+    def interval(self, value: int) -> Self:
+        return self._set("interval", int(value))
+
+    def get_view_data(self, ctx: RenderContext) -> dict[str, Any]:
+        from django.urls import NoReverseMatch, reverse
+
+        data = super().get_view_data(ctx)
+        endpoint = self._config.get("endpoint")
+        if not endpoint:
+            try:
+                endpoint = reverse("dcc_studio:notifications")
+            except NoReverseMatch:
+                endpoint = ""
+        data["endpoint"] = endpoint
+        data["interval"] = int(self._config.get("interval", 30))
+        return data

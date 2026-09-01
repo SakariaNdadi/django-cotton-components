@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from ..core.type_registry import TypeRegistry
 from .base import Block
-from .chrome import AppShell, Footer, Navbar, Sidebar
+from .chrome import AppShell, Footer, Navbar, NotificationBell, Sidebar
 from .layout import Card, Column, Divider, Grid, Row, Spacer, Stack
 
 BLOCK_TYPES: TypeRegistry[Block] = TypeRegistry("block")
@@ -25,6 +25,7 @@ for _cls, _label, _icon, _slots in (
     (Navbar, "Navbar", "window-minimize", ("start", "end")),
     (Sidebar, "Sidebar", "table-columns", ("default",)),
     (Footer, "Footer", "window-minimize", ("default",)),
+    (NotificationBell, "Notification bell", "bell", ()),
 ):
     BLOCK_TYPES.register(
         _cls, label=_label, icon=_icon, category="block", accepts_children=bool(_slots)
@@ -40,6 +41,7 @@ __all__ = [
     "Footer",
     "Grid",
     "Navbar",
+    "NotificationBell",
     "Row",
     "Sidebar",
     "Spacer",

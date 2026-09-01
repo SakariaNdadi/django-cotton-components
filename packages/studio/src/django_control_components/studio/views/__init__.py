@@ -10,6 +10,7 @@ from .dashboard import (
     DashboardSave,
 )
 from .nav import NavBuilder, NavPreview, NavSave, StudioHome
+from .notifications import NotificationsApi
 from .page import PageBuilder, PageIndex, PagePreview, PageSave
 from .resource import ResourceBuilder, ResourceIndex, ResourcePreview, ResourceSave
 from .roles import RolesView
@@ -24,6 +25,7 @@ __all__ = [
     "NavBuilder",
     "NavPreview",
     "NavSave",
+    "NotificationsApi",
     "PageBuilder",
     "PageIndex",
     "PagePreview",
