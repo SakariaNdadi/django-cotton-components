@@ -314,16 +314,25 @@ class TableWidget(Widget):
     variant = "table"
     span = 3
 
-    def __init__(self, label: str, table: Any = None, **kwargs: Any) -> None:
+    def __init__(self, label: str = "", table: Any = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._config["label"] = label
-        self._config["table"] = table
+        if table is not None:
+            self._config["table"] = table
 
     @setter
     def table(self, value: Any) -> Self:
         return self._set("table", value)
 
+    @setter
+    def data_source(self, value: Any) -> Self:
+        """A stored ``DataSource`` dict (``{model, fields, filter, order_by,
+        limit}``). The studio turns it into a ``Table`` server-side before
+        render; a code caller passes a ``Table`` to :meth:`table` instead."""
+        return self._set("data_source", value)
+
     def context(self, request: Any) -> dict[str, Any]:
-        table = self._config["table"]
+        table = self._config.get("table")
         table = table(request) if callable(table) else table
-        return {"label": self._config["label"], "table_html": table.render(request)}
+        html = table.render(request) if table is not None else ""
+        return {"label": self._config["label"], "table_html": html}

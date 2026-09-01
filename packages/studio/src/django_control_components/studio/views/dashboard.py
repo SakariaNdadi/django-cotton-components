@@ -118,7 +118,7 @@ class DashboardPreview(StudioView):
         widgets = decode_nodes(doc.get("items", []))
         try:
             validate_widgets_spec(widgets, request=request)
-            built = build_widgets_from_spec(widgets)
+            built = build_widgets_from_spec(widgets, request=request)
             body = "".join(str(w.render(request)) for w in built)
         except ValidationError as exc:
             message = escape("; ".join(str(m) for m in exc.messages))

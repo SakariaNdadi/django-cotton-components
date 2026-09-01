@@ -9,6 +9,7 @@ for _widget_cls, _label, _icon in (
     (StatWidget, "Stat", "hashtag"),
     (ChartWidget, "Chart", "chart-line"),
     (BarListWidget, "Bar list", "chart-simple"),
+    (TableWidget, "Table", "table"),
 ):
     WIDGET_TYPES.register(_widget_cls, label=_label, icon=_icon, category="widget")
 

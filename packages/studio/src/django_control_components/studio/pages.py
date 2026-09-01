@@ -88,4 +88,4 @@ class DynamicDashboardPage(panel_pages.DashboardPage):
         return super().dispatch(request, *args, **kwargs)
 
     def widgets(self, request: Any) -> list[Any]:
-        return build_widgets_from_spec(self._spec.widgets)
+        return build_widgets_from_spec(self._spec.widgets, request=request)

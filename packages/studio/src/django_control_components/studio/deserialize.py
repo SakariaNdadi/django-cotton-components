@@ -183,10 +183,21 @@ def build_infolist_from_spec(model: type, spec: dict[str, Any]) -> Any:
     return Infolist.make().schema(built)
 
 
-def build_widgets_from_spec(nodes: list[dict[str, Any]]) -> list[Any]:
-    from ..panels import WIDGET_TYPES
+def build_widgets_from_spec(nodes: list[dict[str, Any]], *, request: Any = None) -> list[Any]:
+    from ..panels import WIDGET_TYPES, TableWidget
 
-    return [_instantiate(WIDGET_TYPES, node, f"widgets[{i}]") for i, node in enumerate(nodes or [])]
+    built = [
+        _instantiate(WIDGET_TYPES, node, f"widgets[{i}]") for i, node in enumerate(nodes or [])
+    ]
+    for widget in built:
+        source = (
+            widget._config.pop("data_source", None) if isinstance(widget, TableWidget) else None
+        )
+        if source:
+            from .datasource import resolve_table
+
+            widget._config["table"] = lambda req, spec=source: resolve_table(spec, req)
+    return built
 
 
 # -- block trees (the Page document) ----------------------------------
@@ -306,9 +317,15 @@ def validate_widgets_spec(nodes: Any, *, request: Any = None) -> None:
     privileged = _is_privileged(request)
     for i, node in enumerate(nodes):
         _instantiate(WIDGET_TYPES, node, f"widgets[{i}]", privileged=privileged)
-        query = (node.get("config") or {}).get("query") if isinstance(node, dict) else None
+        config = node.get("config") or {} if isinstance(node, dict) else {}
+        query = config.get("query")
         if query is not None:
             _check_query_shape(query, f"widgets[{i}].query")
+        source = config.get("data_source")
+        if source is not None:
+            from .datasource import validate_data_source
+
+            validate_data_source(source, request, where=f"widgets[{i}].data_source")
 
 
 # -- constrained aggregation for widget .query({...}) -----------------
