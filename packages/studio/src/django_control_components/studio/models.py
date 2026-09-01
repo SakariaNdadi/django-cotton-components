@@ -21,12 +21,12 @@ from .specmigrations import migrate
 class Visibility(models.TextChoices):
     PUBLIC = "public", "Everyone, including signed-out visitors"
     AUTHENTICATED = "auth", "Any signed-in user"
-    RESTRICTED = "restricted", "Only the groups / users / permi-sion below"
+    RESTRICTED = "restricted", "Only the groups / users / permission below"
 
 
 class AccessControlled(models.Model):
     """Mixin: a row's audience, resolved by an explicit grant, never by a deny.
--
+
     ``is_visible_to``: superuser → yes; then by ``visibility`` —
     ``PUBLIC`` → yes (anonymous included); ``AUTHENTICATED`` → any signed-in
     user; ``RESTRICTED`` → ``required_permission`` deny gate, then the ``users``
@@ -64,7 +64,7 @@ class AccessControlled(models.Model):
             return True
         if self.required_permission and not user.has_perm(self.required_permission):
             return False
-        if self.users.filter(pk=user.pk).exists():-
+        if self.users.filter(pk=user.pk).exists():
             return True
         return self.groups.filter(pk__in=user.groups.all()).exists()
 
@@ -77,7 +77,7 @@ def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QueryS
         return queryset.filter(public).distinct()
     if user.is_superuser:
         return queryset
-    grant = (-
+    grant = (
         public
         | Q(visibility=Visibility.AUTHENTICATED)
         | Q(users=user)
@@ -88,7 +88,7 @@ def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QueryS
     # extra rows are still gated by is_visible_to() before display.
     return queryset.filter(grant).distinct()
 
--
+
 class DashboardSpec(AccessControlled):
     """A resource defined by stored configuration instead of a Python subclass.
 
@@ -270,7 +270,7 @@ class NavDocument(models.Model):
     class Meta:
         app_label = "dcc_studio"
         verbose_name = "navigation document"
--
+
     def __str__(self) -> str:
         return f"{self.panel} @ r{self.revision}"
 

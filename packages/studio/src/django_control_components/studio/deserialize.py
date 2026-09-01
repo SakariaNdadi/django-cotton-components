@@ -269,7 +269,7 @@ def build_block_tree_from_spec(doc: dict[str, Any], *, request: Any = None) -> A
         slots = node.get("slots") or {}
         if not isinstance(slots, dict):
             raise ValidationError(f"{where}.slots: expected an object")
-        for slot_name in block.slots:-
+        for slot_name in block.slots:
             children = slots.get(slot_name) or []
             built = [
                 walk(child, f"{where}.slots.{slot_name}[{index}]", depth + 1)
