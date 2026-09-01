@@ -15,6 +15,25 @@ if TYPE_CHECKING:
     from django.urls import URLResolver
 
 
+#: Every ``Panel`` registers itself here on construction, keyed by ``name``. The
+#: standalone studio (which is not mounted under a panel) resolves a panel by
+#: name through :func:`get_panel` / :func:`all_panels` instead of walking the
+#: URLconf.
+_PANELS: dict[str, Panel] = {}
+
+
+def _register_panel(panel: Panel) -> None:
+    _PANELS[panel.name] = panel
+
+
+def get_panel(name: str) -> Panel | None:
+    return _PANELS.get(name)
+
+
+def all_panels() -> list[Panel]:
+    return sorted(_PANELS.values(), key=lambda p: p.name)
+
+
 class Panel:
     """A mount point for a set of resources.
 
@@ -24,6 +43,7 @@ class Panel:
     def __init__(self, name: str) -> None:
         self.name = name
         self._path = name
+        _register_panel(self)
         self._resources: list[type[Resource]] = []
         self._pages: list[type[Any]] = []
         self._guards: list[Callable[[HttpRequest], bool]] = []
@@ -59,8 +79,9 @@ class Panel:
         return self
 
     def studio(self, value: bool = True) -> Self:
-        """Mount the in-browser builder under ``{panel}/studio/`` for users with
-        the ``dcc_studio.use_studio`` permission. Implies :meth:`dynamic`."""
+        """Mark this panel as an authoring target for the standalone studio
+        (mounted separately at ``include("django_control_components.studio.urls")``).
+        Implies :meth:`dynamic` so specs the studio writes render at runtime."""
         self._studio = value
         if value:
             self._dynamic = True
@@ -161,20 +182,6 @@ class Panel:
                     }
                 )
 
-        if self._studio:
-            from ._studio import require_studio
-
-            can_use_studio = require_studio("access").can_use_studio
-
-            if can_use_studio(request):
-                items.append(
-                    {
-                        "label": "Studio",
-                        "icon": "wand-magic-sparkles",
-                        "group": "",
-                        "url": reverse(f"{self.namespace}:studio-home"),
-                    }
-                )
         return items
 
     def _bind(self, base: type[Any], resource: type[Resource], suffix: str) -> Any:
@@ -258,70 +265,12 @@ class Panel:
                 out.append(path("", view, name="index"))
         return out
 
-    def _studio_patterns(self) -> list[Any]:
-        from ._studio import require_studio
-
-        sviews = require_studio("views")
-
-        def make(view_cls: type[Any]) -> Any:
-            bound = type(f"{view_cls.__name__}Bound", (view_cls,), {"panel": self})
-            return bound.as_view()  # type: ignore[attr-defined]
-
-        return [
-            path("studio/", make(sviews.StudioHome), name="studio-home"),
-            path("studio/nav/", make(sviews.NavBuilder), name="studio-nav"),
-            path("studio/nav/save/", make(sviews.NavSave), name="studio-nav-save"),
-            path("studio/nav/preview/", make(sviews.NavPreview), name="studio-nav-preview"),
-            path("studio/dashboards/", make(sviews.DashboardIndex), name="studio-dashboards"),
-            path(
-                "studio/dashboards/<slug:slug>/",
-                make(sviews.DashboardBuilder),
-                name="studio-dash",
-            ),
-            path(
-                "studio/dashboards/<slug:slug>/save/",
-                make(sviews.DashboardSave),
-                name="studio-dash-save",
-            ),
-            path(
-                "studio/dashboards/<slug:slug>/preview/",
-                make(sviews.DashboardPreview),
-                name="studio-dash-preview",
-            ),
-            path("studio/resources/", make(sviews.ResourceIndex), name="studio-resources"),
-            path(
-                "studio/resources/<slug:slug>/",
-                make(sviews.ResourceBuilder),
-                name="studio-resource",
-            ),
-            path(
-                "studio/resources/<slug:slug>/save/",
-                make(sviews.ResourceSave),
-                name="studio-resource-save",
-            ),
-            path(
-                "studio/resources/<slug:slug>/preview/",
-                make(sviews.ResourcePreview),
-                name="studio-resource-preview",
-            ),
-            path("studio/roles/", make(sviews.RolesView), name="studio-roles"),
-            path("studio/api/palette/", make(sviews.PaletteApi), name="studio-api-palette"),
-            path("studio/api/models/", make(sviews.ModelsApi), name="studio-api-models"),
-            path(
-                "studio/api/models/<str:label>/",
-                make(sviews.ModelFieldsApi),
-                name="studio-api-model-fields",
-            ),
-        ]
-
     @property
     def urls(self) -> tuple[list[Any], str]:
         patterns: list[Any] = []
         patterns.extend(self._page_patterns())
         for resource in self._resources:
             patterns.extend(self._resource_patterns(resource))
-        if self._studio:
-            patterns.extend(self._studio_patterns())
         if self._dynamic:
             patterns.extend(self._dynamic_patterns())
         return (patterns, self.namespace)

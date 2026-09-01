@@ -24,6 +24,7 @@ _MODELS: dict[str, type[AccessControlled]] = {
 
 class RolesView(StudioView):
     template_name = "django_control_components/studio/roles.html"
+    active_section = "roles"
 
     def _require_superuser(self, request: HttpRequest) -> None:
         user = getattr(request, "user", None)
@@ -71,4 +72,4 @@ class RolesView(StudioView):
             group = Group.objects.filter(pk=int(group_pk)).first() if group_pk.isdigit() else None
             if group is not None:
                 (obj.groups.add if action == "grant" else obj.groups.remove)(group)
-        return redirect(f"{self.panel.namespace}:studio-roles")
+        return redirect("dcc_studio:roles")

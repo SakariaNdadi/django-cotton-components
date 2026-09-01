@@ -7,6 +7,7 @@ import json
 
 import pytest
 from django.contrib.auth.models import Permission
+from django.urls import include, path
 
 from django_control_components.panels import Panel
 from django_control_components.studio.models import PanelDashboard, SpecRevision
@@ -15,7 +16,10 @@ pytestmark = pytest.mark.django_db
 
 
 panel = Panel("s").path("s").studio().auth(lambda r: r.user.is_authenticated)
-urlpatterns = [panel.mount()]
+urlpatterns = [
+    panel.mount(),
+    path("studio/", include("django_control_components.studio.urls")),
+]
 
 
 @pytest.fixture
@@ -39,15 +43,15 @@ def dashboard():
 
 def test_index_lists_and_creates(client, urlconf, studio_user):
     client.force_login(studio_user)
-    assert client.get("/s/studio/dashboards/").status_code == 200
-    response = client.post("/s/studio/dashboards/", {"label": "Revenue"})
+    assert client.get("/studio/dashboards/").status_code == 200
+    response = client.post("/studio/dashboards/", {"label": "Revenue"})
     assert response.status_code == 302
     assert PanelDashboard.objects.filter(slug="revenue").exists()
 
 
 def test_builder_renders(client, urlconf, studio_user, dashboard):
     client.force_login(studio_user)
-    response = client.get("/s/studio/dashboards/ops/")
+    response = client.get("/studio/dashboards/ops/")
     assert response.status_code == 200
     assert b"dccStudioDoc" in response.content
     assert b"StatWidget" in response.content  # a palette entry
@@ -57,7 +61,7 @@ def test_save_writes_widgets_and_a_revision(client, urlconf, studio_user, dashbo
     client.force_login(studio_user)
     doc = {"items": [{"id": "w0", "type": "StatWidget", "config": {"name": "Articles"}}]}
     response = client.post(
-        "/s/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
+        "/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
     )
     assert response.status_code == 200
     assert response.json()["revision"] == 1
@@ -73,7 +77,7 @@ def test_stale_revision_conflicts(client, urlconf, studio_user, dashboard):
     dashboard.revision = 5
     dashboard.save()
     response = client.post(
-        "/s/studio/dashboards/ops/save/", {"doc": json.dumps({"items": []}), "revision": "0"}
+        "/studio/dashboards/ops/save/", {"doc": json.dumps({"items": []}), "revision": "0"}
     )
     assert response.status_code == 409
     assert response.json()["revision"] == 5
@@ -83,7 +87,7 @@ def test_save_rejects_unknown_widget_type(client, urlconf, studio_user, dashboar
     client.force_login(studio_user)
     doc = {"items": [{"id": "w0", "type": "TeleportWidget", "config": {}}]}
     response = client.post(
-        "/s/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
+        "/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
     )
     assert response.status_code == 422
 
@@ -91,7 +95,7 @@ def test_save_rejects_unknown_widget_type(client, urlconf, studio_user, dashboar
 def test_preview_renders_widgets(client, urlconf, studio_user, dashboard):
     client.force_login(studio_user)
     doc = {"items": [{"id": "w0", "type": "StatWidget", "config": {"name": "Count"}}]}
-    response = client.post("/s/studio/dashboards/ops/preview/", {"doc": json.dumps(doc)})
+    response = client.post("/studio/dashboards/ops/preview/", {"doc": json.dumps(doc)})
     assert response.status_code == 200
     assert b"dcc-widget" in response.content
 
@@ -111,7 +115,7 @@ def test_query_widget_round_trips_through_the_builder(client, urlconf, studio_us
         ]
     }
     response = client.post(
-        "/s/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
+        "/studio/dashboards/ops/save/", {"doc": json.dumps(doc), "revision": "0"}
     )
     assert response.status_code == 200
     dashboard.refresh_from_db()

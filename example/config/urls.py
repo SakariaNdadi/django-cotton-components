@@ -8,6 +8,7 @@ from demo.panels import admin_panel
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("dcc/", include("django_control_components.urls")),
+    path("studio/", include("django_control_components.studio.urls")),
     admin_panel.mount(),
     path("", include("demo.urls")),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

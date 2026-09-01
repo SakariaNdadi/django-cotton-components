@@ -97,6 +97,8 @@ DCC = {
 | `VENDOR_ASSET_DIR` | str | `"dcc/vendor/"` | Static path prefix the vendored copies are served from when `VENDOR_ASSETS`. |
 | `ASSET_SRI` | dict[str, str] | `{}` | `{cdn_url: "sha384-…"}`. Any CDN asset URL present is emitted with `integrity` + `crossorigin="anonymous"`. Ignored for a URL served via `VENDOR_ASSETS`. |
 
+| `STUDIO_ADMIN_ENTRY` | bool | `True` | Show a "Studio" entry in the Django admin index (redirects to `/studio/`). Set `False` if the project has no `django.contrib.admin` or wants its own entry point. |
+
 Alpine is pinned exactly (`ALPINE_VERSION` in `templatetags/dcc_tags.py`), not a
 floating `3.x.x` range — bump it deliberately, in lockstep with the vendored files.
 
@@ -120,6 +122,7 @@ but a `setting_changed` receiver clears that cache, so
 | `django_control_components.W011` | Warning | a `DCC["STUDIO_MODELS"]` / `STUDIO_RESOURCE_MODELS` label does not resolve to a model |
 | `django_control_components.W012` | Warning | a `DCC["STUDIO_CALLABLES"]` dotted path cannot be imported |
 | `dcc_studio.E001` | Error | `django_control_components.studio` is installed without `django_control_components` |
+| `dcc_studio.W002` | Warning | `DCC["STUDIO_ADMIN_ENTRY"]` is on but the studio URLs are not mounted (`include("django_control_components.studio.urls")`) |
 
 ## Styling
 

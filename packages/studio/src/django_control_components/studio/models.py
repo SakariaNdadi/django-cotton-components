@@ -297,3 +297,16 @@ class SpecRevision(models.Model):
 
     def __str__(self) -> str:
         return f"revision {self.pk} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class StudioEntry(DashboardSpec):
+    """Proxy of :class:`DashboardSpec` that exists only to place a "Studio" entry
+    in the Django admin index (its ``ModelAdmin`` redirects to the studio hub).
+    No table, no data of its own."""
+
+    class Meta:
+        proxy = True
+        app_label = "dcc_studio"
+        verbose_name = "studio"
+        verbose_name_plural = "studio"
+        default_permissions = ()  # the entry is a redirect, not a CRUD surface

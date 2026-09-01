@@ -1,0 +1,44 @@
+{% load dcc_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Studio{% endblock %}</title>
+  {% block head_extra %}{% endblock %}
+  {% dcc_assets %}
+  {% dcc_studio_assets %}
+</head>
+<body class="dcc-body">
+  <div class="dcc-panel" x-data="dccShell()" :class="{ 'is-nav-open': navOpen }">
+    <button type="button" class="dcc-panel__navtoggle" aria-label="Toggle navigation" @click="navOpen = !navOpen">
+      {% dcc_icon "bars" %}
+    </button>
+    <div class="dcc-panel__scrim" @click="navOpen = false" x-show="navOpen" x-transition.opacity></div>
+    <nav class="dcc-panel__nav" id="dcc-nav" aria-label="Studio">
+      <a class="dcc-panel__brand" href="{% url 'dcc_studio:home' %}">
+        {% dcc_icon "wand-magic-sparkles" %}<strong>Studio</strong>
+      </a>
+      <ul class="dcc-nav">
+        <li><a class="dcc-nav__link{% if active == "home" %} is-active{% endif %}" href="{% url 'dcc_studio:home' %}">{% dcc_icon "house" %}<span>Home</span></a></li>
+        <li><a class="dcc-nav__link{% if active == "dashboards" %} is-active{% endif %}" href="{% url 'dcc_studio:dashboards' %}">{% dcc_icon "gauge-high" %}<span>Dashboards</span></a></li>
+        <li><a class="dcc-nav__link{% if active == "resources" %} is-active{% endif %}" href="{% url 'dcc_studio:resources' %}">{% dcc_icon "table" %}<span>Resources</span></a></li>
+        {% for p in studio_panels %}
+        <li><a class="dcc-nav__link{% if active == "nav" and panel_name == p.name %} is-active{% endif %}" href="{% url 'dcc_studio:nav' panel=p.name %}">{% dcc_icon "bars" %}<span>{{ p.brand_label|default:p.name }} nav</span></a></li>
+        {% endfor %}
+        {% if request.user.is_superuser %}
+        <li><a class="dcc-nav__link{% if active == "roles" %} is-active{% endif %}" href="{% url 'dcc_studio:roles' %}">{% dcc_icon "users" %}<span>Users &amp; Roles</span></a></li>
+        {% endif %}
+      </ul>
+      {% if request.user.is_authenticated %}
+      <div class="dcc-panel__user">
+        <span class="dcc-panel__username">{{ request.user.get_username }}</span>
+        <button type="button" class="dcc-panel__theme" @click="cycleTheme()" aria-label="Toggle colour theme" x-text="themeLabel()"></button>
+      </div>
+      {% endif %}
+    </nav>
+    <main class="dcc-panel__main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

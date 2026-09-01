@@ -1,8 +1,9 @@
 # No-code resources (studio)
 
-`django_control_components.studio` lets an admin define a panel resource from
-**stored JSON** instead of a Python subclass — the seam a visual dashboard
-builder would sit on top of. The builder UI itself is not included yet.
+`django_control_components.studio` is an in-browser builder for panel
+navigation, resources and dashboards, defined as **stored JSON** instead of
+Python subclasses. It mounts at **its own URL**, entered from the Django admin,
+and is never part of the app it builds.
 
 ## Enable it
 
@@ -19,17 +20,32 @@ INSTALLED_APPS = [
     "django_control_components",
     "django_control_components.studio",
 ]
+
+# urls.py
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("studio/", include("django_control_components.studio.urls")),  # the builder
+    admin_panel.mount(),  # the app
+]
 ```
+
+The studio hub is at `/studio/` (URL namespace `dcc_studio`), gated by the
+`dcc_studio.use_studio` permission. A "Studio" entry also appears in the Django
+admin index for anyone holding that permission — disable it with
+`DCC["STUDIO_ADMIN_ENTRY"] = False`.
 
 Calling `.studio()` or `.dynamic()` on a `Panel` without the extra installed
 raises `ImproperlyConfigured` with the install hint.
 
 ```python
-admin_panel = Panel("admin").path("panel").resources([...]).dynamic()
+admin_panel = Panel("admin").path("panel").resources([...]).studio()
 ```
 
-`.dynamic()` adds `d/<slug>/…` routes that resolve a `DashboardSpec` row per
-request, plus its entries to `panel.navigation()`.
+`.studio()` marks the panel as an authoring target (so the studio's sidebar
+builder can edit its nav) and implies `.dynamic()`. `.dynamic()` adds
+`d/<slug>/…` routes that resolve a `DashboardSpec` row per request, plus its
+entries to `panel.navigation()` — this is the **runtime** rendering and stays on
+the panel, unaffected by where the builder is mounted.
 
 ## The spec
 

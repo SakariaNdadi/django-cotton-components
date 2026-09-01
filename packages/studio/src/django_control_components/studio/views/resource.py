@@ -10,6 +10,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from ..deserialize import build_table_from_spec, validate_spec
 from ..introspect import installed_models, resolve_model
@@ -21,6 +22,7 @@ from .base import StudioView
 
 class ResourceIndex(StudioView):
     template_name = "django_control_components/studio/resource_index.html"
+    active_section = "resources"
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return render(
@@ -49,7 +51,7 @@ class ResourceIndex(StudioView):
             model=label,
             **spec,
         )
-        return redirect(f"{self.panel.namespace}:studio-resource", slug=obj.slug)
+        return redirect("dcc_studio:resource", slug=obj.slug)
 
 
 class ResourceBuilder(StudioView):
@@ -69,8 +71,8 @@ class ResourceBuilder(StudioView):
             "palette": pal,
             "revision": spec.revision,
             "listKey": "columns",
-            "saveUrl": _url(self.panel, "studio-resource-save", slug=slug),
-            "previewUrl": _url(self.panel, "studio-resource-preview", slug=slug),
+            "saveUrl": reverse("dcc_studio:resource-save", args=[slug]),
+            "previewUrl": reverse("dcc_studio:resource-preview", args=[slug]),
             "csrfToken": get_token(request),
         }
         return render(
@@ -156,12 +158,6 @@ def _get_spec(slug: str) -> DashboardSpec:
         return DashboardSpec.objects.get(slug=slug)
     except DashboardSpec.DoesNotExist:
         raise Http404("no such resource") from None
-
-
-def _url(panel: Any, name: str, **kwargs: Any) -> str:
-    from django.urls import reverse
-
-    return reverse(f"{panel.namespace}:{name}", kwargs=kwargs)
 
 
 def _nodes(raw: Any) -> list[dict[str, Any]]:

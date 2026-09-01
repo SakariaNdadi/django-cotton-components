@@ -6,6 +6,7 @@ import json
 
 import pytest
 from django.contrib.auth.models import Permission
+from django.urls import include, path
 
 from django_control_components.panels import Panel
 from django_control_components.panels.resource import Resource
@@ -26,7 +27,10 @@ panel = (
     .studio()
     .auth(lambda r: r.user.is_authenticated)
 )
-urlpatterns = [panel.mount()]
+urlpatterns = [
+    panel.mount(),
+    path("studio/", include("django_control_components.studio.urls")),
+]
 
 
 @pytest.fixture
@@ -43,17 +47,17 @@ def studio_user(django_user_model):
 
 
 def test_anonymous_redirected_to_login(client, urlconf):
-    assert client.get("/s/studio/nav/").status_code == 302
+    assert client.get("/studio/nav/s/").status_code == 302
 
 
 def test_authenticated_without_permission_gets_403(client, urlconf, django_user_model):
     client.force_login(django_user_model.objects.create_user("plain", password="x"))
-    assert client.get("/s/studio/nav/").status_code == 403
+    assert client.get("/studio/nav/s/").status_code == 403
 
 
 def test_builder_renders_for_studio_user(client, urlconf, studio_user):
     client.force_login(studio_user)
-    response = client.get("/s/studio/nav/")
+    response = client.get("/studio/nav/s/")
     assert response.status_code == 200
     assert b"dccStudioDoc" in response.content
     assert b"nav-boot" in response.content
@@ -61,11 +65,11 @@ def test_builder_renders_for_studio_user(client, urlconf, studio_user):
 
 def test_studio_home_is_a_hub(client, urlconf, studio_user):
     client.force_login(studio_user)
-    response = client.get("/s/studio/")
+    response = client.get("/studio/")
     assert response.status_code == 200
-    assert b"/s/studio/nav/" in response.content
-    assert b"/s/studio/dashboards/" in response.content
-    assert b"/s/studio/resources/" in response.content
+    assert b"/studio/nav/s/" in response.content
+    assert b"/studio/dashboards/" in response.content
+    assert b"/studio/resources/" in response.content
 
 
 def test_save_round_trips_with_group_nesting(client, urlconf, studio_user):
@@ -77,7 +81,7 @@ def test_save_round_trips_with_group_nesting(client, urlconf, studio_user):
             {"id": "c", "label": "Docs", "target_kind": "url", "target": "/docs/"},
         ]
     }
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    response = client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 200
     assert response.json()["revision"] == 1
 
@@ -94,7 +98,7 @@ def test_save_is_non_destructive_and_keeps_access_grants(client, urlconf, studio
 
     client.force_login(studio_user)
     first = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
-    r1 = client.post("/s/studio/nav/save/", {"doc": json.dumps(first), "revision": 0})
+    r1 = client.post("/studio/nav/s/save/", {"doc": json.dumps(first), "revision": 0})
     assert r1.json()["revision"] == 1
 
     row = NavItem.objects.get(panel="s")
@@ -113,7 +117,7 @@ def test_save_is_non_destructive_and_keeps_access_grants(client, urlconf, studio
             }
         ]
     }
-    r2 = client.post("/s/studio/nav/save/", {"doc": json.dumps(second), "revision": 1})
+    r2 = client.post("/studio/nav/s/save/", {"doc": json.dumps(second), "revision": 1})
     assert r2.json()["revision"] == 2
 
     row.refresh_from_db()
@@ -126,8 +130,8 @@ def test_save_is_non_destructive_and_keeps_access_grants(client, urlconf, studio
 def test_save_rejects_stale_revision(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
-    client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
-    stale = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
+    stale = client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
     assert stale.status_code == 409
     assert stale.json()["revision"] == 1
     assert stale.json()["doc"]["items"][0]["label"] == "Docs"
@@ -136,7 +140,7 @@ def test_save_rejects_stale_revision(client, urlconf, studio_user):
 def test_save_rejects_unknown_kind(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "X", "target_kind": "wormhole"}]}
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    response = client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 422
     assert "wormhole" in response.json()["errors"][0]["message"]
 
@@ -144,14 +148,14 @@ def test_save_rejects_unknown_kind(client, urlconf, studio_user):
 def test_save_rejects_missing_label(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "  ", "target_kind": "url", "target": "/x/"}]}
-    response = client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
+    response = client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
     assert response.status_code == 422
 
 
 def test_preview_renders_a_nav_fragment(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
-    response = client.post("/s/studio/nav/preview/", {"doc": json.dumps(doc)})
+    response = client.post("/studio/nav/s/preview/", {"doc": json.dumps(doc)})
     assert response.status_code == 200
     assert b"Docs" in response.content
 
@@ -159,14 +163,14 @@ def test_preview_renders_a_nav_fragment(client, urlconf, studio_user):
 def test_save_then_reload_prefills_the_builder(client, urlconf, studio_user):
     client.force_login(studio_user)
     doc = {"items": [{"id": "a", "label": "Docs", "target_kind": "url", "target": "/docs/"}]}
-    client.post("/s/studio/nav/save/", {"doc": json.dumps(doc), "revision": 0})
-    response = client.get("/s/studio/nav/")
+    client.post("/studio/nav/s/save/", {"doc": json.dumps(doc), "revision": 0})
+    response = client.get("/studio/nav/s/")
     assert b"Docs" in response.content
 
 
 def test_palette_api_gated_and_returns_types(client, urlconf, studio_user):
     client.force_login(studio_user)
-    response = client.get("/s/studio/api/palette/")
+    response = client.get("/studio/api/palette/")
     assert response.status_code == 200
     assert "columns" in response.json()
 
@@ -174,7 +178,7 @@ def test_palette_api_gated_and_returns_types(client, urlconf, studio_user):
 def test_models_api(client, urlconf, django_user_model):
     root = django_user_model.objects.create_superuser("root-m", "m@x.io", "x")
     client.force_login(root)
-    response = client.get("/s/studio/api/models/")
+    response = client.get("/studio/api/models/")
     assert response.status_code == 200
     labels = {row["label"] for row in response.json()["models"]}
     assert "testapp.article" in labels
@@ -184,9 +188,9 @@ def test_models_api(client, urlconf, django_user_model):
 def test_model_fields_api(client, urlconf, django_user_model):
     root = django_user_model.objects.create_superuser("root-f", "f@x.io", "x")
     client.force_login(root)
-    response = client.get("/s/studio/api/models/testapp.article/")
+    response = client.get("/studio/api/models/testapp.article/")
     assert response.status_code == 200
     names = {f["name"] for f in response.json()["fields"]}
     assert "title" in names
-    assert client.get("/s/studio/api/models/auth.group/").status_code == 404
-    assert client.get("/s/studio/api/models/no.such/").status_code == 404
+    assert client.get("/studio/api/models/auth.group/").status_code == 404
+    assert client.get("/studio/api/models/no.such/").status_code == 404

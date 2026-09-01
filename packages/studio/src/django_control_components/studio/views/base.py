@@ -1,4 +1,9 @@
-"""Shared plumbing for the studio builder views."""
+"""Shared plumbing for the studio builder views.
+
+The studio is mounted at its own URL (``include("django_control_components.studio.urls")``),
+not under a panel, so these views carry no ``panel`` — a panel is a *parameter*
+of the artefact being edited (only the nav builder needs one).
+"""
 
 from __future__ import annotations
 
@@ -14,14 +19,13 @@ from ..access import require_studio
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
-    from ...panels.panel import Panel
-
 
 class StudioView(View):
-    """A builder view: gated by ``dcc_studio.use_studio``, anonymous users are
-    redirected to login (via the panel's ``LoginRequired`` handling)."""
+    """A builder view: gated by ``dcc_studio.use_studio``; anonymous users are
+    redirected to ``settings.LOGIN_URL``."""
 
-    panel: Panel
+    #: drives the active state in the studio's own sidebar
+    active_section: str = ""
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
         from ...panels.guards import LoginRequired
@@ -30,19 +34,19 @@ class StudioView(View):
             if not require_studio(request):
                 raise PermissionDenied
         except LoginRequired:
+            from django.conf import settings
             from django.contrib.auth.views import redirect_to_login
 
-            return redirect_to_login(request.get_full_path(), self.panel.get_login_url())
+            login_url = getattr(settings, "LOGIN_URL", None) or "/accounts/login/"
+            return redirect_to_login(request.get_full_path(), str(login_url))
         return super().dispatch(request, *args, **kwargs)
 
     def shell_context(self, **extra: Any) -> dict[str, Any]:
-        from ...panels.nav import build_nav
+        from ...panels.panel import all_panels
 
-        ctx = {
-            "panel": self.panel,
-            "nav": self.panel.navigation(self.request),
-            "nav_tree": build_nav(self.panel, self.request),
-            "resource_label": "Studio",
+        ctx: dict[str, Any] = {
+            "studio_panels": [p for p in all_panels() if getattr(p, "_studio", False)],
+            "active": self.active_section,
         }
         ctx.update(extra)
         return ctx

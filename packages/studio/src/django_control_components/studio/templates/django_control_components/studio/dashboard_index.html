@@ -1,8 +1,7 @@
-{% extends "django_control_components/panels/base.html" %}
+{% extends "django_control_components/studio/base.html" %}
 {% load dcc_tags %}
 
 {% block title %}Dashboards · Studio{% endblock %}
-{% block head_extra %}{% dcc_studio_assets %}{% endblock %}
 
 {% block content %}
 <header class="dcc-panel__header"><h1>Dashboards</h1></header>
@@ -13,7 +12,7 @@
   {% for dashboard in dashboards %}
   <li class="dcc-sortable__item">
     <span class="dcc-sortable__label">{{ dashboard.label|default:dashboard.slug }}</span>
-    <a class="dcc-studio__btn" href="{% url panel.namespace|add:':studio-dash' slug=dashboard.slug %}">Edit</a>
+    <a class="dcc-studio__btn" href="{% url 'dcc_studio:dash' slug=dashboard.slug %}">Edit</a>
   </li>
   {% empty %}
   <li class="dcc-field__help">No dashboards yet.</li>

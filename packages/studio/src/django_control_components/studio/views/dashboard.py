@@ -9,6 +9,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.text import slugify
 
@@ -20,6 +21,7 @@ from .base import StudioView
 
 class DashboardIndex(StudioView):
     template_name = "django_control_components/studio/dashboard_index.html"
+    active_section = "dashboards"
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return render(
@@ -41,7 +43,7 @@ class DashboardIndex(StudioView):
             )
         dashboard = PanelDashboard(label=label, slug=slugify(label), widgets=[])
         dashboard.save()
-        return redirect(f"{self.panel.namespace}:studio-dash", slug=dashboard.slug)
+        return redirect("dcc_studio:dash", slug=dashboard.slug)
 
 
 class DashboardBuilder(StudioView):
@@ -56,8 +58,8 @@ class DashboardBuilder(StudioView):
             "doc": {"items": _items(dashboard)},
             "palette": pal,
             "revision": dashboard.revision,
-            "saveUrl": _url(self.panel, "studio-dash-save", slug=slug),
-            "previewUrl": _url(self.panel, "studio-dash-preview", slug=slug),
+            "saveUrl": reverse("dcc_studio:dash-save", args=[slug]),
+            "previewUrl": reverse("dcc_studio:dash-preview", args=[slug]),
             "csrfToken": get_token(request),
         }
         return render(
@@ -129,12 +131,6 @@ def _get_dashboard(slug: str) -> PanelDashboard:
         return PanelDashboard.objects.get(slug=slug)
     except PanelDashboard.DoesNotExist:
         raise Http404("no such dashboard") from None
-
-
-def _url(panel: Any, name: str, **kwargs: Any) -> str:
-    from django.urls import reverse
-
-    return reverse(f"{panel.namespace}:{name}", kwargs=kwargs)
 
 
 def _items(dashboard: PanelDashboard) -> list[dict[str, Any]]:

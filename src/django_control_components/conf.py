@@ -44,6 +44,10 @@ DEFAULTS: dict[str, Any] = {
     # ``Panel.name`` whose home the allauth adapter resolves after login. None =>
     # fall back to allauth's own ``LOGIN_REDIRECT_URL``.
     "HOME_PANEL": None,
+    # Show a "Studio" entry in the Django admin index (redirects to the standalone
+    # studio hub). Set False if the project does not use django.contrib.admin or
+    # wants its own entry point. Requires the studio URLs to be mounted.
+    "STUDIO_ADMIN_ENTRY": True,
     # Serve htmx / Alpine / the focus plugin from the project's own static files
     # instead of a CDN. Air-gapped and privacy-sensitive deploys set this True and
     # place the pinned files under ``VENDOR_ASSET_DIR`` (``manage.py dcc_vendor_assets``

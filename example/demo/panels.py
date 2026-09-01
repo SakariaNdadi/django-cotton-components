@@ -180,6 +180,6 @@ admin_panel = (
     .brand("Demo Admin", "gauge-high")
     .pages([DemoDashboard, ReportsPage])
     .resources([ArticleResource, AuthorResource])
-    .studio()  # in-browser builder at /panel/studio/ (needs dcc_studio.use_studio)
+    .studio()  # authoring target for the standalone studio at /studio/
     .auth(lambda r: r.user.is_authenticated)
 )

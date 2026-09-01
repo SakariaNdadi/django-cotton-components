@@ -1,5 +1,4 @@
-"""The sidebar builder: palette of nav-item kinds, a sortable canvas, an
-inspector, save (full-document rebuild) and live preview."""
+"""The studio hub and the per-panel sidebar builder."""
 
 from __future__ import annotations
 
@@ -8,8 +7,9 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 
 from ..models import NavDocument, NavItem
 from .base import StudioView
@@ -24,6 +24,7 @@ _BUILDER_FIELDS = ("label", "icon", "target_kind", "target", "is_enabled", "open
 
 class StudioHome(StudioView):
     template_name = "django_control_components/studio/home.html"
+    active_section = "home"
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return render(request, self.template_name, self.shell_context())
@@ -31,50 +32,49 @@ class StudioHome(StudioView):
 
 class NavBuilder(StudioView):
     template_name = "django_control_components/studio/nav_builder.html"
+    active_section = "nav"
 
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def get(self, request: HttpRequest, panel: str, *args: Any, **kwargs: Any) -> HttpResponse:
         from django.middleware.csrf import get_token
 
+        _require_panel(panel)
         boot = {
-            "doc": {"items": _current_items(self.panel.name)},
+            "doc": {"items": _current_items(panel)},
             "kinds": _KINDS,
-            "revision": _revision_of(self.panel.name),
-            "saveUrl": _url(self.panel, "studio-nav-save"),
-            "previewUrl": _url(self.panel, "studio-nav-preview"),
+            "revision": _revision_of(panel),
+            "saveUrl": reverse("dcc_studio:nav-save", args=[panel]),
+            "previewUrl": reverse("dcc_studio:nav-preview", args=[panel]),
             "csrfToken": get_token(request),
         }
         return render(
             request,
             self.template_name,
-            self.shell_context(boot_json=json.dumps(boot), kinds=_KINDS),
+            self.shell_context(boot_json=json.dumps(boot), kinds=_KINDS, panel_name=panel),
         )
 
 
 class NavSave(StudioView):
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self, request: HttpRequest, panel: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        _require_panel(panel)
         doc = self.read_doc()
         items = doc.get("items", [])
         if not isinstance(items, list):
             return _error_response(["items: expected a list"])
 
-        panel_name = self.panel.name
         try:
             client_revision = int(request.POST.get("revision", -1))
         except (TypeError, ValueError):
             client_revision = -1
 
         with transaction.atomic():
-            navdoc, _ = NavDocument.objects.select_for_update().get_or_create(panel=panel_name)
+            navdoc, _ = NavDocument.objects.select_for_update().get_or_create(panel=panel)
             if client_revision != navdoc.revision:
                 return JsonResponse(
-                    {
-                        "revision": navdoc.revision,
-                        "doc": {"items": _current_items(panel_name)},
-                    },
+                    {"revision": navdoc.revision, "doc": {"items": _current_items(panel)}},
                     status=409,
                 )
             try:
-                _apply(panel_name, items)
+                _apply(panel, items)
             except ValidationError as exc:
                 return _error_response(list(exc.messages))
             navdoc.revision += 1
@@ -84,23 +84,27 @@ class NavSave(StudioView):
 
 
 class NavPreview(StudioView):
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self, request: HttpRequest, panel: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        panel_obj = _require_panel(panel)
         doc = self.read_doc()
         tree = _preview_tree(doc.get("items", []))
         return render(
             request,
             "django_control_components/panels/_nav.html",
-            {"panel": self.panel, "nav_tree": tree, "request": request},
+            {"panel": panel_obj, "nav_tree": tree, "request": request},
         )
 
 
 # -- helpers ---------------------------------------------------------------
 
 
-def _url(panel: Any, name: str) -> str:
-    from django.urls import reverse
+def _require_panel(name: str) -> Any:
+    from ...panels.panel import get_panel
 
-    return reverse(f"{panel.namespace}:{name}")
+    panel = get_panel(name)
+    if panel is None or not getattr(panel, "_studio", False):
+        raise Http404(f"no studio-enabled panel {name!r}")
+    return panel
 
 
 def _current_items(panel_name: str) -> list[dict[str, Any]]:
