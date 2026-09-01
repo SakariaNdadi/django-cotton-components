@@ -1,4 +1,4 @@
-"""Layout blocks — arrange other blocks on a page.
+"""Layout blocks - arrange other blocks on a page.
 
 The form-schema containers (``Section`` / ``Fieldset`` / ``Tabs`` in
 ``schemas/layout.py``) stay where they are; those render inside a bound Django
@@ -81,7 +81,7 @@ class Row(Block):
 
 
 class Grid(Block):
-    """A CSS grid — ``cols`` tracks, ``gap`` spacing. Children are usually
+    """A CSS grid - ``cols`` tracks, ``gap`` spacing. Children are usually
     :class:`Column` blocks but need not be."""
 
     slots = ("default",)

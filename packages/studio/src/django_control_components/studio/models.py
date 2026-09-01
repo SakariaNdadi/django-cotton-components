@@ -9,18 +9,24 @@ from django.db import models
 from django.db.models import Q
 from django.utils.text import slugify
 
-from .deserialize import validate_spec, validate_widgets_spec
+from .deserialize import (
+    build_block_tree_from_spec,
+    validate_block_tree,
+    validate_spec,
+    validate_widgets_spec,
+)
+from .specmigrations import migrate
 
 
 class Visibility(models.TextChoices):
     PUBLIC = "public", "Everyone, including signed-out visitors"
     AUTHENTICATED = "auth", "Any signed-in user"
-    RESTRICTED = "restricted", "Only the groups / users / permission below"
+    RESTRICTED = "restricted", "Only the groups / users / permi-sion below"
 
 
 class AccessControlled(models.Model):
     """Mixin: a row's audience, resolved by an explicit grant, never by a deny.
-
+-
     ``is_visible_to``: superuser → yes; then by ``visibility`` —
     ``PUBLIC`` → yes (anonymous included); ``AUTHENTICATED`` → any signed-in
     user; ``RESTRICTED`` → ``required_permission`` deny gate, then the ``users``
@@ -58,7 +64,7 @@ class AccessControlled(models.Model):
             return True
         if self.required_permission and not user.has_perm(self.required_permission):
             return False
-        if self.users.filter(pk=user.pk).exists():
+        if self.users.filter(pk=user.pk).exists():-
             return True
         return self.groups.filter(pk__in=user.groups.all()).exists()
 
@@ -71,7 +77,7 @@ def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QueryS
         return queryset.filter(public).distinct()
     if user.is_superuser:
         return queryset
-    grant = (
+    grant = (-
         public
         | Q(visibility=Visibility.AUTHENTICATED)
         | Q(users=user)
@@ -82,7 +88,7 @@ def visible_queryset(queryset: models.QuerySet[Any], user: Any) -> models.QueryS
     # extra rows are still gated by is_visible_to() before display.
     return queryset.filter(grant).distinct()
 
-
+-
 class DashboardSpec(AccessControlled):
     """A resource defined by stored configuration instead of a Python subclass.
 
@@ -264,9 +270,80 @@ class NavDocument(models.Model):
     class Meta:
         app_label = "dcc_studio"
         verbose_name = "navigation document"
-
+-
     def __str__(self) -> str:
         return f"{self.panel} @ r{self.revision}"
+
+
+class Page(AccessControlled):
+    """An arbitrary page — index, about, dashboards, in-app screens — assembled
+    in the studio as a block tree instead of a ``PanelPage`` subclass.
+
+    ``tree`` holds the root block node; ``schema_version`` is the spec-migration
+    version it was written with. ``document`` returns the tree lazily upgraded to
+    the current version — the first real call site of :mod:`.specmigrations`.
+    """
+
+    class Mount(models.TextChoices):
+        PANEL = "panel", "In-app, inside a panel"
+        SITE = "site", "Public site"
+
+    mount = models.CharField(max_length=10, choices=Mount.choices, default=Mount.PANEL)
+    panel = models.CharField(max_length=100, blank=True, help_text="Panel.name when mount=panel")
+    route = models.CharField(max_length=200, blank=True, help_text='"" for the index page')
+    title = models.CharField(max_length=200)
+
+    tree = models.JSONField(default=dict, blank=True)
+    schema_version = models.PositiveIntegerField(default=0)
+    revision = models.PositiveIntegerField(default=0)
+
+    is_enabled = models.BooleanField(default=True)
+    is_home = models.BooleanField(default=False)
+    show_in_nav = models.BooleanField(default=True)
+    nav_label = models.CharField(max_length=100, blank=True)
+    nav_icon = models.CharField(max_length=60, blank=True)
+    nav_group = models.CharField(max_length=60, blank=True)
+    nav_order = models.IntegerField(default=0)
+    seo_title = models.CharField(max_length=200, blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "dcc_studio"
+        verbose_name = "page"
+        unique_together = ("mount", "panel", "route")
+        ordering = ("mount", "panel", "nav_order", "route")
+
+    def __str__(self) -> str:
+        return self.title or self.route or "(index)"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def clean(self) -> None:
+        try:
+            validate_block_tree(self.envelope())
+        except ValidationError as exc:
+            raise ValidationError({"tree": exc.messages}) from None
+
+    def envelope(self) -> dict[str, Any]:
+        return {"schema_version": self.schema_version, "root": self.tree or {}}
+
+    @property
+    def document(self) -> dict[str, Any]:
+        cached = getattr(self, "_document_cache", None)
+        if cached is None:
+            cached = migrate(self.envelope())
+            self._document_cache = cached
+        return cached
+
+    def build_tree(self, request: Any = None) -> Any:
+        """The hydrated :class:`~django_control_components.blocks.Block` tree
+        (or ``None`` for an empty page), pruned by each node's server-side gate."""
+        return build_block_tree_from_spec(self.document, request=request)
 
 
 class UserPreference(models.Model):
@@ -300,6 +377,9 @@ class SpecRevision(models.Model):
     )
     panel_dashboard = models.ForeignKey(
         PanelDashboard, null=True, blank=True, on_delete=models.CASCADE, related_name="revisions"
+    )
+    page = models.ForeignKey(
+        Page, null=True, blank=True, on_delete=models.CASCADE, related_name="revisions"
     )
     payload = models.JSONField()
     author = models.ForeignKey(

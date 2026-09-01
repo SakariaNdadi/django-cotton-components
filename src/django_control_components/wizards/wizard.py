@@ -6,12 +6,12 @@ step re-entry and ``done()``. DCC's :class:`WizardView` subclasses its
 
 A step's ``body`` is polymorphic:
 
-* a DCC :class:`~django_control_components.schemas.schema.Schema` — a form step,
+* a DCC :class:`~django_control_components.schemas.schema.Schema` - a form step,
   validated by Django's ``form.is_valid()`` (there is no parallel system);
-* a DCC :class:`~django_control_components.infolists.infolist.Infolist` — a
+* a DCC :class:`~django_control_components.infolists.infolist.Infolist` - a
   read-only detail step (an intro screen, a review of collected data);
-* a string / ``SafeString`` — raw markup;
-* a callable ``view -> str`` — markup that needs live data.
+* a string / ``SafeString`` - raw markup;
+* a callable ``view -> str`` - markup that needs live data.
 
 Non-form bodies get an empty always-valid form, so they never block ``Next``.
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
 
 class _EmptyForm(forms.Form):
-    """Placeholder form for a non-form step — always valid, no fields."""
+    """Placeholder form for a non-form step - always valid, no fields."""
 
 
 def _default_file_storage() -> Any:
@@ -80,7 +80,7 @@ class WizardStep:
 
     @property
     def form_class(self) -> type[BaseForm]:
-        # a form step is self-contained — only the fields it declares
+        # a form step is self-contained - only the fields it declares
         return self.body.to_form_class() if self.is_form else _EmptyForm
 
     def render_body(self, view: Any, form: BaseForm) -> SafeString:
@@ -141,7 +141,7 @@ class WizardView(SessionWizardView):  # type: ignore[misc]
     def _all_data(self) -> dict[str, Any]:
         try:
             return self.get_all_cleaned_data()
-        except Exception:  # a prior step is invalid — nothing to show yet
+        except Exception:  # a prior step is invalid - nothing to show yet
             return {}
 
     def _steps_meta(self) -> list[dict[str, Any]]:
@@ -211,7 +211,7 @@ class WizardView(SessionWizardView):  # type: ignore[misc]
         response = super().render_done(form, **kwargs)
         # Each step swaps only the wizard node, so a plain 3xx from done() would
         # be followed by htmx and its body selected into the (now absent) wizard
-        # node — blanking the page. Promote it to a real browser navigation.
+        # node - blanking the page. Promote it to a real browser navigation.
         if (
             htmx.is_htmx(self.request)
             and getattr(response, "status_code", None) in (301, 302)

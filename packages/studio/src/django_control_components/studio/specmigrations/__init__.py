@@ -3,12 +3,12 @@
 The thing that keeps a no-code tool alive across releases: when the block IR's
 shape changes, a stored document does not have to change with it on every
 deploy. Each migration upgrades a document by exactly one ``schema_version``,
-applied on **read** — an old row keeps resolving under the version it was
+applied on **read** - an old row keeps resolving under the version it was
 written with, and is rewritten to the current shape lazily the next time it is
 saved. Mirrors Django's own migration shape (ordered, forward-only, one step at
 a time) rather than inventing a new one.
 
-No migrations are registered yet — nothing stores a document in the
+No migrations are registered yet - nothing stores a document in the
 ``{"schema_version": n, "root": {...}}`` envelope this targets until the
 layout/chrome blocks and the ``Page`` model exist. This module is the
 mechanism; ``migrate()`` on an empty registry is a no-op passthrough, exercised
@@ -40,7 +40,7 @@ _REGISTRY: list[SpecMigration] = []
 
 def register(version: int, name: str) -> Callable[[Forward], Forward]:
     """Decorator: ``@register(1, "flat_to_blocks")`` on a ``forward(doc) -> doc``
-    function. Registration order does not matter — ``migrate()`` always applies
+    function. Registration order does not matter - ``migrate()`` always applies
     by ascending ``version``."""
 
     def decorator(fn: Forward) -> Forward:

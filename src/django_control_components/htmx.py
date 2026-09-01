@@ -195,7 +195,7 @@ def boost(
 def oob(value: str | bool = True) -> AttributeBag:
     """Mark a response fragment for an out-of-band swap (``hx-swap-oob``).
 
-    Used when one response updates a second region — e.g. a studio save that
+    Used when one response updates a second region - e.g. a studio save that
     also refreshes the live navigation. ``value`` is ``True`` or an explicit
     swap spec such as ``"innerHTML:#dcc-nav"``.
     """

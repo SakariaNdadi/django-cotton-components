@@ -2,7 +2,7 @@
 
 Each filter validates its incoming querystring value through a Django form
 field. Anything that does not clean is ignored (the filter is simply not
-applied) rather than raising — a garbage ``?f_status=`` must not 500 the page.
+applied) rather than raising - a garbage ``?f_status=`` must not 500 the page.
 """
 
 from __future__ import annotations

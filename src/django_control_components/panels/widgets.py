@@ -1,4 +1,4 @@
-"""Dashboard widgets — self-contained blocks for a panel's index page.
+"""Dashboard widgets - self-contained blocks for a panel's index page.
 
 Every widget renders a persistent shell (``<div class="dcc-widget" id="...">``)
 around a swappable content fragment (``#<id>-content``). ``.poll(seconds)`` and
@@ -7,7 +7,7 @@ chart repaints without a full page load.
 
 ``ChartWidget`` draws with Chart.js (loaded on demand via :class:`Asset`);
 ``BarListWidget`` is a dependency-free CSS bar chart. A third-party library is
-added by registering a renderer in ``window.dccWidgets`` — see ``dcc.js``.
+added by registering a renderer in ``window.dccWidgets`` - see ``dcc.js``.
 """
 
 from __future__ import annotations
@@ -284,7 +284,7 @@ class ChartWidget(Widget):
 
 
 class BarListWidget(Widget):
-    """A dependency-free CSS bar chart — ``.data([(label, value), ...])``."""
+    """A dependency-free CSS bar chart - ``.data([(label, value), ...])``."""
 
     template_name = "django_control_components/panels/widgets/bar_list.html"
     variant = "bar-list"

@@ -1,6 +1,6 @@
 """Generate a complete, immediately-working spec from a model.
 
-``scaffold_spec(model)`` is the "django admin just starts up" moment — one call
+``scaffold_spec(model)`` is the "django admin just starts up" moment - one call
 produces a ``{table, schema, infolist}`` that renders a usable list + create +
 edit + view with sensible columns, filters and sorting, zero clicks. It is used
 by the ``dcc_scaffold`` command and by the studio's "Add model" button.

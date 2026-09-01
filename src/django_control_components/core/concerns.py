@@ -76,7 +76,7 @@ class HasColumnSpan:
 class HasVisibilityRules:
     """Compiles ``.visible_when(...)`` calls into a client-side Alpine expression
     (``_visible_expr()``) evaluated live against sibling form values, via
-    ``$dccField`` — see ``core/visibility.py``. Shared by ``Field`` and
+    ``$dccField`` - see ``core/visibility.py``. Shared by ``Field`` and
     ``Layout``: a whole section can react to another field exactly like a
     single field can."""
 

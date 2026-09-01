@@ -1,7 +1,7 @@
 """Table columns.
 
 A column knows how to (a) label its header, (b) pull a display value from a
-record, and (c) declare — separately — the ORM path used for sorting and the
+record, and (c) declare - separately - the ORM path used for sorting and the
 paths used for search. Query params never reach the ORM: the table looks a
 requested sort key up in the set of sortable column names and then uses
 ``column.sort_field()``.

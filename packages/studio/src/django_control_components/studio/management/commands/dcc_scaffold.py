@@ -1,4 +1,4 @@
-"""``manage.py dcc_scaffold`` — write ``DashboardSpec`` rows from live models.
+"""``manage.py dcc_scaffold`` - write ``DashboardSpec`` rows from live models.
 
 manage.py dcc_scaffold blog.Article           # one model
 manage.py dcc_scaffold blog.Article --dry-run  # print the spec, write nothing

@@ -1,4 +1,4 @@
-"""Studio builder views — mounted by ``django_control_components.studio.urls``."""
+"""Studio builder views - mounted by ``django_control_components.studio.urls``."""
 
 from __future__ import annotations
 

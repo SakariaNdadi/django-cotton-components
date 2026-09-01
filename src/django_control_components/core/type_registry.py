@@ -1,7 +1,7 @@
 """String-keyed registries of the declarative building blocks.
 
 Stored dashboard specs reference component types by name (``"TextColumn"``),
-never by import path — the same posture as the action registry. A spec can only
+never by import path - the same posture as the action registry. A spec can only
 name a type someone deliberately registered.
 
 Registration also carries the palette metadata (label, icon, category, whether

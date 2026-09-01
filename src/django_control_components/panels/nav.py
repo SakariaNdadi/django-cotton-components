@@ -5,7 +5,7 @@ Sources, in order:
 * code ``Resource`` classes and code ``PanelPage`` s on the panel;
 * enabled ``DashboardSpec`` / ``PanelDashboard`` rows (studio resources /
   dashboards), access-filtered by ``AccessControlled.is_visible_to``;
-* ``NavItem`` rows for the panel — a two-level tree the studio edits.
+* ``NavItem`` rows for the panel - a two-level tree the studio edits.
 
 A studio item pointing at a resource the user lacks ``view_`` permission for is
 dropped here (and still 403s if hit directly): the studio controls visibility,

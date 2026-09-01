@@ -1,7 +1,7 @@
 """Shared plumbing for the studio builder views.
 
 The studio is mounted at its own URL (``include("django_control_components.studio.urls")``),
-not under a panel, so these views carry no ``panel`` — a panel is a *parameter*
+not under a panel, so these views carry no ``panel`` - a panel is a *parameter*
 of the artefact being edited (only the nav builder needs one).
 """
 

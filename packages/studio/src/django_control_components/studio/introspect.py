@@ -2,9 +2,9 @@
 
 Two audiences:
 
-* the **picker** — which models may a staff user build a resource / dashboard
+* the **picker** - which models may a staff user build a resource / dashboard
   for (``installed_models``), and what are a model's fields (``describe_model``);
-* the **validator** — the set of ORM paths a stored spec is allowed to name
+* the **validator** - the set of ORM paths a stored spec is allowed to name
   (``safe_paths``), so a column/filter/sort/group-by can never reach
   ``author__user__password``.
 
@@ -35,7 +35,7 @@ SENSITIVE_MODELS: frozenset[str] = frozenset(
     }
 )
 
-#: never scaffolded, never a valid spec path — even on an otherwise-allowed model
+#: never scaffolded, never a valid spec path - even on an otherwise-allowed model
 SENSITIVE_FIELDS: frozenset[str] = frozenset(
     {
         "password",
@@ -102,7 +102,7 @@ def installed_models(request: HttpRequest | None, *, trusted: bool = False) -> l
 
     ``trusted=True`` is for the management command: it runs from a shell with DB
     access, so the per-user ``view_`` permission gate (and the user-model
-    superuser restriction) do not apply — only the sensitive-model deny list and
+    superuser restriction) do not apply - only the sensitive-model deny list and
     ``DCC["STUDIO_RESOURCE_MODELS"]`` still filter.
     """
     user = getattr(request, "user", None)

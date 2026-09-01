@@ -1,4 +1,4 @@
-"""Users & Roles — superuser-only access matrix with grant toggles."""
+"""Users & Roles - superuser-only access matrix with grant toggles."""
 
 from __future__ import annotations
 

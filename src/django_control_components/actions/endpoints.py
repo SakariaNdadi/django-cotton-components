@@ -29,7 +29,7 @@ class ActionView(View):
                 request.POST.get("select_all") == "1" or request.GET.get("select_all") == "1"
             )
             if select_all:
-                # "every row matching the current filter" — the owner already
+                # "every row matching the current filter" - the owner already
                 # scoped `scope` to those filters. Hand back the queryset itself
                 # (unmaterialised) so a callback can `.update()` it in one query.
                 return scope

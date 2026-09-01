@@ -79,7 +79,7 @@ class Schema:
         """A real Django form containing only this schema's declared fields.
 
         Used where a schema must stand alone (wizard steps, action modals,
-        filter forms). Goes back through the same bind/render path — one
+        filter forms). Goes back through the same bind/render path - one
         validation path, always Django's.
         """
         names = [f.name for f in self.iter_fields() if f.name]
@@ -107,7 +107,7 @@ class Schema:
 
         Used by action modals and filter forms: the schema renders a subset of a
         larger ``ModelForm``, so binding the full form would fail validation on
-        fields the user never saw. Goes through :meth:`to_form_class` — the same
+        fields the user never saw. Goes through :meth:`to_form_class` - the same
         path wizard steps use.
         """
         form_class = self.to_form_class()

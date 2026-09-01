@@ -1,4 +1,4 @@
-"""django-allauth integration — route a signed-in user to their studio home.
+"""django-allauth integration - route a signed-in user to their studio home.
 
 Enable with ``pip install "django-control-components[allauth]"`` and, in settings::
 
@@ -8,7 +8,7 @@ Enable with ``pip install "django-control-components[allauth]"`` and, in setting
 The adapter falls back to allauth's own ``LOGIN_REDIRECT_URL`` behaviour when no
 panel is configured or the panel cannot be found, so it is safe to set
 unconditionally. Importing this module without allauth installed raises
-``ImproperlyConfigured`` — the rest of the library is unaffected.
+``ImproperlyConfigured`` - the rest of the library is unaffected.
 """
 
 from __future__ import annotations

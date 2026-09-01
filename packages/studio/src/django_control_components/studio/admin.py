@@ -1,6 +1,6 @@
 """A single Django-admin entry that opens the standalone studio.
 
-Auto-imported by ``django.contrib.admin`` autodiscovery — so this module is only
+Auto-imported by ``django.contrib.admin`` autodiscovery - so this module is only
 loaded when the admin is installed. Gated by ``DCC["STUDIO_ADMIN_ENTRY"]``.
 """
 
@@ -20,7 +20,7 @@ if dcc_settings.STUDIO_ADMIN_ENTRY:
 
     @admin.register(StudioEntry)
     class StudioEntryAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-        """Renders nothing — every entry point redirects to ``dcc_studio:home``."""
+        """Renders nothing - every entry point redirects to ``dcc_studio:home``."""
 
         def has_module_permission(self, request: HttpRequest) -> bool:
             return can_use_studio(request)

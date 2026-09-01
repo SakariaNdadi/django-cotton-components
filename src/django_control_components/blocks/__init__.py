@@ -1,4 +1,4 @@
-"""Page/layout building blocks — sixth ``TypeRegistry``, alongside
+"""Page/layout building blocks - sixth ``TypeRegistry``, alongside
 ``FIELD_TYPES`` / ``COLUMN_TYPES`` / ``FILTER_TYPES`` / ``ENTRY_TYPES`` /
 ``WIDGET_TYPES``. A type registered here reaches the studio palette for free
 through ``studio/palette.py`` and inherits ``strip_privileged_setters``.

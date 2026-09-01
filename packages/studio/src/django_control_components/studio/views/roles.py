@@ -1,4 +1,4 @@
-"""Access overview — which groups a studio object is visible to, with quick
+"""Access overview - which groups a studio object is visible to, with quick
 toggles. Superuser only; raw group / permission management stays in django
 admin. Never the generic spec builder (``auth.Group`` is on the model deny
 list)."""

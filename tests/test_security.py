@@ -1,4 +1,4 @@
-"""Behavioural security tests. These encode this library's threat model —
+"""Behavioural security tests. These encode this library's threat model -
 things a generic SAST scanner will not catch."""
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def test_payload_in_choice_label_is_escaped(author: Author):
     author.save()
     schema = Schema.make().form(ArticleForm).schema([Select.make("author")])
     html = str(schema.render(form=ArticleForm()))
-    # no raw tag anywhere — option text is HTML-escaped, json_script is unicode-escaped
+    # no raw tag anywhere - option text is HTML-escaped, json_script is unicode-escaped
     assert "<img src=x onerror=alert(1)>" not in html
 
 
@@ -96,7 +96,7 @@ def test_spec_column_named_delete_renders_empty_and_keeps_the_row(article):
 
 def test_validate_spec_rejects_privileged_setter_from_non_superuser():
     """`allow_html` is `requires="superuser"`. The palette hides it, but a
-    hand-crafted POST must be rejected server-side too — otherwise a `use_studio`
+    hand-crafted POST must be rejected server-side too - otherwise a `use_studio`
     holder can plant stored XSS in a column."""
     from types import SimpleNamespace
 

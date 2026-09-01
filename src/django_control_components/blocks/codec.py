@@ -1,14 +1,14 @@
 """The wire <-> stored codec for a flat list of ``{type, name, config}`` nodes.
 
-Two call sites in the studio builder — the dashboard's widget list and the
-resource builder's columns/filters — independently folded ``name`` into
+Two call sites in the studio builder - the dashboard's widget list and the
+resource builder's columns/filters - independently folded ``name`` into
 ``config.name`` for the wire form and back out for storage. Same transform,
 duplicated. This is the one implementation.
 
 Wire form (what the browser's doc store edits): ``{"id": "n0", "type": ...,
 "config": {..., "name": <folded in>}}``. Stored form (what a
 ``DashboardSpec``/``PanelDashboard`` JSONField holds): ``{"type": ..., "name":
-..., "config": {...}}`` — ``name`` lifted back out, dropped entirely if unset.
+..., "config": {...}}`` - ``name`` lifted back out, dropped entirely if unset.
 """
 
 from __future__ import annotations

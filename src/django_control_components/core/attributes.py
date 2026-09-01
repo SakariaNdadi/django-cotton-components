@@ -13,7 +13,7 @@ _BOOLEAN_ATTRS = frozenset(
 class AttributeBag:
     """Accumulates HTML attributes and renders them safely.
 
-    ``class`` is the only attribute that *merges* — appending a caller-supplied
+    ``class`` is the only attribute that *merges* - appending a caller-supplied
     value to component defaults rather than replacing them. Everything else is
     last-write-wins. Values are escaped at render time; keys are validated.
     """

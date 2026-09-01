@@ -33,7 +33,7 @@ VENDOR_NAMES = {
 def _script(
     url: str, *, vendor: bool, vendor_dir: str, sri: dict[str, str], vendor_key: str | None = None
 ) -> str:
-    """One ``<script defer>`` tag — self-hosted when ``vendor``, else CDN with an
+    """One ``<script defer>`` tag - self-hosted when ``vendor``, else CDN with an
     optional ``integrity`` from ``DCC["ASSET_SRI"]``."""
     key = vendor_key or url
     if vendor and key in VENDOR_NAMES:

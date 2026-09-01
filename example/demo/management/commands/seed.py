@@ -123,7 +123,7 @@ class Command(BaseCommand):
         parser.add_argument("--no-images", action="store_true", help="skip avatar/cover generation")
 
     def _seed_dashboard_spec(self):
-        """A resource defined entirely from stored JSON — no Python subclass."""
+        """A resource defined entirely from stored JSON - no Python subclass."""
         from django_control_components.studio.models import DashboardSpec
 
         DashboardSpec.objects.update_or_create(
@@ -149,7 +149,7 @@ class Command(BaseCommand):
                         {
                             "type": "BooleanColumn",
                             "name": "approved",
-                            "config": {"labels": ["✓", "—"]},
+                            "config": {"labels": ["✓", "-"]},
                         },
                     ],
                     "filters": [{"type": "TernaryFilter", "name": "approved"}],
@@ -276,7 +276,7 @@ class Command(BaseCommand):
                 Comment.objects.create(
                     article=art,
                     author_name=rng.choice(COMMENTERS),
-                    body="Useful writeup — the part about re-scoping clicked for me.",
+                    body="Useful writeup - the part about re-scoping clicked for me.",
                     approved=rng.random() < 0.7,
                 )
             made += 1

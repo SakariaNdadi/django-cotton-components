@@ -3,7 +3,7 @@
 A guard is ``Callable[[HttpRequest], bool]`` passed to ``Panel.auth(...)``.
 Returning ``False`` denies with ``PermissionDenied`` (403). Raising
 :class:`LoginRequired` instead makes the panel page redirect an anonymous user
-to the login page — ``LoginRequired`` is deliberately **not** a
+to the login page - ``LoginRequired`` is deliberately **not** a
 ``PermissionDenied`` subclass so the page can tell the two apart.
 """
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class LoginRequired(Exception):
-    """Raised by a guard when the request is anonymous — the page turns this
+    """Raised by a guard when the request is anonymous - the page turns this
     into a redirect to ``settings.LOGIN_URL`` (or ``Panel.login_url``)."""
 
 

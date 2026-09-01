@@ -12,7 +12,7 @@ class Modal(Component):
     """One modal implementation: teleported overlay + focus trap.
 
     The body is supplied as pre-rendered HTML (``body``) because the Python
-    render path has no slot mechanism. ``open_on_load`` starts it visible — the
+    render path has no slot mechanism. ``open_on_load`` starts it visible - the
     action endpoint swaps a ready-open modal into a mount point.
     """
 

@@ -1,7 +1,7 @@
 """Parse a table's slice of the querystring.
 
 Every key is namespaced by the table id (``t_<id>_sort`` etc.) so two tables
-render on one page without colliding. Nothing parsed here is trusted — the
+render on one page without colliding. Nothing parsed here is trusted - the
 table validates each value against its own columns/filters before use.
 """
 

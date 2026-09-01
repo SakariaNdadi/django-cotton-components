@@ -57,12 +57,12 @@ class Table:
 
     def record_url(self, value: str | Any) -> Self:
         """Clicking anywhere on a row (bar its buttons/inputs) navigates to
-        ``value(record)`` — a full page."""
+        ``value(record)`` - a full page."""
         self._config["record_url"] = value
         return self
 
     def record_action(self, action: Action) -> Self:
-        """Clicking a row fires this Action — typically ``.modal(...)`` for a
+        """Clicking a row fires this Action - typically ``.modal(...)`` for a
         detail dialog, or ``.to_url(...)`` to navigate. Registered like a row
         action but never shown as a column button."""
         self._config["record_action"] = action
@@ -106,7 +106,7 @@ class Table:
         return self
 
     def stream(self) -> Self:
-        """Keyset pagination + append-on-scroll — safe over millions of rows."""
+        """Keyset pagination + append-on-scroll - safe over millions of rows."""
         self._config["page_strategy"] = "more"
         return self
 
@@ -120,7 +120,7 @@ class Table:
 
     def presentation(self, value: str) -> Self:
         """``"grid"`` (default) renders a table; ``"feed"`` renders a borderless
-        list — for compact dashboard cards."""
+        list - for compact dashboard cards."""
         self._config["presentation"] = value
         return self
 
@@ -392,7 +392,7 @@ class Table:
                 "pagination": self._pagination(request, state, page),
             }
 
-        # keyset / append-on-scroll — no COUNT, no OFFSET
+        # keyset / append-on-scroll - no COUNT, no OFFSET
         sort_field, descending = self._effective_sort(state)
         records, next_token = cursor.paginate(
             qs,

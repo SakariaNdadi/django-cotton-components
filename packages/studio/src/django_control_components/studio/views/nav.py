@@ -141,7 +141,7 @@ def _revision_of(panel_name: str) -> int:
 def _apply(panel_name: str, items: list[Any]) -> None:
     """Reconcile the panel's nav rows against ``items`` by client id.
 
-    Existing rows (``id`` = ``"db<pk>"``) are updated in place — so
+    Existing rows (``id`` = ``"db<pk>"``) are updated in place - so
     access-matrix fields set in RolesView survive. Rows missing from the payload
     are deleted; new items are created. Two levels deep, folded under the most
     recent ``group`` item exactly as before.
@@ -205,7 +205,7 @@ def _preview_tree(items: list[Any]) -> list[Any]:
         if not isinstance(raw, dict):
             continue
         kind = raw.get("target_kind", "url")
-        label = (raw.get("label") or "").strip() or "—"
+        label = (raw.get("label") or "").strip() or "-"
         if kind == _NavItem.Kind.GROUP:
             group = NavNode(label=label)
             nodes.append(group)

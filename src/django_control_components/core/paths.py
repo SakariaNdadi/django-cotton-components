@@ -6,7 +6,7 @@ A stored studio spec is user-editable data, so this walk must never
 * reach a private attribute (``_meta``, ``__class__`` internals), or
 * auto-invoke a method Django flagged ``alters_data`` (``delete``, ``save``).
 
-Both cases resolve to "no value" — the cell renders empty rather than raising or
+Both cases resolve to "no value" - the cell renders empty rather than raising or
 mutating a row. This mirrors the Django template language's own ``alters_data``
 guard.
 """

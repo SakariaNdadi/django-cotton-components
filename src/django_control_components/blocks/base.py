@@ -1,13 +1,13 @@
-"""``Block`` — a page/layout building block.
+"""``Block`` - a page/layout building block.
 
 Where a form :class:`~django_control_components.schemas.layout.Layout` has one
 implicit child list, a block declares zero or more **named** slots
 (``AppShell`` wants ``topbar`` / ``sidebar`` / ``content`` / ``footer``; a plain
 container wants just ``"default"``). That is the one structural difference from
-``Layout`` — everything else (fluent ``@setter`` config, ``visible``/``hidden``,
+``Layout`` - everything else (fluent ``@setter`` config, ``visible``/``hidden``,
 rendering through ``template_name``) is the ordinary :class:`Component` contract.
 
-No concrete blocks are registered yet — this module is foundation for the
+No concrete blocks are registered yet - this module is foundation for the
 layout/chrome blocks that land on top of it (``AppShell``, ``Grid``, ``Sidebar``,
 …) and the tree-builder UI that edits them.
 """
@@ -37,7 +37,7 @@ class Block(Component):
 
     def fill(self, slot: str, children: list[Block]) -> Self:
         """Set a named slot's children. Raises on an unknown slot or a
-        non-``Block`` child — the same posture as ``Tabs.schema()`` for tabs."""
+        non-``Block`` child - the same posture as ``Tabs.schema()`` for tabs."""
         if slot not in self._slots:
             raise ValueError(
                 f"{type(self).__name__} has no slot {slot!r}. Valid: {sorted(self._slots)}"

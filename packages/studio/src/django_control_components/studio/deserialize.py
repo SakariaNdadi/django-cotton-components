@@ -1,8 +1,8 @@
 """Build a ``Schema`` / ``Table`` / ``Infolist`` from a stored JSON spec.
 
 The spec only ever names a **registered type** (``"TextColumn"``) and passes
-**JSON-round-trippable config** to it. Anything else — an import path, a callable,
-an unknown setter — raises. Custom behaviour (a ``state`` closure, an action
+**JSON-round-trippable config** to it. Anything else - an import path, a callable,
+an unknown setter - raises. Custom behaviour (a ``state`` closure, an action
 callback) is not expressible in a spec: it stays in code and is attached by a
 ``Resource`` subclass after ``from_spec`` builds the declarative shell.
 """
@@ -18,12 +18,12 @@ from ..core.describe import CODE_ONLY_SETTERS
 
 _SCALAR = (str, int, float, bool, type(None))
 
-#: hard ceilings applied to a stored spec before it is walked — a spec is
+#: hard ceilings applied to a stored spec before it is walked - a spec is
 #: user-editable data, so an unbounded document must not reach the builders.
 _MAX_SPEC_BYTES = 64 * 1024
 _MAX_SPEC_DEPTH = 8
 
-# setters that expect a callable / predicate at runtime — never spec-expressible.
+# setters that expect a callable / predicate at runtime - never spec-expressible.
 # Canonical set now lives in core.describe; alias kept for one release.
 _UNSAFE_KEYS = CODE_ONLY_SETTERS
 
@@ -71,7 +71,7 @@ def _reject_privileged_setters(
     """Reject config keys whose setter is gated ``requires="superuser"``.
 
     The palette hides these from a non-superuser (``strip_privileged_setters``),
-    but that is presentation only — a hand-crafted ``doc`` POST bypasses it.
+    but that is presentation only - a hand-crafted ``doc`` POST bypasses it.
     ``allow_html`` on a column is the stored-XSS case this closes.
     """
     try:
@@ -187,6 +187,104 @@ def build_widgets_from_spec(nodes: list[dict[str, Any]]) -> list[Any]:
     from ..panels import WIDGET_TYPES
 
     return [_instantiate(WIDGET_TYPES, node, f"widgets[{i}]") for i, node in enumerate(nodes or [])]
+
+
+# -- block trees (the Page document) ----------------------------------
+
+#: page trees nest deeper than a form spec (shell > grid > column > card > ...).
+_MAX_TREE_DEPTH = 12
+
+
+def _check_document_bytes(doc: Any) -> None:
+    try:
+        encoded = json.dumps(doc)
+    except (TypeError, ValueError):
+        raise ValidationError("block document is not JSON-serialisable") from None
+    if len(encoded.encode("utf-8")) > _MAX_SPEC_BYTES:
+        raise ValidationError(f"block document exceeds the {_MAX_SPEC_BYTES // 1024} KB ceiling")
+
+
+def _block_gate(node: dict[str, Any], request: Any) -> bool:
+    """Server-side visibility for a block node.
+
+    ``perms`` — a list of permission name strings, ANDed, checked with
+    ``has_perm`` (superuser passes). ``when`` — a single ``@alias`` predicate
+    resolved through ``DCC["STUDIO_CALLABLES"]`` and called with the request.
+    The ``visible`` / ``hidden`` props are presentation only and not consulted
+    here.
+    """
+    user = getattr(request, "user", None) if request is not None else None
+    perms = node.get("perms") or []
+    if perms:
+        if not isinstance(perms, list):
+            raise ValidationError("block 'perms' must be a list of permission strings")
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if not user.is_superuser and not all(user.has_perm(str(p)) for p in perms):
+            return False
+    when = node.get("when")
+    if when:
+        from .callables import is_alias, resolve_alias
+
+        if not is_alias(when):
+            raise ValidationError(f"block 'when' must be an @alias string, got {when!r}")
+        predicate = resolve_alias(when)
+        try:
+            return bool(predicate(request))
+        except TypeError:
+            return bool(predicate())
+    return True
+
+
+def build_block_tree_from_spec(doc: dict[str, Any], *, request: Any = None) -> Any:
+    """Hydrate a stored block document into a :class:`Block` tree, or ``None``.
+
+    ``doc`` is the ``{"schema_version", "root"}`` envelope (a bare root node is
+    also accepted). Reuses the spec sandbox unchanged — byte ceiling, depth
+    ceiling (``_MAX_TREE_DEPTH``), JSON-only config, ``CODE_ONLY_SETTERS`` and
+    privileged-setter rejection — then prunes any node whose server-side
+    ``perms`` / ``when`` gate fails.
+    """
+    from ..blocks import BLOCK_TYPES
+
+    root = doc.get("root", doc) if isinstance(doc, dict) else doc
+    if not root:
+        return None
+    _check_document_bytes(doc)
+    privileged = _is_privileged(request)
+
+    def walk(node: Any, where: str, depth: int) -> Any:
+        if depth > _MAX_TREE_DEPTH:
+            raise ValidationError(f"block tree nesting exceeds {_MAX_TREE_DEPTH} levels")
+        if not isinstance(node, dict):
+            raise ValidationError(f"{where}: expected a block node object")
+        adapter = {
+            "type": node.get("type"),
+            "config": node.get("props") or {},
+            "name": node.get("name"),
+        }
+        block = _instantiate(BLOCK_TYPES, adapter, where, privileged=privileged)
+        if not _block_gate(node, request):
+            return None
+        slots = node.get("slots") or {}
+        if not isinstance(slots, dict):
+            raise ValidationError(f"{where}.slots: expected an object")
+        for slot_name in block.slots:-
+            children = slots.get(slot_name) or []
+            built = [
+                walk(child, f"{where}.slots.{slot_name}[{index}]", depth + 1)
+                for index, child in enumerate(children)
+            ]
+            block.fill(slot_name, [child for child in built if child is not None])
+        return block
+
+    return walk(root, "root", 0)
+
+
+def validate_block_tree(doc: dict[str, Any], *, request: Any = None) -> None:
+    """Raise ``ValidationError`` if ``doc`` is not a hydratable block document.
+    Called from ``Page.clean``."""
+    build_block_tree_from_spec(doc, request=request)
 
 
 def _is_privileged(request: Any) -> bool:

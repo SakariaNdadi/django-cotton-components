@@ -1,4 +1,4 @@
-"""Chrome blocks — the page frame a studio-built app sits in.
+"""Chrome blocks - the page frame a studio-built app sits in.
 
 ``AppShell`` is the root: a header, a sidebar, the content, a footer. It reuses
 the existing ``.dcc-panel`` structure and the ``dccShell()`` Alpine component

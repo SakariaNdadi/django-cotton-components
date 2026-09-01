@@ -21,7 +21,7 @@ class FileUpload(Field):
     def accept(self, value: str) -> Self:
         return self._set("accept", value)
 
-    # Image-processing setters — consumed by images.pipeline on form.save().
+    # Image-processing setters - consumed by images.pipeline on form.save().
     @setter
     def max_size(self, value: str | int) -> Self:
         return self._set("max_size", value)

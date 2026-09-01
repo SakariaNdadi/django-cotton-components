@@ -40,7 +40,7 @@ def test_no_hand_rolled_buttons_outside_primitives():
         "templates/django_control_components/controls/select.html",
         "templates/django_control_components/controls/password.html",
         "templates/django_control_components/layout/tabs.html",
-        # client-side sort header toggle — bare button, no dcc-btn
+        # client-side sort header toggle - bare button, no dcc-btn
         "templates/django_control_components/tables/_content.html",
     }
     offenders = []
@@ -54,7 +54,7 @@ def test_no_hand_rolled_buttons_outside_primitives():
 
 
 def test_no_django_interpolation_inside_alpine_data():
-    """No {{ }} inside x-data='{ ... }' — that is the JS-injection footgun."""
+    """No {{ }} inside x-data='{ ... }' - that is the JS-injection footgun."""
     offenders = []
     for path in _template_files():
         for line in path.read_text().splitlines():
@@ -72,8 +72,8 @@ def test_mark_safe_only_at_reviewed_sites():
         "templatetags/dcc_tags.py",
         "schemas/schema.py",
         "schemas/layout.py",
-        "blocks/base.py",  # Block.render_slot — same already-safe-parts concat as layout.py
-        "tables/columns.py",  # .allow_html() — documented opt-in, escaping is default
+        "blocks/base.py",  # Block.render_slot - same already-safe-parts concat as layout.py
+        "tables/columns.py",  # .allow_html() - documented opt-in, escaping is default
         "icons/fontawesome.py",  # fixed markup + a setting-controlled asset URL
     }
     offenders = []

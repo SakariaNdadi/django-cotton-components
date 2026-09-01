@@ -47,7 +47,7 @@ class Component:
     """Base fluent primitive.
 
     Subclasses declare ``template_name`` and hand-written setters (each returning
-    ``Self``). Instances hold *configuration only* — never per-request state.
+    ``Self``). Instances hold *configuration only* - never per-request state.
     """
 
     template_name: ClassVar[str] = ""

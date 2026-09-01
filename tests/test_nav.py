@@ -1,4 +1,4 @@
-"""build_nav — merging code and stored navigation into one tree."""
+"""build_nav - merging code and stored navigation into one tree."""
 
 from __future__ import annotations
 

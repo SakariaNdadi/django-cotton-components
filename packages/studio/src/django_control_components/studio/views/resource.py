@@ -1,6 +1,6 @@
 """The resource builder: edit a ``DashboardSpec``'s list table (columns +
 filters) with the shared canvas. Schema and infolist keep their scaffolded
-JSON — the form / detail builders come later."""
+JSON - the form / detail builders come later."""
 
 from __future__ import annotations
 

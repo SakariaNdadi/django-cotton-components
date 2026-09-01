@@ -1,6 +1,6 @@
 """Read-only counterparts to schema fields.
 
-An entry pulls a value off ``ctx.record`` and renders it — no form, no input.
+An entry pulls a value off ``ctx.record`` and renders it - no form, no input.
 Layout reuses ``Section`` / ``Grid`` from :mod:`schemas.layout`.
 """
 
@@ -49,7 +49,7 @@ class Entry(Component):
     def display(self, ctx: RenderContext) -> Any:
         value = self.raw_value(ctx)
         if value in (None, ""):
-            return self._config.get("placeholder", "—")
+            return self._config.get("placeholder", "-")
         return value
 
     def get_view_data(self, ctx: RenderContext) -> dict[str, Any]:
@@ -100,7 +100,7 @@ class DateEntry(Entry):
     def display(self, ctx: RenderContext) -> Any:
         value = self.raw_value(ctx)
         if not value:
-            return self._config.get("placeholder", "—")
+            return self._config.get("placeholder", "-")
         if self._config.get("since"):
             return f"{timesince(value)} ago"
         return date_format(value, self._config.get("date_format", "N j, Y"))

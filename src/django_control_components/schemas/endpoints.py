@@ -5,7 +5,7 @@ client. The endpoint binds the schema's form to the partial POST data, runs
 ``full_clean``, and returns just the requested field's re-rendered wrapper.
 
 Access: a registration may carry an ``authorize`` predicate
-(``Callable[[HttpRequest], bool]``) — typically the owning view's permission
+(``Callable[[HttpRequest], bool]``) - typically the owning view's permission
 check. With none given the endpoint still requires an authenticated user, so a
 dormant registration cannot echo rendered markup to anonymous callers.
 """

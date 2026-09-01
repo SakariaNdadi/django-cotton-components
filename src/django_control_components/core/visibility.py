@@ -8,7 +8,7 @@ round-trip) or a plain Python closure (evaluated once at render, not reactive):
     .visible_when("accept_terms")            # truthy
 
 The generated expression reads sibling controls by ``name`` through a helper the
-schema wrapper installs on the Alpine root scope (``$dccField``) — so this only
+schema wrapper installs on the Alpine root scope (``$dccField``) - so this only
 does anything inside a ``.dcc-form`` (a rendered ``Schema``), on a ``Field`` or a
 ``Layout`` container.
 """

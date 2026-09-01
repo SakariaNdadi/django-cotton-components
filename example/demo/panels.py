@@ -40,7 +40,7 @@ def _articles_over_time(request):
         .annotate(n=Count("id"))
         .order_by("month")
     )
-    return [(row["month"].strftime("%b %Y") if row["month"] else "—", row["n"]) for row in rows]
+    return [(row["month"].strftime("%b %Y") if row["month"] else "-", row["n"]) for row in rows]
 
 
 def _recent_articles_table(request):
@@ -92,7 +92,7 @@ class DemoDashboard(DashboardPage):
 
 
 class ReportsPage(PanelPage):
-    """A custom (non-resource) panel page — demonstrates Panel.pages()."""
+    """A custom (non-resource) panel page - demonstrates Panel.pages()."""
 
     template_name = "demo/panel_reports.html"
     slug = "reports"

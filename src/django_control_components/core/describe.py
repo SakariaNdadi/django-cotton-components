@@ -1,7 +1,7 @@
 """Introspect a declarative type into UI-form metadata.
 
 The studio palette needs, per registered type: a human label, an icon, a
-category, whether it nests children, and — per ``@setter`` — a control kind, a
+category, whether it nests children, and - per ``@setter`` - a control kind, a
 default, whether it is required, any fixed choices, and a one-line help string.
 
 ``Column`` / ``Filter`` / ``Widget`` / ``Action`` are **not** ``Component``
@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from functools import cache
 from typing import Any, Literal, Union, get_args, get_origin
 
-#: setters that take a runtime callable / predicate — never expressible in a
+#: setters that take a runtime callable / predicate - never expressible in a
 #: stored JSON spec. This module owns the canonical set; ``studio.deserialize``
 #: re-exports it under its old private name for one release.
 CODE_ONLY_SETTERS = frozenset(
@@ -40,9 +40,9 @@ class SetterInfo:
     required: bool = False
     choices: tuple[tuple[str, str], ...] | None = None
     help: str = ""
-    #: takes a runtime closure — surfaced in the inspector but not editable
+    #: takes a runtime closure - surfaced in the inspector but not editable
     code_only: bool = False
-    #: privilege gate ("superuser") — stripped from the palette for others
+    #: privilege gate ("superuser") - stripped from the palette for others
     requires: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
@@ -81,7 +81,7 @@ class TypeInfo:
 
 
 def setter_names(cls: type) -> list[str]:
-    """The sorted ``@setter``-marked method names on ``cls`` — the same walk
+    """The sorted ``@setter``-marked method names on ``cls`` - the same walk
     ``Component._apply_kwargs`` does to validate kwargs, extracted once."""
     return sorted(
         name for name in dir(cls) if getattr(getattr(cls, name, None), "__dcc_setter__", False)

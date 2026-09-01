@@ -1,6 +1,6 @@
 """The spec-migration framework mechanics. Uses locally-built SpecMigration
 instances throughout so tests never touch the process-global production
-registry (empty until real migrations land — see specmigrations/__init__.py)."""
+registry (empty until real migrations land - see specmigrations/__init__.py)."""
 
 from __future__ import annotations
 

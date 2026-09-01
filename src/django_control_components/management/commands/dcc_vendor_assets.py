@@ -1,7 +1,7 @@
 """Download the pinned htmx / Alpine / focus assets into a project static dir.
 
 Run once (and after every version bump) so ``DCC["VENDOR_ASSETS"] = True`` can
-serve them from the same origin — no CDN, no SRI needed.
+serve them from the same origin - no CDN, no SRI needed.
 
     python manage.py dcc_vendor_assets --dest myproject/static/dcc/vendor/
 """

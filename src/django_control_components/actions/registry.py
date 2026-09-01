@@ -6,7 +6,7 @@ import path, a model label, or a callable. An unknown key is a 404, not an
 error page.
 
 An owner (a table, later a resource) knows how to produce the queryset the
-action is allowed to touch — used to re-scope row and bulk targets so a tampered
+action is allowed to touch - used to re-scope row and bulk targets so a tampered
 pk cannot reach a row the user was never shown.
 """
 
@@ -26,7 +26,7 @@ class ActionOwner(Protocol):
     def key(self) -> str: ...
 
     def get_action_queryset(self, request: HttpRequest) -> QuerySet[Any]:
-        """The rows this owner currently exposes — the scope for its actions."""
+        """The rows this owner currently exposes - the scope for its actions."""
 
     def get_actions(self) -> dict[str, Action]: ...
 

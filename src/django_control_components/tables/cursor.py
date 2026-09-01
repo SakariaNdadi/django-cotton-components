@@ -2,7 +2,7 @@
 
 Deep OFFSET and ``SELECT COUNT(*)`` both scale badly. Keyset pagination orders
 by ``(sort_column, pk)`` and asks for "the page after this (value, pk)". No
-count, no offset — each page is one indexed range scan.
+count, no offset - each page is one indexed range scan.
 
 The cursor token is an opaque base64 of ``[sort_value, pk]``; it never carries a
 column name or ORM path, so a tampered token can at worst point at a wrong row
@@ -49,7 +49,7 @@ def paginate(
     after: str | None,
     per_page: int,
 ) -> tuple[list[Any], str | None]:
-    """Return ``(rows, next_token)`` — ``next_token`` is ``None`` at the end.
+    """Return ``(rows, next_token)`` - ``next_token`` is ``None`` at the end.
 
     Fetches ``per_page + 1`` rows to know whether another page exists without a
     count.

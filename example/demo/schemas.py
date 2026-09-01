@@ -41,7 +41,7 @@ def article_schema() -> Schema:
                         Toggle.make("featured").help_text("Show on the marketing page."),
                         TextInput.make("published_at")
                         .visible_when("status", equals="live")
-                        .help_text("Only asked for when status is Live — zero requests."),
+                        .help_text("Only asked for when status is Live - zero requests."),
                     ]
                 ),
                 Section.make("Cover image").schema(

@@ -65,7 +65,7 @@ def article_table(request):
                 .sortable()
                 .state(_status_cell)
                 .allow_html(),
-                BooleanColumn.make("featured").labels(("★", "—")),
+                BooleanColumn.make("featured").labels(("★", "-")),
                 DateColumn.make("created_at").label("Created").since().sortable(),
             ]
         )
@@ -141,7 +141,7 @@ def recent_articles_table(request):
         )
         .client_side()
         .presentation("feed")
-        .empty_message("No articles yet — run manage.py seed.")
+        .empty_message("No articles yet - run manage.py seed.")
     )
 
 

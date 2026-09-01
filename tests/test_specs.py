@@ -130,7 +130,7 @@ def test_unknown_type_is_rejected():
 
 
 def test_callable_setters_are_rejected():
-    # `state` takes a closure at render time — not spec-expressible
+    # `state` takes a closure at render time - not spec-expressible
     with pytest.raises(ValidationError):
         build_table_from_spec(
             Article.objects.all(),

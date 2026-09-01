@@ -1,7 +1,7 @@
 """Process a validated image on ``form.save()``.
 
 Synchronous and bounded to one image. EXIF orientation is applied (so phone
-photos are upright) and the rest of the EXIF block — including GPS — is dropped.
+photos are upright) and the rest of the EXIF block - including GPS - is dropped.
 """
 
 from __future__ import annotations

@@ -8,7 +8,7 @@ from ..core.context import RenderContext
 
 
 class Checkbox(Component):
-    """A bare labelled checkbox — no field chrome.
+    """A bare labelled checkbox - no field chrome.
 
     Used for table row-selection and anywhere a plain toggle is needed. Schema
     form fields keep their own error/help wrapper.

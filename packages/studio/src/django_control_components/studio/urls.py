@@ -3,7 +3,7 @@
     # project urls.py
     path("studio/", include("django_control_components.studio.urls")),
 
-Every builder view lives here under the flat ``dcc_studio`` namespace — the
+Every builder view lives here under the flat ``dcc_studio`` namespace - the
 runtime rendering of stored specs stays on the panel (``Panel.dynamic()``).
 """
 

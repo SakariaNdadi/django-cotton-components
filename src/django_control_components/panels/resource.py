@@ -113,7 +113,7 @@ class Resource:
         perm = cls.perm(action)
         # Object-level backends (django-guardian, rules) get first say when an object
         # is in hand. Django's default ``ModelBackend`` returns ``False`` for any
-        # object-scoped check, so fall back to the model-level permission — that
+        # object-scoped check, so fall back to the model-level permission - that
         # preserves the plain-Django behaviour while letting an object backend grant.
         if obj is not None and user.has_perm(perm, obj):
             return True

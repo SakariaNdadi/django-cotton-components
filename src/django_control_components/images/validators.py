@@ -45,7 +45,7 @@ def validate_image(file: File[Any], spec: ImageSpec) -> tuple[int, int]:
         if not spec.allow_svg:
             raise ImageValidationError(
                 "SVG uploads are rejected by default (script-injection risk). "
-                "Enable .allow_svg() to accept them. SVGs are stored as-is — this "
+                "Enable .allow_svg() to accept them. SVGs are stored as-is - this "
                 "library does not sanitise them, so serve them as downloads, never "
                 "inline from a trusted origin."
             )
