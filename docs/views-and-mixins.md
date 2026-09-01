@@ -19,6 +19,7 @@ Drives a `FormView` / `CreateView` / `UpdateView` from a `Schema`.
 class ArticleUpdateView(SchemaFormMixin, UpdateView):
     model = Article
     template_name = "articles/form.html"
+
     def get_schema(self):
         return article_schema()
 ```
@@ -40,6 +41,7 @@ Renders a `Table` and answers its htmx fragment requests.
 ```python
 class ArticleListView(TableMixin, TemplateView):
     template_name = "articles/list.html"
+
     def get_table(self):
         return article_table(self.request)
 ```

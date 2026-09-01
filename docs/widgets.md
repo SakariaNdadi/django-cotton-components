@@ -9,8 +9,13 @@ Compose them in `DashboardPage.widgets(request)`:
 
 ```python
 from django_control_components.panels import (
-    BarListWidget, ChartWidget, DashboardPage, StatWidget, TableWidget,
+    BarListWidget,
+    ChartWidget,
+    DashboardPage,
+    StatWidget,
+    TableWidget,
 )
+
 
 class Overview(DashboardPage):
     page_title = "Overview"
@@ -18,8 +23,11 @@ class Overview(DashboardPage):
     def widgets(self, request):
         return [
             StatWidget.make("Articles", Article.objects.count()).icon("newspaper"),
-            StatWidget.make("Open comments", lambda r: Comment.objects.filter(approved=False).count())
-                .icon("comments").poll(30),
+            StatWidget.make(
+                "Open comments", lambda r: Comment.objects.filter(approved=False).count()
+            )
+            .icon("comments")
+            .poll(30),
             ChartWidget.make("Articles over time").kind("area").data(_by_month).columns(2),
             BarListWidget.make("By status").data([("Live", 8), ("Draft", 3)]),
             TableWidget.make("Recent", _recent_table),
@@ -79,10 +87,11 @@ Alpine component.
 from django_control_components.panels import Widget
 from django_control_components.panels.assets import Asset
 
+
 class SparklineWidget(Widget):
     template_name = "myapp/widgets/sparkline.html"
-    variant = "sparkline"                 # -> class="dcc-widget--sparkline"
-    js_component = "mySparkline"          # Alpine.data() name, optional
+    variant = "sparkline"  # -> class="dcc-widget--sparkline"
+    js_component = "mySparkline"  # Alpine.data() name, optional
     assets = (Asset("script", "https://cdn.jsdelivr.net/npm/…"),)
     auto_refresh = True
 
@@ -147,14 +156,22 @@ A stored dashboard:
 
 ```python
 PanelDashboard.objects.create(
-    slug="metrics", label="Metrics",
+    slug="metrics",
+    label="Metrics",
     widgets=[
-        {"type": "StatWidget", "name": "Articles",
-         "config": {"query": {"model": "blog.Article", "aggregate": "count"}}},
-        {"type": "ChartWidget", "name": "By status",
-         "config": {"kind": "doughnut",
-                    "query": {"model": "blog.Article", "group_by": "status",
-                              "aggregate": "count"}}},
+        {
+            "type": "StatWidget",
+            "name": "Articles",
+            "config": {"query": {"model": "blog.Article", "aggregate": "count"}},
+        },
+        {
+            "type": "ChartWidget",
+            "name": "By status",
+            "config": {
+                "kind": "doughnut",
+                "query": {"model": "blog.Article", "group_by": "status", "aggregate": "count"},
+            },
+        },
     ],
 )
 ```

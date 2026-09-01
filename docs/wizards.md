@@ -24,14 +24,21 @@ django-control-components[wizard].")`.
 from django_control_components.wizards import WizardView, WizardStep
 from django_control_components.schemas import Schema, TextInput
 
+
 class ArticleWizard(WizardView):
-    template_name = "articles/wizard.html"   # optional — a default ships
+    template_name = "articles/wizard.html"  # optional — a default ships
     steps_config = [
         WizardStep(
             "content",
-            Schema.make().form(ArticleForm).strict().schema([
-                TextInput.make("title"), TextInput.make("slug"),
-            ]),
+            Schema.make()
+            .form(ArticleForm)
+            .strict()
+            .schema(
+                [
+                    TextInput.make("title"),
+                    TextInput.make("slug"),
+                ]
+            ),
             title="Content",
         ),
         WizardStep(
@@ -79,13 +86,18 @@ and they contribute nothing to `form_list` / `get_all_cleaned_data()`.
 from django_control_components.infolists import Infolist, TextEntry
 
 steps_config = [
-    WizardStep("intro", "<p>Nothing is saved until the final step.<p>",
-               title="Start", heading="Before you begin"),
+    WizardStep(
+        "intro",
+        "<p>Nothing is saved until the final step.<p>",
+        title="Start",
+        heading="Before you begin",
+    ),
     WizardStep("content", article_content_schema(), title="Content"),
     WizardStep(
         "review",
         Infolist.make().schema([TextEntry.make("title"), TextEntry.make("status")]),
-        title="Review", heading="Confirm and publish",
+        title="Review",
+        heading="Confirm and publish",
         record=lambda view: view.get_all_cleaned_data(),
     ),
 ]
@@ -133,7 +145,7 @@ class ArticleWizard(WizardView):
     wizard_class = "article-wizard"
     wizard_attrs = {
         "style": "--dcc-wizard-bg:#0b1120;--dcc-wizard-pad:2rem;"
-                 "--dcc-wizard-accent:#6366f1;--dcc-wizard-accent-fg:#fff",
+        "--dcc-wizard-accent:#6366f1;--dcc-wizard-accent-fg:#fff",
     }
     show_step_nav = True
 ```

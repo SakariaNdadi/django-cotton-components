@@ -58,10 +58,12 @@ DashboardSpec.objects.create(
             {"type": "Toggle", "name": "approved"},
         ],
     },
-    infolist={"entries": [
-        {"type": "TextEntry", "name": "author_name"},
-        {"type": "BooleanEntry", "name": "approved"},
-    ]},
+    infolist={
+        "entries": [
+            {"type": "TextEntry", "name": "author_name"},
+            {"type": "BooleanEntry", "name": "approved"},
+        ]
+    },
 )
 ```
 

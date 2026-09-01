@@ -78,7 +78,7 @@ Every builder accepts configuration two equivalent ways:
 
 ```python
 TextInput.make("email").label("Email").required()
-TextInput("email", label="Email", required=True)   # identical
+TextInput("email", label="Email", required=True)  # identical
 ```
 
 A method decorated `@setter` (`core/component.py:40-43`) is marked

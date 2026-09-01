@@ -24,19 +24,23 @@ from .models import Article
 
 class ArticleResource(Resource):
     model = Article
-    navigation_icon = "newspaper"        # any active-icon-set name
-    navigation_group = "Content"          # optional sidebar grouping
+    navigation_icon = "newspaper"  # any active-icon-set name
+    navigation_group = "Content"  # optional sidebar grouping
 
     @classmethod
     def build_table(cls, *, request):
         return (
             Table.make(cls.get_queryset(request).select_related("author"))
             .id("panel-articles")
-            .columns([
-                TextColumn.make("title").sortable().searchable().limit(60),
-                TextColumn.make("author.name").label("Author").sortable(sort_field="author__name"),
-                DateColumn.make("created_at").since().sortable(),
-            ])
+            .columns(
+                [
+                    TextColumn.make("title").sortable().searchable().limit(60),
+                    TextColumn.make("author.name")
+                    .label("Author")
+                    .sortable(sort_field="author__name"),
+                    DateColumn.make("created_at").since().sortable(),
+                ]
+            )
             .filters([SelectFilter.make("status").options(Article.Status.choices)])
             .default_sort("-created_at")
         )
@@ -46,13 +50,17 @@ class ArticleResource(Resource):
         return (
             Schema.make()
             .model(Article, fields=["title", "slug", "status", "body"])
-            .schema([
-                Section.make("Content").schema([
-                    TextInput.make("title").required(),
-                    TextInput.make("slug").required(),
-                    Select.make("status"),
-                ]),
-            ])
+            .schema(
+                [
+                    Section.make("Content").schema(
+                        [
+                            TextInput.make("title").required(),
+                            TextInput.make("slug").required(),
+                            Select.make("status"),
+                        ]
+                    ),
+                ]
+            )
         )
 ```
 
@@ -83,13 +91,13 @@ from django_control_components.panels import Panel
 
 admin_panel = (
     Panel("admin")
-    .path("panel")                       # -> /panel/...
+    .path("panel")  # -> /panel/...
     .resources([ArticleResource])
-    .auth(lambda request: request.user.is_staff)   # panel-wide guard(s)
+    .auth(lambda request: request.user.is_staff)  # panel-wide guard(s)
 )
 
 urlpatterns = [
-    admin_panel.mount(),                  # /panel/article/, /panel/article/new/, ...
+    admin_panel.mount(),  # /panel/article/, /panel/article/new/, ...
     # ...
 ]
 ```

@@ -74,10 +74,12 @@ An Alpine disclosure: a trigger button (default icon `ellipsis-vertical`) and a
 list of **pre-rendered HTML item strings**.
 
 ```python
-Menu.make().icon("ellipsis-vertical").align("end").items([
-    edit_action.render_trigger(record=obj, request=request),
-    delete_action.render_trigger(record=obj, request=request),
-])
+Menu.make().icon("ellipsis-vertical").align("end").items(
+    [
+        edit_action.render_trigger(record=obj, request=request),
+        delete_action.render_trigger(record=obj, request=request),
+    ]
+)
 ```
 
 | setter | note |
@@ -177,13 +179,13 @@ Satisfy the `IconSet` protocol (`icons/base.py:15-23`):
 
 ```python
 class MyIcons:
-    def __init__(self, asset_url=None):        # optional — see note below
+    def __init__(self, asset_url=None):  # optional — see note below
         self.asset_url = asset_url
 
-    def render(self, name, *, css_class=""):    # -> SafeString (already safe)
+    def render(self, name, *, css_class=""):  # -> SafeString (already safe)
         ...
 
-    def assets(self):                           # -> SafeString of <link>/<script>
+    def assets(self):  # -> SafeString of <link>/<script>
         ...
 ```
 

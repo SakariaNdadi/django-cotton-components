@@ -11,9 +11,9 @@ pip install "django-control-components[studio]"        # + django-control-compon
 ```python
 INSTALLED_APPS = [
     # ...
-    "django_cotton",                       # BEFORE django_control_components
+    "django_cotton",  # BEFORE django_control_components
     "django_control_components",
-    "django_control_components.studio",     # only for the no-code seam
+    "django_control_components.studio",  # only for the no-code seam
 ]
 ```
 
@@ -93,6 +93,12 @@ DCC = {
 | `ICON_SET` | dotted path | `…icons.FontAwesome` | `icons.active_set()` — the class rendering `{% dcc_icon %}` / every component icon. Must satisfy the `IconSet` protocol. |
 | `ICON_ASSET_URL` | str \| `None` | FontAwesome 6.7.2 CDN CSS | The `<link>` `{% dcc_assets %}` emits for icons. `None` → the set self-hosts / emits nothing. |
 | `STUDIO_MODELS` | list[str] | `[]` | `"app_label.Model"` entries a stored studio spec or a widget `.query({...})` may aggregate over. A model not in this list is refused. |
+| `VENDOR_ASSETS` | bool | `False` | `{% dcc_assets %}` — `True` serves htmx / Alpine / focus from your own static files instead of jsDelivr. Run `manage.py dcc_vendor_assets --dest <static dir>` to fetch the pinned files first. Air-gapped and privacy-sensitive deploys. |
+| `VENDOR_ASSET_DIR` | str | `"dcc/vendor/"` | Static path prefix the vendored copies are served from when `VENDOR_ASSETS`. |
+| `ASSET_SRI` | dict[str, str] | `{}` | `{cdn_url: "sha384-…"}`. Any CDN asset URL present is emitted with `integrity` + `crossorigin="anonymous"`. Ignored for a URL served via `VENDOR_ASSETS`. |
+
+Alpine is pinned exactly (`ALPINE_VERSION` in `templatetags/dcc_tags.py`), not a
+floating `3.x.x` range — bump it deliberately, in lockstep with the vendored files.
 
 ### Live re-read
 
@@ -109,6 +115,11 @@ but a `setting_changed` receiver clears that cache, so
 |---|---|---|
 | `django_control_components.E001` | Error | `django_cotton` is not in `INSTALLED_APPS` |
 | `django_control_components.W002` | Warning | no `django.template.backends.django.DjangoTemplates` backend in `TEMPLATES` — component rendering (`render_to_string`) will fail |
+| `django_control_components.E010` | Error | `DCC` contains an unknown key (a typo — the shim would raise on first access) |
+| `django_control_components.E011` | Error | `DCC["ICON_SET"]` cannot be imported |
+| `django_control_components.W011` | Warning | a `DCC["STUDIO_MODELS"]` / `STUDIO_RESOURCE_MODELS` label does not resolve to a model |
+| `django_control_components.W012` | Warning | a `DCC["STUDIO_CALLABLES"]` dotted path cannot be imported |
+| `dcc_studio.E001` | Error | `django_control_components.studio` is installed without `django_control_components` |
 
 ## Styling
 

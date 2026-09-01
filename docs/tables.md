@@ -27,37 +27,62 @@ point at a wrong row inside the already-scoped queryset.
 ```python
 from django.urls import reverse
 from django_control_components.tables import (
-    Table, TextColumn, DateColumn, BooleanColumn, SelectFilter, TernaryFilter,
+    Table,
+    TextColumn,
+    DateColumn,
+    BooleanColumn,
+    SelectFilter,
+    TernaryFilter,
 )
 from django_control_components.actions import Action, BulkAction
+
 
 def article_table(request):
     return (
         Table.make(Article.objects.select_related("author"))
         .id("articles")
-        .columns([
-            TextColumn.make("title").sortable().searchable().limit(64),
-            TextColumn.make("author.name").label("Author").sortable(sort_field="author__name"),
-            BooleanColumn.make("featured").labels(("★", "—")),
-            DateColumn.make("created_at").label("Created").since().sortable(),
-        ])
-        .filters([
-            SelectFilter.make("status").options(Article.Status.choices),
-            TernaryFilter.make("featured"),
-        ])
-        .actions([
-            Action.make("edit").icon("pen").to_url(lambda record: reverse("article-edit", args=[record.pk])),
-            Action.make("quick_edit").icon("pen-to-square").collapsed()
-                .modal(quick_edit_schema()).action(save_quick_edit),
-        ])
-        .bulk_actions([
-            BulkAction.make("publish").icon("rocket").requires_confirmation()
+        .columns(
+            [
+                TextColumn.make("title").sortable().searchable().limit(64),
+                TextColumn.make("author.name").label("Author").sortable(sort_field="author__name"),
+                BooleanColumn.make("featured").labels(("★", "—")),
+                DateColumn.make("created_at").label("Created").since().sortable(),
+            ]
+        )
+        .filters(
+            [
+                SelectFilter.make("status").options(Article.Status.choices),
+                TernaryFilter.make("featured"),
+            ]
+        )
+        .actions(
+            [
+                Action.make("edit")
+                .icon("pen")
+                .to_url(lambda record: reverse("article-edit", args=[record.pk])),
+                Action.make("quick_edit")
+                .icon("pen-to-square")
+                .collapsed()
+                .modal(quick_edit_schema())
+                .action(save_quick_edit),
+            ]
+        )
+        .bulk_actions(
+            [
+                BulkAction.make("publish")
+                .icon("rocket")
+                .requires_confirmation()
                 .action(lambda records: records.update(status="live")),
-        ])
+            ]
+        )
         .searchable()
         .default_sort("-created_at")
         .record_url(lambda record: reverse("article-edit", args=[record.pk]))
-        .record_preview(lambda record: format_html("<strong>{}</strong><p>{}</p>", record.title, record.body[:200]))
+        .record_preview(
+            lambda record: format_html(
+                "<strong>{}</strong><p>{}</p>", record.title, record.body[:200]
+            )
+        )
     )
 ```
 
@@ -66,8 +91,10 @@ Render it from a view with `TableMixin`:
 ```python
 from django_control_components.tables.views import TableMixin
 
+
 class ArticleListView(TableMixin, TemplateView):
     template_name = "articles/list.html"
+
     def get_table(self):
         return article_table(self.request)
 ```
@@ -260,8 +287,8 @@ In a panel `Resource`, the table comes from `build_table(*, request)` — see
 ## Calling a table directly
 
 ```python
-table.render(request)            # full shell (SafeString)
-table.render_content(request)    # just the content fragment
+table.render(request)  # full shell (SafeString)
+table.render_content(request)  # just the content fragment
 ```
 
 `render()` and `render_content()` both call `_register()` first, which registers

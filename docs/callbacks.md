@@ -36,7 +36,7 @@ Rules (`core/evaluate.py:57-76`):
 
 ```python
 TextColumn.make("author.name").state(lambda record: record.author.get_full_name())
-TextInput.make("published_at").visible(lambda get: get("status") == "live")   # once, at render
+TextInput.make("published_at").visible(lambda get: get("status") == "live")  # once, at render
 Action.make("delete").authorize(lambda user, record: record.owner_id == user.id)
 ```
 
@@ -60,9 +60,9 @@ Return value is ignored. The callback runs **uncaught** — raise to abort with 
 callback did.
 
 ```python
-def publish(records):                       # BulkAction
+def publish(records):  # BulkAction
     if isinstance(records, QuerySet):
-        records.update(status="live")        # one statement, select-all
+        records.update(status="live")  # one statement, select-all
     else:
         for r in records:
             r.publish()

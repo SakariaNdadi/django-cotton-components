@@ -16,16 +16,22 @@ resolves to empty, never called).
 
 ```python
 from django_control_components.infolists import (
-    Infolist, TextEntry, BadgeEntry, BooleanEntry, DateEntry,
+    Infolist,
+    TextEntry,
+    BadgeEntry,
+    BooleanEntry,
+    DateEntry,
 )
 
-infolist = Infolist.make().schema([
-    TextEntry.make("title"),
-    TextEntry.make("author.name").label("Author"),
-    BadgeEntry.make("status").colors({"live": "success", "archived": "muted"}),
-    BooleanEntry.make("featured"),
-    DateEntry.make("created_at").since(),
-])
+infolist = Infolist.make().schema(
+    [
+        TextEntry.make("title"),
+        TextEntry.make("author.name").label("Author"),
+        BadgeEntry.make("status").colors({"live": "success", "archived": "muted"}),
+        BooleanEntry.make("featured"),
+        DateEntry.make("created_at").since(),
+    ]
+)
 
 html = infolist.render(request=request, record=article)
 ```

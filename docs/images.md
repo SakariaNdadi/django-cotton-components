@@ -99,6 +99,7 @@ Runs on `form.save()` via `schema.process_images(instance)`.
 
 ```python
 from django_control_components.tables import ImageColumn
+
 ImageColumn.make("cover").thumbnail((48, 48)).rounded()
 ```
 
@@ -106,6 +107,7 @@ or directly:
 
 ```python
 from django_control_components.images import get_thumbnail_backend
+
 url = get_thumbnail_backend().thumbnail(instance.cover, 48, 48)
 ```
 

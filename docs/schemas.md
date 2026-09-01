@@ -21,28 +21,52 @@ validation.
 
 ```python
 from django_control_components.schemas import (
-    Schema, Section, Grid, TextInput, Textarea, Select, MultiSelect, Toggle, FileUpload,
+    Schema,
+    Section,
+    Grid,
+    TextInput,
+    Textarea,
+    Select,
+    MultiSelect,
+    Toggle,
+    FileUpload,
 )
+
 
 def article_schema():
     return (
         Schema.make()
         .model(Article, fields=["title", "slug", "body", "status", "cover", "published_at"])
-        .schema([
-            Section.make("Content").schema([
-                TextInput.make("title").required(),
-                TextInput.make("slug").help_text("Lowercase, dashes."),
-                Textarea.make("body").column_span_full(),
-            ]),
-            Section.make("Publishing").schema([
-                Grid.make().columns(2).schema([
-                    Select.make("status").searchable(),
-                    TextInput.make("published_at").visible_when("status", equals="live"),
-                ]),
-                FileUpload.make("cover").image().max_size("2mb").max_dimensions(2000, 2000)
-                    .convert("webp"),
-            ]),
-        ])
+        .schema(
+            [
+                Section.make("Content").schema(
+                    [
+                        TextInput.make("title").required(),
+                        TextInput.make("slug").help_text("Lowercase, dashes."),
+                        Textarea.make("body").column_span_full(),
+                    ]
+                ),
+                Section.make("Publishing").schema(
+                    [
+                        Grid.make()
+                        .columns(2)
+                        .schema(
+                            [
+                                Select.make("status").searchable(),
+                                TextInput.make("published_at").visible_when(
+                                    "status", equals="live"
+                                ),
+                            ]
+                        ),
+                        FileUpload.make("cover")
+                        .image()
+                        .max_size("2mb")
+                        .max_dimensions(2000, 2000)
+                        .convert("webp"),
+                    ]
+                ),
+            ]
+        )
     )
 ```
 
@@ -50,6 +74,7 @@ Render from a `CreateView` / `UpdateView` with `SchemaFormMixin`:
 
 ```python
 from django_control_components.mixins import SchemaFormMixin
+
 
 class ArticleCreateView(SchemaFormMixin, CreateView):
     model = Article
@@ -171,7 +196,7 @@ sibling fields change — **no round-trip** (`schemas/visibility.py`).
 ```python
 TextInput.make("published_at").visible_when("status", equals="live")
 Select.make("plan").visible_when("kind", is_in=["pro", "enterprise"])
-Toggle.make("newsletter").visible_when("accepted_terms")   # bare = truthy
+Toggle.make("newsletter").visible_when("accepted_terms")  # bare = truthy
 ```
 
 Only these three forms compile. Anything more complex: use a plain Python closure

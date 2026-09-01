@@ -79,6 +79,7 @@ def save_quick_edit(record, data):
     record.title = data["title"]
     record.save(update_fields=["title"])
 
+
 Action.make("quick_edit").modal(quick_edit_schema()).action(save_quick_edit)
 ```
 
@@ -141,10 +142,12 @@ no modal does nothing on a row click. See
 actions:
 
 ```python
-Menu.make().items([
-    edit_action.render_trigger(record=obj, request=request),
-    delete_action.render_trigger(record=obj, request=request),
-])
+Menu.make().items(
+    [
+        edit_action.render_trigger(record=obj, request=request),
+        delete_action.render_trigger(record=obj, request=request),
+    ]
+)
 ```
 
 `action.render_modal(*, request, records, form_html="")` builds the Cancel /

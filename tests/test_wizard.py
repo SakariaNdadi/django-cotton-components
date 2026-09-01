@@ -145,18 +145,14 @@ def test_string_body_step_renders_and_advances(rich_client):
 def test_callable_body_gets_view(rich_client):
     rich_client.get("/rw/")
     rich_client.post("/rw/", {"rich_wizard-current_step": "intro"})
-    r = rich_client.post(
-        "/rw/", {"rich_wizard-current_step": "basics", "basics-title": "Hi"}
-    )
+    r = rich_client.post("/rw/", {"rich_wizard-current_step": "basics", "basics-title": "Hi"})
     assert b"<p data-note>step is note</p>" in r.content
 
 
 def test_infolist_review_step_shows_prior_data(rich_client):
     rich_client.get("/rw/")
     rich_client.post("/rw/", {"rich_wizard-current_step": "intro"})
-    rich_client.post(
-        "/rw/", {"rich_wizard-current_step": "basics", "basics-title": "My Title"}
-    )
+    rich_client.post("/rw/", {"rich_wizard-current_step": "basics", "basics-title": "My Title"})
     r = rich_client.post("/rw/", {"rich_wizard-current_step": "note"})
     assert b"My Title" in r.content  # infolist rendered get_all_cleaned_data()
     assert b"Confirm" in r.content and b"Nothing saved yet." in r.content
@@ -178,9 +174,7 @@ def test_theming_hooks_on_wrapper(rich_client):
 def test_empty_form_body_never_blocks_done(rich_client):
     rich_client.get("/rw/")
     rich_client.post("/rw/", {"rich_wizard-current_step": "intro"})
-    rich_client.post(
-        "/rw/", {"rich_wizard-current_step": "basics", "basics-title": "T"}
-    )
+    rich_client.post("/rw/", {"rich_wizard-current_step": "basics", "basics-title": "T"})
     rich_client.post("/rw/", {"rich_wizard-current_step": "note"})
     r = rich_client.post("/rw/", {"rich_wizard-current_step": "review"})
     assert r.content == b"done"
@@ -211,9 +205,7 @@ def test_htmx_done_redirect_uses_hx_redirect_header(rich_client):
         c.post("/rw/", {"rich_wizard-current_step": "intro"})
         c.post("/rw/", {"rich_wizard-current_step": "basics", "basics-title": "T"})
         c.post("/rw/", {"rich_wizard-current_step": "note"})
-        r = c.post(
-            "/rw/", {"rich_wizard-current_step": "review"}, HTTP_HX_REQUEST="true"
-        )
+        r = c.post("/rw/", {"rich_wizard-current_step": "review"}, HTTP_HX_REQUEST="true")
         assert r.status_code == 204
         assert r["HX-Redirect"] == "/after/"
     finally:
