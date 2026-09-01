@@ -72,6 +72,7 @@ def test_mark_safe_only_at_reviewed_sites():
         "templatetags/dcc_tags.py",
         "schemas/schema.py",
         "schemas/layout.py",
+        "blocks/base.py",  # Block.render_slot — same already-safe-parts concat as layout.py
         "tables/columns.py",  # .allow_html() — documented opt-in, escaping is default
         "icons/fontawesome.py",  # fixed markup + a setting-controlled asset URL
     }

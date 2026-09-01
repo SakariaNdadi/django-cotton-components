@@ -12,6 +12,7 @@ from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from ...blocks.codec import decode_nodes, encode_nodes
 from ..deserialize import build_table_from_spec, validate_spec
 from ..introspect import installed_models, resolve_model
 from ..models import DashboardSpec, SpecRevision
@@ -65,8 +66,8 @@ class ResourceBuilder(StudioView):
         table = spec.table or {}
         boot: dict[str, Any] = {
             "doc": {
-                "columns": _nodes(table.get("columns")),
-                "filters": _nodes(table.get("filters")),
+                "columns": encode_nodes(table.get("columns")),
+                "filters": encode_nodes(table.get("filters")),
             },
             "palette": pal,
             "revision": spec.revision,
@@ -99,12 +100,8 @@ class ResourceSave(StudioView):
             return JsonResponse({"revision": spec.revision, "doc": _current_doc(spec)}, status=409)
 
         table = dict(spec.table or {})
-        table["columns"] = [
-            _clean(node) for node in doc.get("columns", []) if isinstance(node, dict)
-        ]
-        table["filters"] = [
-            _clean(node) for node in doc.get("filters", []) if isinstance(node, dict)
-        ]
+        table["columns"] = decode_nodes(doc.get("columns", []))
+        table["filters"] = decode_nodes(doc.get("filters", []))
 
         candidate = {"table": table, "schema": spec.schema, "infolist": spec.infolist}
         try:
@@ -132,8 +129,8 @@ class ResourcePreview(StudioView):
         doc = self.read_doc()
         model = spec.resolve_model()
         table_spec = {
-            "columns": [_clean(n) for n in doc.get("columns", []) if isinstance(n, dict)],
-            "filters": [_clean(n) for n in doc.get("filters", []) if isinstance(n, dict)],
+            "columns": decode_nodes(doc.get("columns", [])),
+            "filters": decode_nodes(doc.get("filters", [])),
         }
         from django.utils.html import escape
 
@@ -160,32 +157,12 @@ def _get_spec(slug: str) -> DashboardSpec:
         raise Http404("no such resource") from None
 
 
-def _nodes(raw: Any) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
-    for index, node in enumerate(raw or []):
-        if not isinstance(node, dict):
-            continue
-        config = dict(node.get("config") or {})
-        if node.get("name"):
-            config.setdefault("name", node["name"])
-        out.append({"id": f"n{index}", "type": node.get("type", ""), "config": config})
-    return out
-
-
-def _clean(node: dict[str, Any]) -> dict[str, Any]:
-    result: dict[str, Any] = {"type": node.get("type", "")}
-    config = dict(node.get("config") or {})
-    name = config.pop("name", None)
-    if name:
-        result["name"] = name
-    if config:
-        result["config"] = config
-    return result
-
-
 def _current_doc(spec: DashboardSpec) -> dict[str, Any]:
     table = spec.table or {}
-    return {"columns": _nodes(table.get("columns")), "filters": _nodes(table.get("filters"))}
+    return {
+        "columns": encode_nodes(table.get("columns")),
+        "filters": encode_nodes(table.get("filters")),
+    }
 
 
 def _trim(spec: DashboardSpec, keep: int = 20) -> None:

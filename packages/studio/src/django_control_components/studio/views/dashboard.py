@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils.text import slugify
 
+from ...blocks.codec import decode_nodes, encode_nodes
 from ..deserialize import build_widgets_from_spec, validate_widgets_spec
 from ..models import PanelDashboard, SpecRevision
 from ..palette import palette
@@ -55,7 +56,7 @@ class DashboardBuilder(StudioView):
         dashboard = _get_dashboard(slug)
         pal = palette(request)
         boot: dict[str, Any] = {
-            "doc": {"items": _items(dashboard)},
+            "doc": {"items": encode_nodes(dashboard.widgets, id_prefix="w")},
             "palette": pal,
             "revision": dashboard.revision,
             "saveUrl": reverse("dcc_studio:dash-save", args=[slug]),
@@ -83,10 +84,14 @@ class DashboardSave(StudioView):
             client_revision = -1
         if client_revision != dashboard.revision:
             return JsonResponse(
-                {"revision": dashboard.revision, "doc": {"items": _items(dashboard)}}, status=409
+                {
+                    "revision": dashboard.revision,
+                    "doc": {"items": encode_nodes(dashboard.widgets, id_prefix="w")},
+                },
+                status=409,
             )
 
-        widgets = [_clean_node(node) for node in doc.get("items", []) if isinstance(node, dict)]
+        widgets = decode_nodes(doc.get("items", []))
         try:
             validate_widgets_spec(widgets, request=request)
         except ValidationError as exc:
@@ -110,7 +115,7 @@ class DashboardPreview(StudioView):
     def post(self, request: HttpRequest, slug: str, *args: Any, **kwargs: Any) -> HttpResponse:
         _get_dashboard(slug)
         doc = self.read_doc()
-        widgets = [_clean_node(n) for n in doc.get("items", []) if isinstance(n, dict)]
+        widgets = decode_nodes(doc.get("items", []))
         try:
             validate_widgets_spec(widgets, request=request)
             built = build_widgets_from_spec(widgets)
@@ -131,33 +136,6 @@ def _get_dashboard(slug: str) -> PanelDashboard:
         return PanelDashboard.objects.get(slug=slug)
     except PanelDashboard.DoesNotExist:
         raise Http404("no such dashboard") from None
-
-
-def _items(dashboard: PanelDashboard) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
-    for index, node in enumerate(dashboard.widgets or []):
-        if not isinstance(node, dict):
-            continue
-        out.append(
-            {
-                "id": f"w{index}",
-                "type": node.get("type", ""),
-                "config": {k: v for k, v in node.items() if k not in ("type", "id")},
-            }
-        )
-    return out
-
-
-def _clean_node(node: dict[str, Any]) -> dict[str, Any]:
-    result: dict[str, Any] = {"type": node.get("type", "")}
-    config = node.get("config") or {}
-    if isinstance(config, dict):
-        if config.get("name"):
-            result["name"] = config["name"]
-        payload = {k: v for k, v in config.items() if k != "name"}
-        if payload:
-            result["config"] = payload
-    return result
 
 
 def _trim_revisions(dashboard: PanelDashboard, keep: int = 20) -> None:
