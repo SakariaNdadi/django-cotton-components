@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Self
 
-from .component import setter
+from .component import UNSET, setter
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -71,6 +71,37 @@ class HasColumnSpan:
 
     def column_span_full(self) -> Self:
         return self._set("column_span", "full")
+
+
+class HasVisibilityRules:
+    """Compiles ``.visible_when(...)`` calls into a client-side Alpine expression
+    (``_visible_expr()``) evaluated live against sibling form values, via
+    ``$dccField`` — see ``core/visibility.py``. Shared by ``Field`` and
+    ``Layout``: a whole section can react to another field exactly like a
+    single field can."""
+
+    _config: dict[str, Any]
+    _set: Callable[[str, Any], Self]
+
+    def visible_when(self, field: str, *, equals: Any = UNSET, is_in: Any = UNSET) -> Self:
+        from .visibility import VisibilityRule
+
+        rule = VisibilityRule(
+            field=field,
+            equals=None if equals is UNSET else equals,
+            is_in=None if is_in is UNSET else tuple(is_in),
+            truthy=equals is UNSET and is_in is UNSET,
+        )
+        rules = [*self._config.get("visibility_rules", []), rule]
+        return self._set("visibility_rules", rules)
+
+    def _visible_expr(self) -> str:
+        from .visibility import VisibilityRule
+
+        rules: list[VisibilityRule] = self._config.get("visibility_rules", [])
+        if not rules:
+            return ""
+        return " && ".join(f"({r.to_alpine()})" for r in rules)
 
 
 class HasChildComponents:

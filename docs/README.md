@@ -28,6 +28,7 @@ other doc assumes it.
 | [infolists.md](infolists.md) | `Infolist` — the read-only counterpart to a schema |
 | [wizards.md](wizards.md) | `WizardView` — multi-step forms over django-formtools with htmx step swapping |
 | [ui.md](ui.md) | `Button`, `Badge`, `Icon`, `Checkbox`, `Menu`, `Modal` (Python **and** `<c-dcc.*>`) + the icon-set registry |
+| [blocks.md](blocks.md) | `blocks/` — page/layout blocks with named slots (`AppShell`, `Grid`, `Card`, …), `BLOCK_TYPES`, the wire↔stored codec, the spec-migration framework |
 | [images.md](images.md) | `FileUpload` validation, the Pillow processing pipeline, thumbnails |
 | [panels.md](panels.md) | `Panel` / `Resource` — an admin-independent CRUD surface; `DashboardPage` + widgets |
 | [widgets.md](widgets.md) | dashboard widgets — `StatWidget`, `ChartWidget`, `BarListWidget`, `TableWidget`, custom widgets |

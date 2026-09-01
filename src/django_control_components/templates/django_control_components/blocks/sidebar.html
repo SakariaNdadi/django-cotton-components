@@ -1,0 +1,5 @@
+{% load dcc_tags %}
+<nav class="dcc-panel__nav" id="dcc-nav" aria-label="Sidebar">
+  {% if brand %}<div class="dcc-panel__brand">{% if brand_icon %}{% dcc_icon brand_icon %}{% endif %}<strong>{{ brand }}</strong></div>{% endif %}
+  <ul class="dcc-nav">{{ slots.default }}</ul>
+</nav>

@@ -1,0 +1,13 @@
+{% load dcc_tags %}
+<div class="dcc-panel" x-data="dccShell()" :class="{ 'is-nav-open': navOpen }" style="--dcc-panel-nav-w:{{ sidebar_width }}">
+  {% if has_sidebar %}
+  <button type="button" class="dcc-panel__navtoggle" aria-label="Toggle navigation" @click="navOpen = !navOpen">{% dcc_icon "bars" %}</button>
+  <div class="dcc-panel__scrim" @click="navOpen = false" x-show="navOpen" x-transition.opacity></div>
+  {{ slots.sidebar }}
+  {% endif %}
+  <div class="dcc-panel__body">
+    {% if has_topbar %}{{ slots.topbar }}{% endif %}
+    <main class="dcc-panel__main">{{ slots.content }}</main>
+    {% if has_footer %}{{ slots.footer }}{% endif %}
+  </div>
+</div>

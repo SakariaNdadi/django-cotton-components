@@ -1,0 +1,5 @@
+<div class="dcc-card"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>
+  {% if title or slots.header %}<div class="dcc-card__header">{% if title %}<h3 class="dcc-card__title">{{ title }}</h3>{% endif %}{{ slots.header }}</div>{% endif %}
+  <div class="dcc-card__body">{{ slots.body }}{{ slots.default }}</div>
+  {% if slots.footer %}<div class="dcc-card__footer">{{ slots.footer }}</div>{% endif %}
+</div>

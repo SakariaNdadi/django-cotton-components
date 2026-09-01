@@ -305,6 +305,21 @@
   .dcc-widget { grid-column: span 2; }
 }
 
+/* ---- page blocks (blocks/) ---------------------------------- */
+
+.dcc-card { border: 1px solid var(--dcc-border); border-radius: var(--dcc-radius); background: var(--dcc-surface); overflow: hidden; }
+.dcc-card__header { padding: 0.875rem 1rem; border-bottom: 1px solid var(--dcc-border); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.dcc-card__title { margin: 0; font-size: 0.9375rem; font-weight: 600; }
+.dcc-card__body { padding: 1rem; }
+.dcc-card__footer { padding: 0.875rem 1rem; border-top: 1px solid var(--dcc-border); }
+.dcc-divider { border: 0; border-top: 1px solid var(--dcc-border); margin: 1rem 0; }
+.dcc-navbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.625rem 1.25rem; border-bottom: 1px solid var(--dcc-border); background: var(--dcc-surface); }
+.dcc-navbar__start, .dcc-navbar__end { display: flex; align-items: center; gap: 0.5rem; }
+.dcc-navbar__brand { font-weight: 600; }
+.dcc-footer { padding: 1.25rem; border-top: 1px solid var(--dcc-border); color: var(--dcc-muted); font-size: 0.8125rem; }
+.dcc-panel__body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.dcc-panel__body .dcc-panel__main { max-width: none; }
+
 /* ---- layout containers --------------------------------------- */
 
 .dcc-section { border: 1px solid var(--dcc-border); border-radius: var(--dcc-radius); padding: 1.25rem; }

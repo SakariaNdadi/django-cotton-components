@@ -136,6 +136,50 @@ def test_visible_when_is_in(soup):
     assert '["live", "archived"]' in x_show and "includes" in x_show
 
 
+def test_column_span_full_emits_grid_class(soup):
+    doc = soup(render(TextInput.make("title").column_span_full()))
+    field = doc.select_one("div.dcc-field")
+    assert "dcc-col-span-full" in field.get("class")
+    assert field.get("style") is None
+
+
+def test_column_span_int_emits_grid_span_style(soup):
+    doc = soup(render(TextInput.make("title").column_span(2)))
+    field = doc.select_one("div.dcc-field")
+    assert field.get("style") == "grid-column: span 2"
+    assert "dcc-col-span-full" not in (field.get("class") or [])
+
+
+def test_field_without_column_span_has_no_span_markup(soup):
+    doc = soup(render(TextInput.make("title")))
+    field = doc.select_one("div.dcc-field")
+    assert field.get("style") is None
+    assert "dcc-col-span-full" not in (field.get("class") or [])
+
+
+def test_layout_visible_when_now_compiles_an_expression(soup):
+    schema = (
+        Schema.make()
+        .form(ArticleForm)
+        .schema(
+            [
+                Section.make("Advanced")
+                .visible_when("status", equals="live")
+                .schema([TextInput.make("slug")])
+            ]
+        )
+    )
+    doc = soup(str(schema.render(form=ArticleForm())))
+    section = doc.select_one("section.dcc-section[x-show]")
+    assert section is not None
+    assert '$dccField("status") == "live"' in section.get("x-show")
+
+
+def test_layout_without_visible_when_has_no_x_show(soup):
+    doc = soup(render(Section.make("Plain").schema([TextInput.make("title")])))
+    assert doc.select_one("section.dcc-section").get("x-show") is None
+
+
 def test_field_base_default_value_used_without_form():
     from django_control_components.core.context import RenderContext
 

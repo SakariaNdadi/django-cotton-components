@@ -1,2 +1,2 @@
-<div class="dcc-field{% if errors %} dcc-field--invalid{% endif %}"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>{% if label_display and label %}
+<div class="dcc-field{% if errors %} dcc-field--invalid{% endif %}{% if column_span == "full" %} dcc-col-span-full{% endif %}"{% if column_span and column_span != "full" %} style="grid-column: span {{ column_span }}"{% endif %}{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %}>{% if label_display and label %}
   <label for="{{ id }}" class="dcc-field__label">{{ label }}{% if required %}<span class="dcc-field__required" aria-hidden="true">*</span>{% endif %}</label>{% endif %}

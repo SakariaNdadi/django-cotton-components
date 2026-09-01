@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 def palette(request: HttpRequest | None = None) -> dict[str, list[dict[str, Any]]]:
+    from ..blocks import BLOCK_TYPES
     from ..core.describe import strip_privileged_setters
     from ..infolists import ENTRY_TYPES
     from ..panels import WIDGET_TYPES
@@ -38,4 +39,5 @@ def palette(request: HttpRequest | None = None) -> dict[str, list[dict[str, Any]
         "fields": dump(FIELD_TYPES),
         "entries": dump(ENTRY_TYPES),
         "widgets": dump(WIDGET_TYPES),
+        "blocks": dump(BLOCK_TYPES),
     }

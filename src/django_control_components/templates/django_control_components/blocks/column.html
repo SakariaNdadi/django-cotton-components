@@ -1,0 +1,1 @@
+<div class="dcc-col"{% if visible_expr %} x-show="{{ visible_expr }}"{% endif %} style="grid-column:{% if offset %}{{ offset|add:1 }} / span {{ span }}{% else %}span {{ span }}{% endif %}">{{ slots.default }}</div>

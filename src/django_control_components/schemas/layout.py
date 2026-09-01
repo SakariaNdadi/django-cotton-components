@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING, Any, Self
 from django.utils.safestring import SafeString, mark_safe
 
 from ..core.component import Component, setter
-from ..core.concerns import HasChildComponents
+from ..core.concerns import HasChildComponents, HasVisibilityRules
 
 if TYPE_CHECKING:
     from ..core.context import RenderContext
 
 
-class Layout(HasChildComponents, Component):
+class Layout(HasChildComponents, HasVisibilityRules, Component):
     """A container that renders child components into a slot."""
 
     def __init__(self, title: str | None = None, **kwargs: Any) -> None:
@@ -27,9 +27,6 @@ class Layout(HasChildComponents, Component):
         # Every part is already a SafeString from Component.render / render_to_string.
         parts = [str(child.render(ctx.child(parent=self))) for child in self._children]
         return mark_safe("".join(parts))  # noqa: S308
-
-    def _visible_expr(self) -> str:
-        return ""
 
     def get_view_data(self, ctx: RenderContext) -> dict[str, Any]:
         return {
@@ -113,4 +110,4 @@ class Tabs(Layout):
             tabs.append(
                 {"title": child.title or f"Tab {i + 1}", "html": child._render_children(child_ctx)}
             )
-        return {"component": self, "tabs": tabs, "visible_expr": ""}
+        return {"component": self, "tabs": tabs, "visible_expr": self._visible_expr()}

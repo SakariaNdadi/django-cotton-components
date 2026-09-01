@@ -7,8 +7,7 @@ from django.utils.text import capfirst
 from ...conf import dcc_settings
 from ...core.attributes import AttributeBag
 from ...core.component import UNSET, Component, setter
-from ...core.concerns import HasColumnSpan, HasHint, HasLabel, HasState
-from ..visibility import VisibilityRule
+from ...core.concerns import HasColumnSpan, HasHint, HasLabel, HasState, HasVisibilityRules
 
 if TYPE_CHECKING:
     from django.forms import BoundField
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
     from ...core.context import RenderContext
 
 
-class Field(HasLabel, HasHint, HasState, HasColumnSpan, Component):
+class Field(HasLabel, HasHint, HasState, HasColumnSpan, HasVisibilityRules, Component):
     """Base for every form field component.
 
     A field never validates. It reads presentation defaults from the bound
@@ -42,16 +41,6 @@ class Field(HasLabel, HasHint, HasState, HasColumnSpan, Component):
         ms = dcc_settings.LIVE_VALIDATION_DEBOUNCE_MS if debounce is True else int(debounce)
         return self._set("live_debounce", ms)
 
-    def visible_when(self, field: str, *, equals: Any = UNSET, is_in: Any = UNSET) -> Self:
-        rule = VisibilityRule(
-            field=field,
-            equals=None if equals is UNSET else equals,
-            is_in=None if is_in is UNSET else tuple(is_in),
-            truthy=equals is UNSET and is_in is UNSET,
-        )
-        rules = [*self._config.get("visibility_rules", []), rule]
-        return self._set("visibility_rules", rules)
-
     # -- binding helpers --------------------------------------------
 
     def _bound(self, ctx: RenderContext) -> BoundField | None:
@@ -63,12 +52,6 @@ class Field(HasLabel, HasHint, HasState, HasColumnSpan, Component):
     def _pick(self, key: str, ctx: RenderContext, fallback: Any) -> Any:
         configured = self.resolve(key, ctx)
         return fallback if configured is UNSET else configured
-
-    def _visible_expr(self) -> str:
-        rules: list[VisibilityRule] = self._config.get("visibility_rules", [])
-        if not rules:
-            return ""
-        return " && ".join(f"({r.to_alpine()})" for r in rules)
 
     # -- view data -------------------------------------------------
 
@@ -114,6 +97,7 @@ class Field(HasLabel, HasHint, HasState, HasColumnSpan, Component):
             "value": value,
             "attrs": extra,
             "visible_expr": self._visible_expr(),
+            "column_span": self._config.get("column_span"),
             "live_url": live_url,
             "htmx_attrs": "",
         }

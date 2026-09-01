@@ -77,7 +77,7 @@ def test_palette_json_is_serialisable_and_gated(rf, django_user_model):
     doc = palette(request)
     blob = json.dumps(doc)  # round-trips
     assert "allow_html" not in blob  # stripped for non-superuser
-    assert set(doc) == {"columns", "filters", "fields", "entries", "widgets"}
+    assert set(doc) == {"columns", "filters", "fields", "entries", "widgets", "blocks"}
 
 
 pytestmark = pytest.mark.django_db
